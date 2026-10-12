@@ -1,0 +1,70 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm check:repo
+      - run: pnpm check:ui
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: campus, POSTGRES_PASSWORD: campus, POSTGRES_DB: campus }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U campus" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://campus:campus@localhost:5432/campus
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash infra/db/migrate.sh
+      - name: Migrations are idempotent
+        run: bash infra/db/migrate.sh
+      - name: Ledger is append-only
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO users DEFAULT VALUES"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "INSERT INTO ledger_entries (idempotency_key, actor_id, currency_code, amount, source_event) SELECT 'ci-test-key-1', id, 'CAMPUS_COINS', 5, 'CI' FROM users LIMIT 1"
+          if psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "UPDATE ledger_entries SET amount = 99"; then echo "ledger was mutable" && exit 1; fi
+      - name: Backup and restore drill
+        run: |
+          bash infra/db/backup.sh /tmp/ci.dump
+          psql postgres://campus:campus@localhost:5432/postgres -c "CREATE DATABASE restore_drill"
+          DATABASE_URL="$DATABASE_URL" RESTORE_DATABASE_URL=postgres://campus:campus@localhost:5432/restore_drill bash infra/db/restore.sh /tmp/ci.dump
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - name: Start api and realtime
+        run: |
+          (pnpm --filter @campus/api start > api.log 2>&1 &)
+          (pnpm --filter @campus/realtime start > realtime.log 2>&1 &)
+          for i in $(seq 1 30); do curl -sf localhost:4000/healthz && curl -sf localhost:4001/healthz && exit 0; sleep 1; done
+          cat api.log realtime.log; exit 1
+      - run: pnpm smoke
+      - run: pnpm e2e:realtime
+      - name: Load budget
+        run: CLIENTS=15 pnpm load
