@@ -223,107 +223,107 @@
       "kind": "lab"
     }
   ],
-  "props": [
+  "props": [],
+  "interactionPoints": [
     {
-      "kind": "pillar",
-      "x": 165.83,
-      "y": 134.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_01_ai_research_lab",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 165.83,
-      "y": 141.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_02_data_science_lab",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 170.33,
-      "y": 134.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_03_biotech_lab",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 170.33,
-      "y": 141.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_04_clean_energy_lab",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 189.33,
-      "y": 134.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_05_agritech_lab",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 95.43,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 189.33,
-      "y": 141.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_06_materials_lab",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 95.43,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 193.83,
-      "y": 134.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_07_drone_lab",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 95.43,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 193.83,
-      "y": 141.32,
-      "w": 0.35,
-      "h": 0.35
+      "id": "rp_research_08_iot_lab",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 95.43,
+      "activity": "quiz"
     },
     {
-      "kind": "block",
-      "x": 188,
-      "y": 129.5,
-      "w": 1.8,
-      "h": 1.8
+      "id": "rp_research_09_research_office_1",
+      "name": "Study Quiz",
+      "x": 169.5,
+      "y": 106.6,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 170.7,
-      "y": 130.2,
-      "w": 0.6,
-      "h": 0.6
+      "id": "rp_research_10_research_office_2",
+      "name": "Study Quiz",
+      "x": 190.5,
+      "y": 106.6,
+      "activity": "quiz"
     },
     {
-      "kind": "tree",
-      "x": 164.4,
-      "y": 129.9,
-      "w": 1.2,
-      "h": 1.2
+      "id": "rp_research_11_innovation_hall",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 117.93,
+      "activity": "quiz"
     },
     {
-      "kind": "tree",
-      "x": 194.4,
-      "y": 144.9,
-      "w": 1.2,
-      "h": 1.2
+      "id": "rp_research_12_prototype_lab",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 117.93,
+      "activity": "quiz"
     },
     {
-      "kind": "tree",
-      "x": 164.4,
-      "y": 144.9,
-      "w": 1.2,
-      "h": 1.2
+      "id": "rp_research_13_quantum_lab",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 117.93,
+      "activity": "quiz"
     },
     {
-      "kind": "bench",
-      "x": 178.4,
-      "y": 146.75,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_research_14_photonics_lab",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 117.93,
+      "activity": "quiz"
     }
   ],
-  "interactionPoints": [],
   "npcs": [
     {
       "id": "npc_research_park_1",
@@ -339,7 +339,7 @@
         },
         {
           "x": 179.2,
-          "y": 95.7
+          "y": 120.5
         }
       ]
     },
@@ -353,11 +353,11 @@
       "path": [
         {
           "x": 180.8,
-          "y": 116.2
+          "y": 120.5
         },
         {
           "x": 180.8,
-          "y": 104.3
+          "y": 86
         }
       ]
     }

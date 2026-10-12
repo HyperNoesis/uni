@@ -194,7 +194,92 @@
     }
   ],
   "props": [],
-  "interactionPoints": [],
+  "interactionPoints": [
+    {
+      "id": "rp_medical_01_student_health_cli",
+      "name": "Study Quiz",
+      "x": 205,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_02_anatomy_lab",
+      "name": "Study Quiz",
+      "x": 214,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_03_pharmacy_lab",
+      "name": "Study Quiz",
+      "x": 226,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_04_nursing_skills_war",
+      "name": "Study Quiz",
+      "x": 235,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_05_dental_suite",
+      "name": "Study Quiz",
+      "x": 205,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_06_physiotherapy_room",
+      "name": "Study Quiz",
+      "x": 214,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_07_radiology_room",
+      "name": "Study Quiz",
+      "x": 226,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_08_counselling_centre",
+      "name": "Study Quiz",
+      "x": 235,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_09_medical_lecture_ro",
+      "name": "Study Quiz",
+      "x": 205,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_10_clinical_skills_la",
+      "name": "Study Quiz",
+      "x": 214,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_11_pharmacy_dispensar",
+      "name": "Study Quiz",
+      "x": 226,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_medical_12_medical_dean_s_off",
+      "name": "Study Quiz",
+      "x": 235,
+      "y": 25.93,
+      "activity": "quiz"
+    }
+  ],
   "npcs": [
     {
       "id": "npc_medical_college_1",
@@ -206,11 +291,11 @@
       "path": [
         {
           "x": 219.2,
-          "y": 11.3
+          "y": 3
         },
         {
           "x": 219.2,
-          "y": 19.2
+          "y": 28.5
         }
       ]
     },
@@ -224,11 +309,11 @@
       "path": [
         {
           "x": 220.8,
-          "y": 19.2
+          "y": 28.5
         },
         {
           "x": 220.8,
-          "y": 11.3
+          "y": 6
         }
       ]
     }

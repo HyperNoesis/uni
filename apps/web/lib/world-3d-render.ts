@@ -11,6 +11,9 @@ import { solveOrbitCamera, solveFirstPersonCamera, solveChaseCamera, DEFAULT_PIT
 import { environment } from "./world-environment";
 import { palmTree } from "./world-flora";
 import { FRAG, SHADOW_VERT, SHADOW_VERT_I, SHADOW_FRAG, SKY_VERT, SKY_FRAG, SUN_DIR } from "./world-shaders";
+// Camera blockers: thin wall segments only (not whole building footprints), so the chase camera can follow you through a
+// doorway and sit inside a room instead of collapsing against your head. Visual only.
+const CAM_WALLS = domain_1.BUILDINGS.flatMap((b) => domain_1.buildingWalls(b).map((w) => ({ x: w.x, y: w.y, w: w.w, h: w.h, height: b.height })));
 const identity = () => new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 function multiply(a, b) {
     const o = new Float32Array(16);
@@ -476,7 +479,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         if (walkCam) {
             const wi = { x: input.camX, y: input.camY, heading: input.camHeading ?? 0, look: input.camLook ?? 0, bob: input.camBob ?? 0 };
             if (fpCam) { const c = solveFirstPersonCamera(wi); eye = c.eye; target = c.target; fov = FP_FOV; }
-            else { const c = solveChaseCamera({ ...wi, boxes: domain_1.BUILDINGS }); camClear += (c.clearance - camClear) * (c.clearance < camClear ? .6 : .1); eye = solveChaseCamera({ ...wi, boxes: [], dist: 4.3 * camClear }).eye; target = c.target; fov = 1.1; }
+            else { const c = solveChaseCamera({ ...wi, boxes: CAM_WALLS }); camClear += (c.clearance - camClear) * (c.clearance < camClear ? .6 : .1); eye = solveChaseCamera({ ...wi, boxes: [], dist: 4.3 * camClear }).eye; target = c.target; fov = 1.1; }
         } else {
             const base = { camX: input.camX, camY: input.camY, yaw: input.camYaw ?? 0, pitch: input.camPitch ?? DEFAULT_PITCH, zoom: input.zoom ?? 1, worldW: domain_1.WORLD.width, worldH: domain_1.WORLD.height };
             const cam = solveOrbitCamera({ ...base, boxes: domain_1.BUILDINGS });

@@ -194,7 +194,92 @@
     }
   ],
   "props": [],
-  "interactionPoints": [],
+  "interactionPoints": [
+    {
+      "id": "rp_arts_01_literature_seminar",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_02_history_room",
+      "name": "Reaction Challenge",
+      "x": 134,
+      "y": 48.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_arts_03_theatre_arts_studi",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_04_music_practice_roo",
+      "name": "Study Quiz",
+      "x": 155,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_05_fine_art_studio",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_06_philosophy_room",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_07_languages_lab",
+      "name": "Reaction Challenge",
+      "x": 146,
+      "y": 59.43,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_arts_08_mass_comm_newsroom",
+      "name": "Study Quiz",
+      "x": 155,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_09_radio_booth",
+      "name": "Reaction Challenge",
+      "x": 125,
+      "y": 69.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_arts_10_dance_studio",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 69.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_11_arts_lecture_room",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 69.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_arts_12_arts_dean_s_office",
+      "name": "Reaction Challenge",
+      "x": 155,
+      "y": 69.93,
+      "activity": "reaction"
+    }
+  ],
   "npcs": [
     {
       "id": "npc_arts_row_1",
@@ -210,7 +295,7 @@
         },
         {
           "x": 139.2,
-          "y": 59.2
+          "y": 72.5
         }
       ]
     },
@@ -224,7 +309,7 @@
       "path": [
         {
           "x": 140.8,
-          "y": 59.2
+          "y": 72.5
         },
         {
           "x": 140.8,

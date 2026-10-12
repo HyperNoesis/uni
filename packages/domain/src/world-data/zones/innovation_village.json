@@ -223,86 +223,86 @@
       "kind": "studio"
     }
   ],
-  "props": [
+  "props": [],
+  "interactionPoints": [
     {
-      "kind": "stage",
-      "x": 215,
-      "y": 129.5,
-      "w": 10,
-      "h": 3.4
+      "id": "rp_innovation_01_startup_pod_1",
+      "name": "Reaction Challenge",
+      "x": 205,
+      "y": 84.93,
+      "activity": "reaction"
     },
     {
-      "kind": "block",
-      "x": 204.5,
-      "y": 137,
-      "w": 6,
-      "h": 2.4
+      "id": "rp_innovation_02_startup_pod_2",
+      "name": "Study Quiz",
+      "x": 214,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "block",
-      "x": 229.5,
-      "y": 137,
-      "w": 6,
-      "h": 2.4
+      "id": "rp_innovation_04_startup_pod_4",
+      "name": "Reaction Challenge",
+      "x": 235,
+      "y": 84.93,
+      "activity": "reaction"
     },
     {
-      "kind": "pillar",
-      "x": 211.85,
-      "y": 133.85,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_innovation_05_maker_space",
+      "name": "Study Quiz",
+      "x": 205,
+      "y": 95.43,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 227.85,
-      "y": 133.85,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_innovation_07_film_studio",
+      "name": "Reaction Challenge",
+      "x": 226,
+      "y": 95.43,
+      "activity": "reaction"
     },
     {
-      "kind": "pillar",
-      "x": 211.85,
-      "y": 145.35,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_innovation_08_podcast_studio",
+      "name": "Reaction Challenge",
+      "x": 235,
+      "y": 95.43,
+      "activity": "reaction"
     },
     {
-      "kind": "pillar",
-      "x": 227.85,
-      "y": 145.35,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_innovation_10_co_working_room_a",
+      "name": "Reaction Challenge",
+      "x": 214,
+      "y": 105.93,
+      "activity": "reaction"
     },
     {
-      "kind": "tree",
-      "x": 204.4,
-      "y": 145.1,
-      "w": 1.2,
-      "h": 1.2
+      "id": "rp_innovation_11_co_working_room_b",
+      "name": "Reaction Challenge",
+      "x": 226,
+      "y": 105.93,
+      "activity": "reaction"
     },
     {
-      "kind": "tree",
-      "x": 234.4,
-      "y": 145.1,
-      "w": 1.2,
-      "h": 1.2
+      "id": "rp_innovation_12_pitch_room",
+      "name": "Study Quiz",
+      "x": 235,
+      "y": 105.93,
+      "activity": "quiz"
     },
     {
-      "kind": "bench",
-      "x": 213.4,
-      "y": 146.05,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_innovation_13_campus_gym",
+      "name": "Reaction Challenge",
+      "x": 209.5,
+      "y": 117.1,
+      "activity": "reaction"
     },
     {
-      "kind": "bench",
-      "x": 223.4,
-      "y": 146.05,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_innovation_14_wellness_studio",
+      "name": "Reaction Challenge",
+      "x": 230.5,
+      "y": 117.1,
+      "activity": "reaction"
     }
   ],
-  "interactionPoints": [],
   "npcs": [
     {
       "id": "npc_innovation_village_1",

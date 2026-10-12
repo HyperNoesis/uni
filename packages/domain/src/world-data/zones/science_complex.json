@@ -194,7 +194,92 @@
     }
   ],
   "props": [],
-  "interactionPoints": [],
+  "interactionPoints": [
+    {
+      "id": "rp_science_01_physics_lab_1",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_02_physics_lab_2",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_03_chemistry_lab_1",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_04_chemistry_lab_2",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_05_biology_lab",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_06_microbiology_lab",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_07_geology_lab",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_08_computer_lab_1",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_09_computer_lab_2",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_10_maths_seminar_room",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_11_science_lecture_ro",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_science_12_science_dean_s_off",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 25.93,
+      "activity": "quiz"
+    }
+  ],
   "npcs": [
     {
       "id": "npc_science_complex_1",
@@ -210,7 +295,7 @@
         },
         {
           "x": 179.2,
-          "y": 7.2
+          "y": 28.5
         }
       ]
     },
@@ -224,11 +309,11 @@
       "path": [
         {
           "x": 180.8,
-          "y": 19.2
+          "y": 28.5
         },
         {
           "x": 180.8,
-          "y": 12.8
+          "y": 6
         }
       ]
     }

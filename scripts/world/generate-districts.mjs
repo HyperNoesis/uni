@@ -31,6 +31,10 @@ const Z = [
     names: ["Startup Pod 1", "Startup Pod 2", "Startup Pod 3", "Startup Pod 4", "Maker Space", "Game Dev Studio", "Film Studio", "Podcast Studio", "Design Studio", "Co-working Room A", "Co-working Room B", "Pitch Room", "Campus Gym", "Wellness Studio"] },
 ];
 const R = (n) => Math.round(n * 100) / 100;
+// What you can do inside each kind of room (stopgap: the two proximity-based activities the API can already verify anywhere).
+// Both have server-owned rewards with per-player daily caps / cooldowns, so more entry points never mean more rewards.
+// Jobs/shifts are tied to specific sites by the API, so they are not offered here. Dorms and lounges stay social spaces for now.
+const ROOM_ACTIVITY = { classroom: ["quiz", "Study Quiz"], lab: ["quiz", "Study Quiz"], hall: ["quiz", "Study Quiz"], office: ["quiz", "Study Quiz"], clinic: ["quiz", "Study Quiz"], workshop: ["quiz", "Study Quiz"], gym: ["reaction", "Reaction Challenge"], studio: ["reaction", "Reaction Challenge"], shop: ["reaction", "Reaction Challenge"], canteen: ["reaction", "Reaction Challenge"] };
 const total = { rooms: 0 };
 const registry = [];
 for (const z of Z) {
@@ -54,6 +58,7 @@ for (const z of Z) {
     }
     ry += bh + FRONT;
   }
+  const interactionPoints = buildings.filter((b) => ROOM_ACTIVITY[b.kind]).map((b) => ({ id: `rp_${b.id}`.slice(0, 41), name: `${ROOM_ACTIVITY[b.kind][1]}`, x: R(b.x + b.w / 2), y: R(b.y + b.h * 0.45), activity: ROOM_ACTIVITY[b.kind][0] }));
   const cx = z.x + z.w / 2, y0 = top + 1, y1 = ry - FRONT - 1;
   const npcs = buildings.length ? [
     { id: `npc_${z.id}_1`, name: ["Tunde", "Amaka", "Ibrahim", "Ngozi", "Seyi", "Halima"][Z.indexOf(z) % 6], outfit: z.pal[0], skin: "#7a4b2e", speed: 1.5, pauseMs: 2600, path: [{ x: R(cx - 0.8), y: R(y0) }, { x: R(cx - 0.8), y: R(Math.max(y0 + 4, y1)) }] },
@@ -62,7 +67,7 @@ for (const z of Z) {
     { id: `npc_${z.id}_1`, name: "Okada Rider", outfit: "#e8a24a", skin: "#7a4b2e", speed: 2.2, pauseMs: 2500, path: [{ x: 58.2, y: 84 }, { x: 58.2, y: 146 }] },
     { id: `npc_${z.id}_2`, name: "Fruit Seller", outfit: "#3f9a58", skin: "#b97a4f", speed: 1.2, pauseMs: 4000, path: [{ x: 64.5, y: 100 }, { x: 64.5, y: 130 }] },
   ];
-  const zone = { schemaVersion: 1, id: z.id, name: z.name, rect: { x: z.x, y: z.y, w: z.w, h: z.h }, color: z.color, ambientAudio: "town", spawnPoints: [], buildings, props: [], interactionPoints: [], npcs, decor: [] };
+  const zone = { schemaVersion: 1, id: z.id, name: z.name, rect: { x: z.x, y: z.y, w: z.w, h: z.h }, color: z.color, ambientAudio: "town", spawnPoints: [], buildings, props: [], interactionPoints, npcs, decor: [] };
   fs.writeFileSync(path.join(dir, "zones", z.id + ".json"), JSON.stringify(zone, null, 2) + "\n");
   total.rooms += buildings.length; registry.push(z.id);
   console.log(z.id.padEnd(22), buildings.length, "rooms");

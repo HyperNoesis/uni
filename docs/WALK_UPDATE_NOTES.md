@@ -31,3 +31,13 @@
 - Test: tests/visual/3d-renderer-runtime-smoke.cjs now renders walk/run/sit/dance at all quality levels (mock WebGL; checks stable frames, NOT how it looks).
 - Limitation: boxes cannot pitch in this renderer, so limbs are stepped box chains, not smooth skinned meshes. True skinned GLB characters need a skinning pass in the shader (next step if you want the Free Fire look).
 - NOT verified: visual result on a real GPU/phone. Please check the walk in game and send a screenshot or video.
+
+## Pass 4 - collision, doors, room activities (12 Oct 2026)
+- Chase camera: blockers are now the thin building WALLS (not whole building footprints). Before, standing inside any building made every camera position "blocked", the camera collapsed to 0.4 m behind your head and the avatar's body filled the screen (the grey slab). Minimum follow distance is now 0.9 m. Tests added in tests/visual/camera-solver.mjs (run and passing).
+- Enter button: within 9 m south of a door (while outside) a "Enter <room>" button appears; the avatar walks itself to the doorway and inside. Any stick/keyboard input cancels; it gives up after ~1.2 s of being blocked or 9 s total.
+- Room activities (stopgap): 114 generated rooms now have an activity marker inside - Study Quiz (classroom, lab, hall, office, clinic, workshop) or Reaction Challenge (gym, studio, shop, canteen). Dorms and lounges have none yet. The API now accepts a proximity grant from ANY marker of that activity (apps/api/src/app.ts grantedPoint), so rewards still go through the same server-side daily caps. Jobs/shifts stay site-bound by design.
+- Generator: scripts/world/generate-districts.mjs now emits these markers (ROOM_ACTIVITY table). Re-running it regenerates all district zone files.
+- Minimap: room markers are small dots (no letters) to avoid clutter.
+- New test: packages/domain/src/room-access.test.ts (door widths/clearance, Enter targets, marker placement, no overlapping buildings). Data audited with a standalone script: 158 doors, none blocked, no overlaps.
+- NOT verified: pnpm typecheck/test/build (no network in this sandbox; syntax-checked with tsc transpile only), real-phone behaviour of the Enter button, whether the grey slab is fully gone.
+- Next: renderer upgrade for real textured/skinned models (needs asset packs), room-specific activities (penalty shootout, delivery, rhythm).

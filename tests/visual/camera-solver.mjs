@@ -34,5 +34,12 @@ for (const h of [0, 0.7, 2, -2.4]) {
 const ch = solveChaseCamera({ x: 30, y: 30, heading: 0, look: 0, boxes: [] });
 assert.ok(ch.eye[2] < 30 && ch.clearance === 1, "behind (-z) when facing +z");
 const behindWall = solveChaseCamera({ x: 30, y: 30, heading: 0, look: 0, boxes: [{ x: 20, y: 26, w: 20, h: 3, height: 30 }] });
-assert.ok(behindWall.clearance < 1 && behindWall.eye[2] > 29.3, "pulled in front of wall, outside the box");
+assert.ok(behindWall.clearance < 1 && behindWall.eye[2] > 29.0, "pulled in front of the wall's face");
+// Never collapses into the avatar: even with a wall right behind, the eye stays at least ~0.85 m away on the ground plane.
+const backToWall = solveChaseCamera({ x: 30, y: 30, heading: 0, look: 0, boxes: [{ x: 20, y: 29.5, w: 20, h: 0.4, height: 30 }] });
+assert.ok(Math.hypot(backToWall.eye[0] - 30, backToWall.eye[2] - 30) >= 0.85, "camera keeps a body-length gap");
+// Standing inside a room made of thin walls (door on the south side): the camera stays at full distance, it is not squeezed.
+const room = [{ x: 10, y: 10, w: 10, h: 0.8, height: 3 }, { x: 10, y: 10, w: 0.8, h: 7, height: 3 }, { x: 19.2, y: 10, w: 0.8, h: 7, height: 3 }, { x: 10, y: 16.2, w: 3, h: 0.8, height: 3 }, { x: 17, y: 16.2, w: 3, h: 0.8, height: 3 }];
+const inRoom = solveChaseCamera({ x: 15, y: 14, heading: 0, look: 0, boxes: room }); // facing +z (the door wall), camera behind toward the north wall
+assert.ok(inRoom.clearance > 0.3 && inRoom.eye[2] > 11.1, "inside a room the eye stays inside the room, not behind the wall");
 console.log("camera solver test passed");

@@ -9,6 +9,7 @@ import {
   CreateSessionRequest,
   HUNT_START_POINT_ID,
   HUNT_STOPS,
+  INTERACTION_POINTS,
   REACTION,
   SaveHomeRequest,
   SHOP_CATALOG,
@@ -336,6 +337,16 @@ export function buildApp(cfg: AppConfig, store = new Store()): { app: FastifyIns
   });
   app.get("/api/v1/campus-wars/history", async () => ({ seasons: store.wars.history() }));
 
+  /** Key of a live proximity grant for any interaction point offering `activity`, or null. */
+  const grantedPoint = (playerId: string, activity: "reaction" | "quiz", t: number): string | null => {
+    for (const pt of INTERACTION_POINTS) {
+      if (pt.activity !== activity) continue;
+      const key = `${playerId}:${pt.id}`, exp = store.grants.get(key);
+      if (exp && exp >= t) return key;
+    }
+    return null;
+  };
+
   // Internal: realtime attests that a player was within interaction range.
   app.post("/internal/proximity-grant", async (req, reply) => {
     if (req.headers["x-internal-secret"] !== cfg.internalSecret) return reply.code(403).send({ error: "forbidden" });
@@ -349,9 +360,8 @@ export function buildApp(cfg: AppConfig, store = new Store()): { app: FastifyIns
     const id = authed(req);
     if (!id || !store.profile(id)) return reply.code(401).send({ error: "unauthorized" });
 
-    const grantKey = `${id}:commons_board`;
-    const exp = store.grants.get(grantKey);
-    if (!exp || exp < now()) return reply.code(403).send({ error: "not_in_range", message: "Walk up to the board first." });
+    // Any Reaction Challenge marker counts (Student Commons board or a room marker): the realtime server attested proximity to it.
+    if (!grantedPoint(id, "reaction", now())) return reply.code(403).send({ error: "not_in_range", message: "Walk up to a Reaction Challenge marker first." });
 
     const last = store.lastCompletedAt(id);
     if (now() - last < REACTION.cooldownMs) return reply.code(429).send({ error: "cooldown" });
@@ -430,10 +440,9 @@ export function buildApp(cfg: AppConfig, store = new Store()): { app: FastifyIns
       if (r.completed || t - r.startedAt > QUIZ_RUN_TTL_MS) quizRuns.delete(rid);
       else if (r.playerId === id) return reply.code(409).send({ error: "quiz_in_progress", message: "Finish your current quiz question first." });
     }
-    const grantKey = `${id}:quiz_board`;
-    const exp = store.grants.get(grantKey);
-    if (!exp || exp < t) return reply.code(403).send({ error: "not_in_range", message: "Walk up to the glowing Campus Quiz board in Student Commons first." });
-    store.grants.delete(grantKey); // a proximity grant starts one attempt only
+    const quizGrant = grantedPoint(id, "quiz", t);
+    if (!quizGrant) return reply.code(403).send({ error: "not_in_range", message: "Walk up to a glowing Study Quiz marker first (Student Commons or inside a classroom, lab or office)." });
+    store.grants.delete(quizGrant); // a proximity grant starts one attempt only
     // Count at start, not completion: waiting for a run to expire must not permit unlimited rerolls.
     store.noteQuizAttempt(id, day);
     const question = QUIZ_QUESTIONS[Math.floor(Math.random() * QUIZ_QUESTIONS.length)]!;

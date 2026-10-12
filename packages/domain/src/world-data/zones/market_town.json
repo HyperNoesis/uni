@@ -284,7 +284,134 @@
     }
   ],
   "props": [],
-  "interactionPoints": [],
+  "interactionPoints": [
+    {
+      "id": "rp_market_01_campus_bookshop",
+      "name": "Reaction Challenge",
+      "x": 77,
+      "y": 84.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_02_stationery_kiosk",
+      "name": "Reaction Challenge",
+      "x": 86,
+      "y": 84.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_03_phone_repair_stall",
+      "name": "Reaction Challenge",
+      "x": 106,
+      "y": 84.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_04_tailor_s_shop",
+      "name": "Study Quiz",
+      "x": 115,
+      "y": 84.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_market_05_barber_shop",
+      "name": "Reaction Challenge",
+      "x": 77,
+      "y": 95.43,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_06_salon",
+      "name": "Reaction Challenge",
+      "x": 86,
+      "y": 95.43,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_07_mama_put_canteen",
+      "name": "Study Quiz",
+      "x": 106,
+      "y": 95.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_market_08_suya_spot",
+      "name": "Reaction Challenge",
+      "x": 115,
+      "y": 95.43,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_09_jollof_kitchen",
+      "name": "Reaction Challenge",
+      "x": 81.5,
+      "y": 106.6,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_10_bukka_canteen",
+      "name": "Study Quiz",
+      "x": 110.5,
+      "y": 106.6,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_market_11_smoothie_bar",
+      "name": "Reaction Challenge",
+      "x": 77,
+      "y": 117.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_12_provision_store",
+      "name": "Reaction Challenge",
+      "x": 86,
+      "y": 117.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_13_pharmacy",
+      "name": "Study Quiz",
+      "x": 106,
+      "y": 117.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_market_14_cyber_cafe",
+      "name": "Reaction Challenge",
+      "x": 115,
+      "y": 117.93,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_15_print_copy_centre",
+      "name": "Reaction Challenge",
+      "x": 77,
+      "y": 128.43,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_16_bank_branch",
+      "name": "Study Quiz",
+      "x": 86,
+      "y": 128.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_market_17_atm_lobby",
+      "name": "Reaction Challenge",
+      "x": 106,
+      "y": 128.43,
+      "activity": "reaction"
+    },
+    {
+      "id": "rp_market_18_tech_gadget_shop",
+      "name": "Reaction Challenge",
+      "x": 115,
+      "y": 128.43,
+      "activity": "reaction"
+    }
+  ],
   "npcs": [
     {
       "id": "npc_market_town_1",

@@ -17,7 +17,8 @@ describe("world as data", () => {
     expect(ZONES).toHaveLength(22);
     expect(BUILDINGS).toHaveLength(160);
     expect(BUILDINGS.filter((b) => b.door).length).toBeGreaterThanOrEqual(100); // enterable rooms
-    expect(INTERACTION_POINTS).toHaveLength(13);
+    expect(INTERACTION_POINTS.filter((p) => !p.id.startsWith("rp_"))).toHaveLength(13); // hand-placed campus points
+    expect(INTERACTION_POINTS.filter((p) => p.id.startsWith("rp_")).length).toBeGreaterThanOrEqual(100); // generated room points (quiz / reaction by room kind)
     expect(AMBIENT_NPCS).toHaveLength(43);
     expect(SOLIDS.filter((s) => s.kind !== "wall")).toHaveLength(86);
     expect(ZONE_DEFS.flatMap((z) => z.decor).length).toBeGreaterThan(50);

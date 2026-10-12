@@ -64,7 +64,8 @@ export function solveChaseCamera(i: WalkIn & { dist?: number }): CamOut {
   const boxes = i.boxes ?? [];
   const free = (t: number) => { const q = at(t); return q[1] > 0.5 && !blocked(q[0], q[1], q[2], boxes); };
   let t = wanted;
-  if (!free(wanted)) { let lo = 0.4, hi = wanted; for (let k = 0; k < 10; k++) { const m = (lo + hi) / 2; if (free(m)) lo = m; else hi = m; } t = lo; }
+  // Never closer than 0.9 m: nearer than that the camera sits inside the avatar's body.
+  if (!free(wanted)) { let lo = 0.9, hi = wanted; for (let k = 0; k < 10; k++) { const m = (lo + hi) / 2; if (free(m)) lo = m; else hi = m; } t = lo; }
   const eye = at(t);
   const target: [number, number, number] = [i.x + Math.sin(h) * 6, 1.15 + Math.sin(clampLook(i.look)) * 3, i.y + Math.cos(h) * 6];
   return { eye, target, clearance: t / wanted, wanted };

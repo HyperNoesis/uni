@@ -194,7 +194,92 @@
     }
   ],
   "props": [],
-  "interactionPoints": [],
+  "interactionPoints": [
+    {
+      "id": "rp_engineering_01_civil_engineering_",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_02_mechanical_worksho",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_03_electrical_machine",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_04_fabrication_bay",
+      "name": "Study Quiz",
+      "x": 155,
+      "y": 4.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_05_robotics_lab",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_06_power_systems_lab",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_07_thermofluids_lab",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_08_cad_studio",
+      "name": "Study Quiz",
+      "x": 155,
+      "y": 15.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_09_materials_testing_",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_10_control_systems_la",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_11_eng_lecture_room_a",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 25.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_engineering_12_eng_dean_s_office",
+      "name": "Study Quiz",
+      "x": 155,
+      "y": 25.93,
+      "activity": "quiz"
+    }
+  ],
   "npcs": [
     {
       "id": "npc_engineering_quarter_1",
@@ -210,7 +295,7 @@
         },
         {
           "x": 139.2,
-          "y": 19.2
+          "y": 28.5
         }
       ]
     },
@@ -224,7 +309,7 @@
       "path": [
         {
           "x": 140.8,
-          "y": 19.2
+          "y": 28.5
         },
         {
           "x": 140.8,

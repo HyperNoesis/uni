@@ -194,7 +194,92 @@
     }
   ],
   "props": [],
-  "interactionPoints": [],
+  "interactionPoints": [
+    {
+      "id": "rp_business_01_moot_court_room",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_02_law_library_room",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_03_accounting_lab",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_04_finance_trading_ro",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 48.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_05_entrepreneurship_h",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_06_marketing_studio",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_07_law_lecture_room",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_08_management_seminar",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 59.43,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_09_economics_room",
+      "name": "Study Quiz",
+      "x": 165,
+      "y": 69.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_10_business_clinic",
+      "name": "Study Quiz",
+      "x": 174,
+      "y": 69.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_11_law_dean_s_office",
+      "name": "Study Quiz",
+      "x": 186,
+      "y": 69.93,
+      "activity": "quiz"
+    },
+    {
+      "id": "rp_business_12_business_dean_s_of",
+      "name": "Study Quiz",
+      "x": 195,
+      "y": 69.93,
+      "activity": "quiz"
+    }
+  ],
   "npcs": [
     {
       "id": "npc_business_law_1",
@@ -210,7 +295,7 @@
         },
         {
           "x": 179.2,
-          "y": 60.2
+          "y": 72.5
         }
       ]
     },
@@ -224,7 +309,7 @@
       "path": [
         {
           "x": 180.8,
-          "y": 60.2
+          "y": 72.5
         },
         {
           "x": 180.8,

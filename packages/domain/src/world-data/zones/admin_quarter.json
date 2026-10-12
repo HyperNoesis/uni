@@ -223,128 +223,86 @@
       "kind": "office"
     }
   ],
-  "props": [
+  "props": [],
+  "interactionPoints": [
     {
-      "kind": "pillar",
-      "x": 139.3,
-      "y": 137.3,
-      "w": 1.4,
-      "h": 1.4
+      "id": "rp_admin_01_registry",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 134.85,
-      "y": 134.85,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_admin_02_bursary",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 144.85,
-      "y": 134.85,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_admin_03_vice_chancellor_s_",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 84.93,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 134.85,
-      "y": 140.85,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_admin_05_admissions_office",
+      "name": "Study Quiz",
+      "x": 129.5,
+      "y": 96.1,
+      "activity": "quiz"
     },
     {
-      "kind": "pillar",
-      "x": 144.85,
-      "y": 140.85,
-      "w": 0.3,
-      "h": 0.3
+      "id": "rp_admin_06_examinations_offic",
+      "name": "Study Quiz",
+      "x": 150.5,
+      "y": 96.1,
+      "activity": "quiz"
     },
     {
-      "kind": "bench",
-      "x": 129.4,
-      "y": 137.75,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_admin_07_senate_chamber",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 107.43,
+      "activity": "quiz"
     },
     {
-      "kind": "bench",
-      "x": 147.4,
-      "y": 137.75,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_admin_08_ict_help_desk",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 107.43,
+      "activity": "quiz"
     },
     {
-      "kind": "bench",
-      "x": 133.9,
-      "y": 146.85,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_admin_09_security_office",
+      "name": "Study Quiz",
+      "x": 146,
+      "y": 107.43,
+      "activity": "quiz"
     },
     {
-      "kind": "bench",
-      "x": 142.9,
-      "y": 146.85,
-      "w": 3.2,
-      "h": 0.5
+      "id": "rp_admin_11_alumni_office",
+      "name": "Study Quiz",
+      "x": 125,
+      "y": 117.93,
+      "activity": "quiz"
     },
     {
-      "kind": "tree",
-      "x": 124.9,
-      "y": 129.9,
-      "w": 1.2,
-      "h": 1.2
+      "id": "rp_admin_12_careers_office",
+      "name": "Study Quiz",
+      "x": 134,
+      "y": 117.93,
+      "activity": "quiz"
     },
     {
-      "kind": "tree",
-      "x": 153.9,
-      "y": 129.9,
-      "w": 1.2,
-      "h": 1.2
-    },
-    {
-      "kind": "tree",
-      "x": 124.9,
-      "y": 144.9,
-      "w": 1.2,
-      "h": 1.2
-    },
-    {
-      "kind": "tree",
-      "x": 153.9,
-      "y": 144.9,
-      "w": 1.2,
-      "h": 1.2
-    },
-    {
-      "kind": "palm",
-      "x": 126.5,
-      "y": 137.5,
-      "w": 1,
-      "h": 1
-    },
-    {
-      "kind": "palm",
-      "x": 152.5,
-      "y": 137.5,
-      "w": 1,
-      "h": 1
-    },
-    {
-      "kind": "palm",
-      "x": 126.5,
-      "y": 129.5,
-      "w": 1,
-      "h": 1
-    },
-    {
-      "kind": "palm",
-      "x": 152.5,
-      "y": 129.5,
-      "w": 1,
-      "h": 1
+      "id": "rp_admin_14_health_safety_offi",
+      "name": "Study Quiz",
+      "x": 155,
+      "y": 117.93,
+      "activity": "quiz"
     }
   ],
-  "interactionPoints": [],
   "npcs": [
     {
       "id": "npc_admin_quarter_1",
@@ -360,7 +318,7 @@
         },
         {
           "x": 139.2,
-          "y": 113.2
+          "y": 120.5
         }
       ]
     },
@@ -374,7 +332,7 @@
       "path": [
         {
           "x": 140.8,
-          "y": 113.2
+          "y": 120.5
         },
         {
           "x": 140.8,

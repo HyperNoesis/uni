@@ -19,7 +19,9 @@ import {
   CAMPUSES,
   DEFAULT_AVATAR,
   DOWNGRADE,
+  BUILDINGS,
   INTERACTION_POINTS,
+  WALL,
   HUNT_START_POINT_ID,
   HUNT_STOPS,
   QUALITY_PROFILES,
@@ -127,6 +129,10 @@ export default function Play() {
   const lookRef = useRef({ heading: Math.atan2(60 - SPAWN.x, 48 - SPAWN.y), pitch: -0.03 }); // spawn facing up the boulevard toward the Commons
   const walkRef = useRef({ phase: 0, amp: 0 });
   const sprintRef = useRef(false);
+  // Tap "Enter" at a door: the avatar walks itself through the doorway (any stick/keyboard input cancels it).
+  const autoWalkRef = useRef<{ stage: 0 | 1; out: [number, number]; inn: [number, number]; until: number; stuck: number } | null>(null);
+  const doorNearRef = useRef<string | null>(null);
+  const [doorNear, setDoorNear] = useState<{ id: string; name: string } | null>(null);
   const [sprintOn, setSprintOn] = useState(false);
   const [hudOpen, setHudOpen] = useState(false);
   const [slowConnect, setSlowConnect] = useState(false);
@@ -500,12 +506,26 @@ export default function Play() {
       // You can walk the moment the page loads: the server link may still be waking (free hosting), and it catches up when it connects.
       const canWalk = phaseRef.current !== "failed" && !overlayRef.current;
       const online = phaseRef.current === "live" && !overlayRef.current;
+      let autoDir: [number, number] | null = null;
+      {
+        const aw = autoWalkRef.current;
+        if (aw) {
+          if (mag > 0.05 || now > aw.until || !canWalk) autoWalkRef.current = null; // any manual input cancels the auto-walk
+          else {
+            const tgt = aw.stage === 0 ? aw.out : aw.inn;
+            const ddx = tgt[0] - me.current.x, ddy = tgt[1] - me.current.y, dist = Math.hypot(ddx, ddy);
+            if (dist < 0.35) { if (aw.stage === 0) aw.stage = 1; else autoWalkRef.current = null; }
+            else autoDir = [ddx / dist, ddy / dist];
+          }
+        }
+      }
       let speedNow = 0;
-      if (canWalk && mag > 0.05) {
+      if (canWalk && (mag > 0.05 || autoDir)) {
         const sprint = k.has("shift") || sprintRef.current;
-        const sp = WORLD.maxSpeed * (sprint ? 1.22 : 0.88) * Math.min(1, mag); // sprint stays under the server's speed tolerance (1.35x)
-        let dx = ix / mag, dy = iy / mag;
-        if (walk) {
+        const sp = WORLD.maxSpeed * (sprint ? 1.22 : 0.88) * (autoDir ? 1 : Math.min(1, mag)); // sprint stays under the server's speed tolerance (1.35x)
+        let dx = autoDir ? autoDir[0] : ix / mag, dy = autoDir ? autoDir[1] : iy / mag;
+        if (autoDir) { const want = Math.atan2(dx, dy), dh = wrapHeading(want - lookRef.current.heading); lookRef.current.heading = wrapHeading(lookRef.current.heading + dh * Math.min(1, dt * 6)); }
+        if (walk && !autoDir) {
           const h = lookRef.current.heading, [fx, fz] = headingForward(h), [rx, rz] = headingRight(h), fw = -iy / mag, st = ix / mag;
           dx = fx * fw + rx * st; dy = fz * fw + rz * st;
         }
@@ -514,6 +534,7 @@ export default function Play() {
         me.current.x = m.x;
         me.current.y = m.y;
       }
+      { const aw = autoWalkRef.current; if (aw) { aw.stuck = speedNow < 0.3 ? aw.stuck + dt : 0; if (aw.stuck > 1.2) autoWalkRef.current = null; } } // blocked by something: give up instead of pushing forever
       { const w = walkRef.current; w.amp += (Math.min(1, speedNow / 5) - w.amp) * Math.min(1, dt * 9); if (speedNow > 0.3) w.phase += dt * (7.5 + speedNow * 0.7); }
       if (document.pointerLockElement && overlayRef.current) { try { document.exitPointerLock(); } catch { /* ignore */ } }
       sendAcc += dt;
@@ -546,6 +567,16 @@ export default function Play() {
       { const mx = me.current.x, my = me.current.y; const sp: Sport | null = my >= 62 && my <= 78 && mx >= 80 && mx <= 100 ? "football" : my >= 62 && my <= 78 && mx >= 102 && mx <= 116 ? "basketball" : null; if (sp !== sportSpotRef.current) { sportSpotRef.current = sp; setSportSpot(sp); } }
       { const mx = me.current.x, my = me.current.y; const mp: Mini | null = mx >= 78 && mx <= 116 && my >= 4 && my <= 36 ? "rhythm" : mx >= 78 && mx <= 100 && my >= 40 && my <= 58 ? "delivery" : null; if (mp !== miniSpotRef.current) { miniSpotRef.current = mp; setMiniSpot(mp); } }
       if (nearest !== nearRef.current) { nearRef.current = nearest; setNear(nearest); }
+      { // the closest door in front of you (south of its wall, within 9 m) while you are outside: offers the Enter button
+        let best: (typeof BUILDINGS)[number] | null = null, bd = 9;
+        if (!buildingAt(me.current.x, me.current.y)) for (const b of BUILDINGS) {
+          if (!b.door || me.current.y < b.y + b.h - 0.2) continue;
+          const d = Math.hypot(b.door.x + b.door.w / 2 - me.current.x, b.y + b.h - me.current.y);
+          if (d < bd) { bd = d; best = b; }
+        }
+        const key = best ? best.id : null;
+        if (key !== doorNearRef.current) { doorNearRef.current = key; setDoorNear(best ? { id: best.id, name: best.name } : null); }
+      }
       const sitNow = canSit(me.current.x, me.current.y);
       if (sitNow !== sitOkRef.current) { sitOkRef.current = sitNow; setSitOk(sitNow); }
 
@@ -668,6 +699,14 @@ export default function Play() {
   }
 
   // ---- actions ----
+  function enterDoor(id: string) {
+    const b = BUILDINGS.find((x) => x.id === id);
+    if (!b || !b.door) return;
+    const cx = b.door.x + b.door.w / 2, by = b.y + b.h;
+    keys.current.clear();
+    autoWalkRef.current = { stage: 0, out: [cx, by + 1.0], inn: [cx, by - WALL - 1.5], until: performance.now() + 9000, stuck: 0 };
+  }
+
   function interact() {
     const id = nearRef.current;
     if (!id) return say("Walk up to a glowing marker");
@@ -868,7 +907,7 @@ export default function Play() {
             <rect x={zone.x} y={zone.y} width={zone.w} height={zone.h} rx="1.8" fill={zone.color} opacity=".62" stroke="#e5f0ff" strokeWidth=".7" strokeOpacity=".65" />
             <text x={zone.x + zone.w / 2} y={zone.y + zone.h / 2 + 1.4} fontSize="3.1" textAnchor="middle" fontWeight="700" fill="#fff" stroke="#172443" strokeWidth=".5" paintOrder="stroke">{zone.id === "student_commons" ? "COMMONS" : zone.id === "academic_block" ? "ACADEMIC" : zone.id === "hostel_street" ? "HOSTELS" : zone.id === "food_court" ? "FOOD" : zone.id === "sports_ground" ? "SPORTS" : zone.id === "creator_hub" ? "CREATOR" : zone.id === "event_arena" ? "ARENA" : zone.id === "main_gate" ? "GATE" : "LIBRARY"}</text>
           </g>)}
-          {INTERACTION_POINTS.filter((point) => !point.hidden).map((point) => <g key={point.id}><circle cx={point.x} cy={point.y} r="2.1" fill={point.activity === "quiz" ? "#53d6d1" : point.activity === "reaction" ? "#ffd166" : point.activity === "hunt" ? "#65c7ff" : "#fff"} stroke="#0c1730" strokeWidth=".8" /><text x={point.x + 2.2} y={point.y + .9} fontSize="3.2" fill="#fff" stroke="#0c1730" strokeWidth=".5" paintOrder="stroke">{point.activity === "quiz" ? "Q" : point.activity === "reaction" ? "!" : point.activity === "hunt" ? "H" : "i"}</text></g>)}
+          {INTERACTION_POINTS.filter((point) => !point.hidden).map((point) => point.id.startsWith("rp_") ? <circle key={point.id} cx={point.x} cy={point.y} r="1" fill={point.activity === "quiz" ? "#53d6d1" : "#ffd166"} opacity=".85" /> : <g key={point.id}><circle cx={point.x} cy={point.y} r="2.1" fill={point.activity === "quiz" ? "#53d6d1" : point.activity === "reaction" ? "#ffd166" : point.activity === "hunt" ? "#65c7ff" : "#fff"} stroke="#0c1730" strokeWidth=".8" /><text x={point.x + 2.2} y={point.y + .9} fontSize="3.2" fill="#fff" stroke="#0c1730" strokeWidth=".5" paintOrder="stroke">{point.activity === "quiz" ? "Q" : point.activity === "reaction" ? "!" : point.activity === "hunt" ? "H" : "i"}</text></g>)}
           <polygon ref={mapCone} points="" fill="#7fb2ff" opacity=".38" />
           <circle ref={mapDot} cx={SPAWN.x} cy={SPAWN.y} r="2.7" fill="#fff" stroke="#2f6bff" strokeWidth="1.5" />
           <circle ref={mapRing} cx={SPAWN.x} cy={SPAWN.y} r="5" fill="none" stroke="#fff" strokeWidth=".65" opacity=".75" />
@@ -921,6 +960,7 @@ export default function Play() {
           </div>
           {sportSpot && !near && <button className="btn big accent" onClick={() => { keys.current.clear(); setSport(sportSpot); }}>🏀⚽ Play {sportSpot === "football" ? "Football" : "Basketball"}</button>}
           {miniSpot && !sportSpot && !near && <button className="btn big accent" onClick={() => { keys.current.clear(); setMini(miniSpot); }}>{miniSpot === "rhythm" ? "🎵 Play Beat Stage" : "🛵 Play Delivery Dash"}</button>}
+          {doorNear && !near && !sportSpot && !miniSpot && <button className="btn big accent" onClick={() => enterDoor(doorNear.id)}>🚪 Enter {doorNear.name}</button>}
           {near && <button className="btn big accent" onClick={interact}>
             {near ? near === HUNT_START_POINT_ID ? (hunt && hunt.stage !== "complete" ? "Resume Scavenger Hunt" : "Start Scavenger Hunt") : INTERACTION_POINTS.find((p) => p.id === near)?.hidden ? "Search clue spot" : INTERACTION_POINTS.find((p) => p.id === near)?.name : "Explore"}
           </button>}
