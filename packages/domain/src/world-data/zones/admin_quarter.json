@@ -1,0 +1,387 @@
+{
+  "schemaVersion": 1,
+  "id": "admin_quarter",
+  "name": "Admin & Staff Quarter",
+  "rect": {
+    "x": 120,
+    "y": 80,
+    "w": 40,
+    "h": 70
+  },
+  "color": "#6f86c9",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "admin_01_registry",
+      "name": "Registry",
+      "x": 121.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#7f93d0",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "admin_02_bursary",
+      "name": "Bursary",
+      "x": 130.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#6f86c9",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "admin_03_vice_chancellor_s_",
+      "name": "Vice-Chancellor's Office",
+      "x": 142.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#93a5dc",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "admin_04_student_affairs",
+      "name": "Student Affairs",
+      "x": 151.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#5f78b8",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "admin_05_admissions_office",
+      "name": "Admissions Office",
+      "x": 121.5,
+      "y": 92.5,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 127.5,
+        "w": 4
+      },
+      "color": "#6f86c9",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "admin_06_examinations_offic",
+      "name": "Examinations Office",
+      "x": 142.5,
+      "y": 92.5,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 148.5,
+        "w": 4
+      },
+      "color": "#93a5dc",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "admin_07_senate_chamber",
+      "name": "Senate Chamber",
+      "x": 121.5,
+      "y": 104.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#7f93d0",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "admin_08_ict_help_desk",
+      "name": "ICT Help Desk",
+      "x": 130.5,
+      "y": 104.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#6f86c9",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "admin_09_security_office",
+      "name": "Security Office",
+      "x": 142.5,
+      "y": 104.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#93a5dc",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "admin_10_staff_common_room",
+      "name": "Staff Common Room",
+      "x": 151.5,
+      "y": 104.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#5f78b8",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "admin_11_alumni_office",
+      "name": "Alumni Office",
+      "x": 121.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#6f86c9",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "admin_12_careers_office",
+      "name": "Careers Office",
+      "x": 130.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#93a5dc",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "admin_13_convocation_hall",
+      "name": "Convocation Hall",
+      "x": 142.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#5f78b8",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "admin_14_health_safety_offi",
+      "name": "Health & Safety Office",
+      "x": 151.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#7f93d0",
+      "height": 2.6,
+      "kind": "office"
+    }
+  ],
+  "props": [
+    {
+      "kind": "pillar",
+      "x": 139.3,
+      "y": 137.3,
+      "w": 1.4,
+      "h": 1.4
+    },
+    {
+      "kind": "pillar",
+      "x": 134.85,
+      "y": 134.85,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "pillar",
+      "x": 144.85,
+      "y": 134.85,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "pillar",
+      "x": 134.85,
+      "y": 140.85,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "pillar",
+      "x": 144.85,
+      "y": 140.85,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "bench",
+      "x": 129.4,
+      "y": 137.75,
+      "w": 3.2,
+      "h": 0.5
+    },
+    {
+      "kind": "bench",
+      "x": 147.4,
+      "y": 137.75,
+      "w": 3.2,
+      "h": 0.5
+    },
+    {
+      "kind": "bench",
+      "x": 133.9,
+      "y": 146.85,
+      "w": 3.2,
+      "h": 0.5
+    },
+    {
+      "kind": "bench",
+      "x": 142.9,
+      "y": 146.85,
+      "w": 3.2,
+      "h": 0.5
+    },
+    {
+      "kind": "tree",
+      "x": 124.9,
+      "y": 129.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 153.9,
+      "y": 129.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 124.9,
+      "y": 144.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 153.9,
+      "y": 144.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "palm",
+      "x": 126.5,
+      "y": 137.5,
+      "w": 1,
+      "h": 1
+    },
+    {
+      "kind": "palm",
+      "x": 152.5,
+      "y": 137.5,
+      "w": 1,
+      "h": 1
+    },
+    {
+      "kind": "palm",
+      "x": 126.5,
+      "y": 129.5,
+      "w": 1,
+      "h": 1
+    },
+    {
+      "kind": "palm",
+      "x": 152.5,
+      "y": 129.5,
+      "w": 1,
+      "h": 1
+    }
+  ],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_admin_quarter_1",
+      "name": "Ngozi",
+      "outfit": "#7f93d0",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 139.2,
+          "y": 83
+        },
+        {
+          "x": 139.2,
+          "y": 113.2
+        }
+      ]
+    },
+    {
+      "id": "npc_admin_quarter_2",
+      "name": "Kola",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 140.8,
+          "y": 113.2
+        },
+        {
+          "x": 140.8,
+          "y": 86
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

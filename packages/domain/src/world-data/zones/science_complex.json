@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "id": "science_complex",
+  "name": "Science Complex",
+  "rect": {
+    "x": 160,
+    "y": 0,
+    "w": 40,
+    "h": 40
+  },
+  "color": "#3fa7a0",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "science_01_physics_lab_1",
+      "name": "Physics Lab 1",
+      "x": 161.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#4fb3a8",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "science_02_physics_lab_2",
+      "name": "Physics Lab 2",
+      "x": 170.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#3fa7a0",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "science_03_chemistry_lab_1",
+      "name": "Chemistry Lab 1",
+      "x": 182.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#6cc4b4",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "science_04_chemistry_lab_2",
+      "name": "Chemistry Lab 2",
+      "x": 191.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#46a08f",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "science_05_biology_lab",
+      "name": "Biology Lab",
+      "x": 161.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#3fa7a0",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "science_06_microbiology_lab",
+      "name": "Microbiology Lab",
+      "x": 170.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#6cc4b4",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "science_07_geology_lab",
+      "name": "Geology Lab",
+      "x": 182.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#46a08f",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "science_08_computer_lab_1",
+      "name": "Computer Lab 1",
+      "x": 191.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#4fb3a8",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "science_09_computer_lab_2",
+      "name": "Computer Lab 2",
+      "x": 161.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#6cc4b4",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "science_10_maths_seminar_room",
+      "name": "Maths Seminar Room",
+      "x": 170.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#46a08f",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "science_11_science_lecture_ro",
+      "name": "Science Lecture Room",
+      "x": 182.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#4fb3a8",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "science_12_science_dean_s_off",
+      "name": "Science Dean's Office",
+      "x": 191.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#3fa7a0",
+      "height": 3,
+      "kind": "classroom"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_science_complex_1",
+      "name": "Amaka",
+      "outfit": "#4fb3a8",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 179.2,
+          "y": 3
+        },
+        {
+          "x": 179.2,
+          "y": 7.2
+        }
+      ]
+    },
+    {
+      "id": "npc_science_complex_2",
+      "name": "Emeka",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 180.8,
+          "y": 19.2
+        },
+        {
+          "x": 180.8,
+          "y": 12.8
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

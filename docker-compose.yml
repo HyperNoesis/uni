@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: campus
+      POSTGRES_DB: campus
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U campus"]
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  # One-shot migration step: docker compose run --rm migrate
+  migrate:
+    image: postgres:16
+    profiles: ["tools"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://campus:campus@postgres:5432/campus
+    volumes: ["./infra/db:/db:ro"]
+    entrypoint: ["bash", "/db/migrate.sh"]
+
+  # Full containerised stack: docker compose --profile full up --build
+  api:
+    profiles: ["full"]
+    build: { context: ., dockerfile: infra/docker/Dockerfile, target: api }
+    env_file: .env.example
+    environment: { API_PORT: "4000", API_ORIGIN: "http://localhost:3000" }
+    ports: ["4000:4000"]
+  realtime:
+    profiles: ["full"]
+    build: { context: ., dockerfile: infra/docker/Dockerfile, target: realtime }
+    env_file: .env.example
+    environment: { REALTIME_PORT: "4001", API_INTERNAL_URL: "http://api:4000", API_ORIGIN: "http://localhost:3000" }
+    ports: ["4001:4001"]
+    depends_on: [api]
+  web:
+    profiles: ["full"]
+    build: { context: ., dockerfile: infra/docker/Dockerfile, target: web }
+    ports: ["3000:3000"]
+  worker:
+    profiles: ["full"]
+    build: { context: ., dockerfile: infra/docker/Dockerfile, target: worker }
+    env_file: .env.example
+    ports: ["4002:4002"]
+  admin:
+    profiles: ["full"]
+    build: { context: ., dockerfile: infra/docker/Dockerfile, target: admin }
+    env_file: .env.example
+    ports: ["4003:4003"]
+volumes:
+  pgdata:

@@ -1,0 +1,1081 @@
+{
+  "schemaVersion": 1,
+  "defaults": {
+    "maxBytes": 300000,
+    "maxTriangles": 6000
+  },
+  "residentBudget": {
+    "maxBytes": 4000000,
+    "maxTriangles": 100000
+  },
+  "assets": [
+    {
+      "id": "av_hair_short",
+      "url": "/assets/props/av_hair_short.glb",
+      "slot": "avatar:hair_short",
+      "zones": "all",
+      "maxBytes": 10000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.51,
+        "h": 0.18,
+        "d": 0.47
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.65,
+        "z": -0.01
+      },
+      "tint": "hair"
+    },
+    {
+      "id": "av_hair_fade",
+      "url": "/assets/props/av_hair_fade.glb",
+      "slot": "avatar:hair_fade",
+      "zones": "all",
+      "maxBytes": 10000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.4,
+        "h": 0.09,
+        "d": 0.37
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.72,
+        "z": -0.01
+      },
+      "tint": "hair"
+    },
+    {
+      "id": "av_hair_afro",
+      "url": "/assets/props/av_hair_afro.glb",
+      "slot": "avatar:hair_afro",
+      "zones": "all",
+      "maxBytes": 17000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.84,
+        "h": 0.62,
+        "d": 0.78
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.51,
+        "z": -0.03
+      },
+      "tint": "hair"
+    },
+    {
+      "id": "av_hair_braids",
+      "url": "/assets/props/av_hair_braids.glb",
+      "slot": "avatar:hair_braids",
+      "zones": "all",
+      "maxBytes": 32000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 0.55,
+        "h": 0.81,
+        "d": 0.5
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": -0.01,
+        "y": 1.02,
+        "z": -0.02
+      },
+      "tint": "hair"
+    },
+    {
+      "id": "av_hair_locs",
+      "url": "/assets/props/av_hair_locs.glb",
+      "slot": "avatar:hair_locs",
+      "zones": "all",
+      "maxBytes": 36000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 0.6,
+        "h": 0.76,
+        "d": 0.53
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": -0.02,
+        "y": 1.08,
+        "z": -0.03
+      },
+      "tint": "hair"
+    },
+    {
+      "id": "av_hair_bun",
+      "url": "/assets/props/av_hair_bun.glb",
+      "slot": "avatar:hair_bun",
+      "zones": "all",
+      "maxBytes": 19000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.51,
+        "h": 0.4,
+        "d": 0.47
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.65,
+        "z": -0.01
+      },
+      "tint": "hair"
+    },
+    {
+      "id": "av_hair_cap",
+      "url": "/assets/props/av_hair_cap.glb",
+      "slot": "avatar:hair_cap",
+      "zones": "all",
+      "maxBytes": 14000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.53,
+        "h": 0.21,
+        "d": 0.67
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.66,
+        "z": 0.07
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_hair_wrap",
+      "url": "/assets/props/av_hair_wrap.glb",
+      "slot": "avatar:hair_wrap",
+      "zones": "all",
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.58,
+        "h": 0.34,
+        "d": 0.56
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.69,
+        "z": 0
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_top_tee",
+      "url": "/assets/props/av_top_tee.glb",
+      "slot": "avatar:top_tee",
+      "zones": "all",
+      "maxBytes": 10000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 1.01,
+        "h": 0.65,
+        "d": 0.48
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0.66,
+        "z": 0.01
+      },
+      "tint": "outfit"
+    },
+    {
+      "id": "av_top_hoodie",
+      "url": "/assets/props/av_top_hoodie.glb",
+      "slot": "avatar:top_hoodie",
+      "zones": "all",
+      "maxBytes": 40000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 1,
+        "h": 0.79,
+        "d": 0.58
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0.65,
+        "z": -0.01
+      },
+      "tint": "outfit"
+    },
+    {
+      "id": "av_top_jersey",
+      "url": "/assets/props/av_top_jersey.glb",
+      "slot": "avatar:top_jersey",
+      "zones": "all",
+      "maxBytes": 12000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.68,
+        "h": 0.66,
+        "d": 0.48
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0.66,
+        "z": 0.01
+      },
+      "tint": "outfit"
+    },
+    {
+      "id": "av_top_kaftan",
+      "url": "/assets/props/av_top_kaftan.glb",
+      "slot": "avatar:top_kaftan",
+      "zones": "all",
+      "maxBytes": 12000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 1.07,
+        "h": 0.85,
+        "d": 0.51
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0.53,
+        "z": 0
+      },
+      "tint": "outfit"
+    },
+    {
+      "id": "av_face_smile",
+      "url": "/assets/props/av_face_smile.glb",
+      "slot": "avatar:face_smile",
+      "zones": "all",
+      "maxBytes": 14000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.22,
+        "h": 0.16,
+        "d": 0.05
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.49,
+        "z": 0.21
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_face_calm",
+      "url": "/assets/props/av_face_calm.glb",
+      "slot": "avatar:face_calm",
+      "zones": "all",
+      "maxBytes": 7000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.26,
+        "h": 0.14,
+        "d": 0.04
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.49,
+        "z": 0.21
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_face_grin",
+      "url": "/assets/props/av_face_grin.glb",
+      "slot": "avatar:face_grin",
+      "zones": "all",
+      "maxBytes": 8000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.22,
+        "h": 0.19,
+        "d": 0.05
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.47,
+        "z": 0.21
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_face_cool",
+      "url": "/assets/props/av_face_cool.glb",
+      "slot": "avatar:face_cool",
+      "zones": "all",
+      "maxBytes": 10000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.27,
+        "h": 0.22,
+        "d": 0.04
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.48,
+        "z": 0.21
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_acc_glasses",
+      "url": "/assets/props/av_acc_glasses.glb",
+      "slot": "avatar:acc_glasses",
+      "zones": "all",
+      "maxBytes": 20000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.5,
+        "h": 0.12,
+        "d": 0.26
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.56,
+        "z": 0.11
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_acc_sunglasses",
+      "url": "/assets/props/av_acc_sunglasses.glb",
+      "slot": "avatar:acc_sunglasses",
+      "zones": "all",
+      "maxBytes": 14000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.51,
+        "h": 0.08,
+        "d": 0.27
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.58,
+        "z": 0.11
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_acc_headphones",
+      "url": "/assets/props/av_acc_headphones.glb",
+      "slot": "avatar:acc_headphones",
+      "zones": "all",
+      "maxBytes": 24000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.65,
+        "h": 0.44,
+        "d": 0.17
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.47,
+        "z": 0
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_acc_chain",
+      "url": "/assets/props/av_acc_chain.glb",
+      "slot": "avatar:acc_chain",
+      "zones": "all",
+      "maxBytes": 31000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 0.36,
+        "h": 0.23,
+        "d": 0.1
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 1.03,
+        "z": 0.25
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_shoes_white_sneakers",
+      "url": "/assets/props/av_shoes_white_sneakers.glb",
+      "slot": "avatar:shoes_white_sneakers",
+      "zones": "all",
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.6,
+        "h": 0.15,
+        "d": 0.34
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0,
+        "z": 0.05
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_shoes_black_sneakers",
+      "url": "/assets/props/av_shoes_black_sneakers.glb",
+      "slot": "avatar:shoes_black_sneakers",
+      "zones": "all",
+      "maxBytes": 12000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.6,
+        "h": 0.15,
+        "d": 0.34
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0,
+        "z": 0.05
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_shoes_red_sneakers",
+      "url": "/assets/props/av_shoes_red_sneakers.glb",
+      "slot": "avatar:shoes_red_sneakers",
+      "zones": "all",
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.6,
+        "h": 0.15,
+        "d": 0.34
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0,
+        "z": 0.05
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_shoes_boots",
+      "url": "/assets/props/av_shoes_boots.glb",
+      "slot": "avatar:shoes_boots",
+      "zones": "all",
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.6,
+        "h": 0.33,
+        "d": 0.36
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0,
+        "z": 0.05
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_shoes_sandals",
+      "url": "/assets/props/av_shoes_sandals.glb",
+      "slot": "avatar:shoes_sandals",
+      "zones": "all",
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.59,
+        "h": 0.08,
+        "d": 0.33
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0,
+        "z": 0.05
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_pack_backpack",
+      "url": "/assets/props/av_pack_backpack.glb",
+      "slot": "avatar:pack_backpack",
+      "zones": "all",
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.48,
+        "h": 0.66,
+        "d": 0.75
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0.7,
+        "z": -0.1
+      },
+      "tint": "none"
+    },
+    {
+      "id": "av_pack_satchel",
+      "url": "/assets/props/av_pack_satchel.glb",
+      "slot": "avatar:pack_satchel",
+      "zones": "all",
+      "maxBytes": 11000,
+      "maxTriangles": 100,
+      "size": {
+        "w": 0.55,
+        "h": 0.73,
+        "d": 0.68
+      },
+      "yOffset": 0,
+      "anchor": {
+        "x": 0,
+        "y": 0.59,
+        "z": -0.07
+      },
+      "tint": "none"
+    },
+    {
+      "id": "facade_lecture_east",
+      "url": "/assets/props/facade_lecture_east.glb",
+      "slot": "building:lecture_east",
+      "zones": [
+        "academic_block"
+      ],
+      "maxBytes": 150000,
+      "maxTriangles": 1300,
+      "size": {
+        "w": 10.42,
+        "h": 3.6,
+        "d": 14.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_lecture_west",
+      "url": "/assets/props/facade_lecture_west.glb",
+      "slot": "building:lecture_west",
+      "zones": [
+        "academic_block"
+      ],
+      "maxBytes": 150000,
+      "maxTriangles": 1300,
+      "size": {
+        "w": 10.42,
+        "h": 3.6,
+        "d": 14.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_creator_studio",
+      "url": "/assets/props/facade_creator_studio.glb",
+      "slot": "building:creator_studio",
+      "zones": [
+        "creator_hub"
+      ],
+      "maxBytes": 133000,
+      "maxTriangles": 1200,
+      "size": {
+        "w": 14.42,
+        "h": 3.35,
+        "d": 12.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_food_hall",
+      "url": "/assets/props/facade_food_hall.glb",
+      "slot": "building:food_hall",
+      "zones": [
+        "food_court"
+      ],
+      "maxBytes": 140000,
+      "maxTriangles": 1300,
+      "size": {
+        "w": 14.42,
+        "h": 3.75,
+        "d": 9.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_hostel_a",
+      "url": "/assets/props/facade_hostel_a.glb",
+      "slot": "building:hostel_a",
+      "zones": [
+        "hostel_street"
+      ],
+      "maxBytes": 119000,
+      "maxTriangles": 1100,
+      "size": {
+        "w": 10.42,
+        "h": 3.5,
+        "d": 5.42
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_hostel_b",
+      "url": "/assets/props/facade_hostel_b.glb",
+      "slot": "building:hostel_b",
+      "zones": [
+        "hostel_street"
+      ],
+      "maxBytes": 119000,
+      "maxTriangles": 1100,
+      "size": {
+        "w": 10.42,
+        "h": 3.5,
+        "d": 5.42
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_library_hall",
+      "url": "/assets/props/facade_library_hall.glb",
+      "slot": "building:library_hall",
+      "zones": [
+        "library"
+      ],
+      "maxBytes": 197000,
+      "maxTriangles": 1800,
+      "size": {
+        "w": 20.42,
+        "h": 9.09,
+        "d": 14.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "facade_student_centre",
+      "url": "/assets/props/facade_student_centre.glb",
+      "slot": "building:student_centre",
+      "zones": [
+        "student_commons"
+      ],
+      "maxBytes": 155000,
+      "maxTriangles": 1400,
+      "size": {
+        "w": 9.44,
+        "h": 8,
+        "d": 11.61
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "palm_tree",
+      "url": "/assets/props/palm_tree.glb",
+      "slot": "prop:tree",
+      "zones": [
+        "creator_hub",
+        "food_court",
+        "hostel_street",
+        "library",
+        "student_commons"
+      ],
+      "maxBytes": 43000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 2.94,
+        "h": 4.64,
+        "d": 2.86
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "bench",
+      "url": "/assets/props/bench.glb",
+      "slot": "prop:bench",
+      "zones": [
+        "student_commons"
+      ],
+      "maxBytes": 20000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 3,
+        "h": 1.33,
+        "d": 0.98
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "library_shelf",
+      "url": "/assets/props/library_shelf.glb",
+      "slot": "prop:shelf",
+      "zones": [
+        "library"
+      ],
+      "maxBytes": 200000,
+      "maxTriangles": 1800,
+      "size": {
+        "w": 6,
+        "h": 2.2,
+        "d": 1.2
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "market_counter",
+      "url": "/assets/props/market_counter.glb",
+      "slot": "prop:counter",
+      "zones": [
+        "creator_hub",
+        "food_court"
+      ],
+      "maxBytes": 76000,
+      "maxTriangles": 700,
+      "size": {
+        "w": 10.2,
+        "h": 2.99,
+        "d": 2.27
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_pillar",
+      "url": "/assets/props/gate_pillar.glb",
+      "slot": "prop:pillar",
+      "zones": [
+        "main_gate"
+      ],
+      "maxBytes": 22000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 1.6,
+        "h": 4.26,
+        "d": 1.6
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "commons_fountain",
+      "url": "/assets/props/commons_fountain.glb",
+      "slot": "prop:fountain",
+      "zones": [
+        "student_commons"
+      ],
+      "maxBytes": 55000,
+      "maxTriangles": 500,
+      "size": {
+        "w": 3.6,
+        "h": 2.12,
+        "d": 3.6
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "event_stage",
+      "url": "/assets/props/event_stage.glb",
+      "slot": "prop:stage",
+      "zones": [
+        "event_arena"
+      ],
+      "maxBytes": 87000,
+      "maxTriangles": 800,
+      "size": {
+        "w": 14,
+        "h": 4.52,
+        "d": 4.55
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "lamp_post",
+      "url": "/assets/props/lamp_post.glb",
+      "slot": "decor:lamp_post",
+      "zones": [
+        "academic_block",
+        "event_arena",
+        "food_court",
+        "hostel_street",
+        "main_gate",
+        "student_commons"
+      ],
+      "maxBytes": 16000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.95,
+        "h": 3.13,
+        "d": 0.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "hedge_row",
+      "url": "/assets/props/hedge_row.glb",
+      "slot": "decor:hedge_row",
+      "zones": [
+        "main_gate",
+        "student_commons"
+      ],
+      "maxBytes": 59000,
+      "maxTriangles": 500,
+      "size": {
+        "w": 4.23,
+        "h": 1.07,
+        "d": 0.9
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "flower_bed",
+      "url": "/assets/props/flower_bed.glb",
+      "slot": "decor:flower_bed",
+      "zones": [
+        "creator_hub",
+        "food_court",
+        "library",
+        "student_commons"
+      ],
+      "maxBytes": 117000,
+      "maxTriangles": 1100,
+      "size": {
+        "w": 2.6,
+        "h": 0.89,
+        "d": 2.6
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "umbrella_table",
+      "url": "/assets/props/umbrella_table.glb",
+      "slot": "decor:umbrella_table",
+      "zones": [
+        "food_court",
+        "student_commons"
+      ],
+      "maxBytes": 39000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 3.1,
+        "h": 2.67,
+        "d": 3.1
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "goal_post",
+      "url": "/assets/props/goal_post.glb",
+      "slot": "decor:goal_post",
+      "zones": [
+        "sports_ground"
+      ],
+      "maxBytes": 24000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 7.46,
+        "h": 2.48,
+        "d": 1.91
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "shrub",
+      "url": "/assets/props/shrub.glb",
+      "slot": "decor:shrub",
+      "zones": [
+        "academic_block",
+        "creator_hub",
+        "food_court",
+        "hostel_street",
+        "library",
+        "student_commons"
+      ],
+      "maxBytes": 32000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 1.53,
+        "h": 0.94,
+        "d": 0.98
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "signboard",
+      "url": "/assets/props/signboard.glb",
+      "slot": "decor:signboard",
+      "zones": [
+        "academic_block",
+        "creator_hub",
+        "food_court",
+        "library",
+        "main_gate"
+      ],
+      "maxBytes": 17000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 2,
+        "h": 1.83,
+        "d": 0.17
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_arch",
+      "url": "/assets/props/gate_arch.glb",
+      "slot": "decor:gate_arch",
+      "zones": [
+        "main_gate"
+      ],
+      "maxBytes": 293000,
+      "maxTriangles": 2600,
+      "size": {
+        "w": 14.87,
+        "h": 6.24,
+        "d": 1.77
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "wayfinding_kiosk",
+      "url": "/assets/props/wayfinding_kiosk.glb",
+      "slot": "decor:wayfinding_kiosk",
+      "zones": [
+        "main_gate"
+      ],
+      "maxBytes": 16000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 1.2,
+        "h": 2.42,
+        "d": 0.9
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "bollard",
+      "url": "/assets/props/bollard.glb",
+      "slot": "decor:bollard",
+      "zones": [
+        "main_gate"
+      ],
+      "maxBytes": 14000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.29,
+        "h": 0.84,
+        "d": 0.29
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "notice_board",
+      "url": "/assets/props/notice_board.glb",
+      "slot": "decor:notice_board",
+      "zones": [
+        "student_commons"
+      ],
+      "maxBytes": 24000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 2.75,
+        "h": 2.09,
+        "d": 0.62
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "commons_pergola",
+      "url": "/assets/props/commons_pergola.glb",
+      "slot": "decor:commons_pergola",
+      "zones": [
+        "student_commons"
+      ],
+      "maxBytes": 67000,
+      "maxTriangles": 600,
+      "size": {
+        "w": 4.68,
+        "h": 3.16,
+        "d": 3.39
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "bench_planter",
+      "url": "/assets/props/bench_planter.glb",
+      "slot": "decor:bench_planter",
+      "zones": [
+        "academic_block",
+        "student_commons"
+      ],
+      "maxBytes": 24000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 3.3,
+        "h": 1.07,
+        "d": 1.57
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "banner_pole",
+      "url": "/assets/props/banner_pole.glb",
+      "slot": "decor:banner_pole",
+      "zones": [
+        "academic_block",
+        "student_commons"
+      ],
+      "maxBytes": 46000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 0.9,
+        "h": 3.89,
+        "d": 0.36
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "palm_royal",
+      "url": "/assets/props/palm_royal.glb",
+      "slot": "decor:palm_royal",
+      "zones": [
+        "academic_block",
+        "creator_hub",
+        "event_arena",
+        "food_court",
+        "hostel_street",
+        "sports_ground",
+        "student_commons"
+      ],
+      "maxBytes": 43000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 2.94,
+        "h": 4.64,
+        "d": 2.86
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "plaza_paving",
+      "url": "/assets/props/plaza_paving.glb",
+      "slot": "decor:plaza_paving",
+      "zones": [
+        "student_commons"
+      ],
+      "maxBytes": 104000,
+      "maxTriangles": 900,
+      "size": {
+        "w": 17.6,
+        "h": 0.05,
+        "d": 12.8
+      },
+      "yOffset": 0.12
+    }
+  ]
+}

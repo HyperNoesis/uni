@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "hostel_street",
+  "name": "Hostel Street",
+  "rect": {
+    "x": 4,
+    "y": 30,
+    "w": 38,
+    "h": 16
+  },
+  "color": "#e8a24a",
+  "ambientAudio": "chatter",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "hostel_a",
+      "name": "Hostel A",
+      "x": 6,
+      "y": 30,
+      "w": 10,
+      "h": 5,
+      "door": null,
+      "color": "#e8a24a",
+      "height": 2.2
+    },
+    {
+      "id": "hostel_b",
+      "name": "Hostel B",
+      "x": 20,
+      "y": 30,
+      "w": 10,
+      "h": 5,
+      "door": null,
+      "color": "#d98f38",
+      "height": 2.2
+    }
+  ],
+  "props": [
+    {
+      "kind": "tree",
+      "x": 40,
+      "y": 44,
+      "w": 1.2,
+      "h": 1.2
+    }
+  ],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_student_2",
+      "name": "Chidi",
+      "outfit": "#4fb286",
+      "skin": "#5e3b26",
+      "speed": 1.8,
+      "pauseMs": 2500,
+      "path": [
+        {
+          "x": 10,
+          "y": 38
+        },
+        {
+          "x": 36,
+          "y": 38
+        }
+      ]
+    }
+  ],
+  "decor": [
+    {
+      "model": "lamp_post",
+      "x": 10,
+      "y": 42,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 20,
+      "y": 42,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 30,
+      "y": 42,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 40,
+      "y": 34
+    },
+    {
+      "model": "lamp_post",
+      "x": 40,
+      "y": 42,
+      "rot": 3.14
+    },
+    {
+      "model": "shrub",
+      "x": 5.1,
+      "y": 35.5
+    },
+    {
+      "model": "shrub",
+      "x": 16.9,
+      "y": 35.5
+    },
+    {
+      "model": "shrub",
+      "x": 19.1,
+      "y": 35.5
+    },
+    {
+      "model": "shrub",
+      "x": 30.9,
+      "y": 35.5
+    },
+    {
+      "model": "palm_royal",
+      "x": 45,
+      "y": 33.4
+    },
+    {
+      "model": "palm_royal",
+      "x": 10,
+      "y": 46,
+      "scale": 1.05
+    }
+  ]
+}

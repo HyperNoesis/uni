@@ -1,0 +1,70 @@
+# Render Blueprint: one connection to this GitHub repo deploys the web app, API and realtime server.
+#
+# Render > New > Blueprint > pick this repo > Apply. Secrets are generated for you.
+#
+# IMPORTANT: service names become public URLs (https://<name>.onrender.com) and must be unique across ALL of Render.
+# The three URLs below assume the names campus-ng-web / campus-ng-api / campus-ng-realtime. If Render says a name is
+# taken (or gives you a different URL), rename the service here AND update the URL values in this file, then push.
+envVarGroups:
+  - name: campus-secrets
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: INTERNAL_SECRET
+        generateValue: true
+
+services:
+  - type: web
+    name: campus-ng-api
+    runtime: node
+    plan: free
+    healthCheckPath: /healthz
+    buildCommand: corepack enable && pnpm install --prod=false
+    startCommand: API_PORT=$PORT pnpm --filter @campus/api start
+    envVars:
+      - fromGroup: campus-secrets
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: API_ORIGIN
+        value: https://campus-ng-web.onrender.com
+      - key: REALTIME_INTERNAL_URL
+        value: https://campus-ng-realtime.onrender.com
+      # Free plan has no disk, so progress resets on restart. On a paid plan add a Disk mounted at /var/data and set:
+      # - key: DATA_DIR
+      #   value: /var/data
+
+  - type: web
+    name: campus-ng-realtime
+    runtime: node
+    plan: free
+    healthCheckPath: /healthz
+    buildCommand: corepack enable && pnpm install --prod=false
+    startCommand: REALTIME_PORT=$PORT pnpm --filter @campus/realtime start
+    envVars:
+      - fromGroup: campus-secrets
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: API_ORIGIN
+        value: https://campus-ng-web.onrender.com
+      - key: API_INTERNAL_URL
+        value: https://campus-ng-api.onrender.com
+
+  - type: web
+    name: campus-ng-web
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --prod=false && pnpm --filter @campus/web build
+    startCommand: cd apps/web && npx next start -p $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://campus-ng-api.onrender.com
+      - key: NEXT_PUBLIC_REALTIME_URL
+        value: wss://campus-ng-realtime.onrender.com

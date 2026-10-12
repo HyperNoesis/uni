@@ -1,0 +1,1 @@
+Integration tests: API + store (`apps/api/src/app.test.ts`), realtime rooms (`apps/realtime/src/room.test.ts`) and the admin console (`apps/admin/src/app.test.ts`). They run with `pnpm test`. Database integration tests arrive with the Postgres adapter.

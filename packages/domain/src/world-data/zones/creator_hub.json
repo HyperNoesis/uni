@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "id": "creator_hub",
+  "name": "Creator Hub",
+  "rect": {
+    "x": 4,
+    "y": 50,
+    "w": 38,
+    "h": 26
+  },
+  "color": "#d65fa0",
+  "ambientAudio": "studio",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "creator_studio",
+      "name": "Creator Studio",
+      "x": 8,
+      "y": 52,
+      "w": 14,
+      "h": 12,
+      "door": {
+        "x": 13,
+        "w": 4
+      },
+      "color": "#d65fa0",
+      "height": 2.4
+    }
+  ],
+  "props": [
+    {
+      "kind": "counter",
+      "x": 10,
+      "y": 54,
+      "w": 10,
+      "h": 1.4
+    },
+    {
+      "kind": "tree",
+      "x": 30,
+      "y": 72,
+      "w": 1.2,
+      "h": 1.2
+    }
+  ],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_designer",
+      "name": "Kemi",
+      "outfit": "#8b6fd6",
+      "skin": "#b97a4f",
+      "speed": 1.2,
+      "pauseMs": 4000,
+      "path": [
+        {
+          "x": 14,
+          "y": 58
+        },
+        {
+          "x": 18,
+          "y": 58
+        }
+      ]
+    }
+  ],
+  "decor": [
+    {
+      "model": "flower_bed",
+      "x": 10,
+      "y": 67
+    },
+    {
+      "model": "flower_bed",
+      "x": 20,
+      "y": 67
+    },
+    {
+      "model": "shrub",
+      "x": 7.1,
+      "y": 64.5
+    },
+    {
+      "model": "shrub",
+      "x": 22.9,
+      "y": 64.5
+    },
+    {
+      "model": "signboard",
+      "x": 18.8,
+      "y": 65.1
+    },
+    {
+      "model": "palm_royal",
+      "x": 28,
+      "y": 62,
+      "scale": 1.05
+    }
+  ]
+}

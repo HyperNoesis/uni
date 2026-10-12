@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "id": "arts_row",
+  "name": "Arts & Humanities Row",
+  "rect": {
+    "x": 120,
+    "y": 40,
+    "w": 40,
+    "h": 40
+  },
+  "color": "#c9724a",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "arts_01_literature_seminar",
+      "name": "Literature Seminar Room",
+      "x": 121.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#d98a5f",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "arts_02_history_room",
+      "name": "History Room",
+      "x": 130.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#c9724a",
+      "height": 2.8,
+      "kind": "studio"
+    },
+    {
+      "id": "arts_03_theatre_arts_studi",
+      "name": "Theatre Arts Studio",
+      "x": 142.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#e4a574",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "arts_04_music_practice_roo",
+      "name": "Music Practice Room",
+      "x": 151.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#b8613f",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "arts_05_fine_art_studio",
+      "name": "Fine Art Studio",
+      "x": 121.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#c9724a",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "arts_06_philosophy_room",
+      "name": "Philosophy Room",
+      "x": 130.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#e4a574",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "arts_07_languages_lab",
+      "name": "Languages Lab",
+      "x": 142.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#b8613f",
+      "height": 2.8,
+      "kind": "studio"
+    },
+    {
+      "id": "arts_08_mass_comm_newsroom",
+      "name": "Mass Comm. Newsroom",
+      "x": 151.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#d98a5f",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "arts_09_radio_booth",
+      "name": "Radio Booth",
+      "x": 121.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#e4a574",
+      "height": 2.8,
+      "kind": "studio"
+    },
+    {
+      "id": "arts_10_dance_studio",
+      "name": "Dance Studio",
+      "x": 130.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#b8613f",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "arts_11_arts_lecture_room",
+      "name": "Arts Lecture Room",
+      "x": 142.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#d98a5f",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "arts_12_arts_dean_s_office",
+      "name": "Arts Dean's Office",
+      "x": 151.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#c9724a",
+      "height": 2.8,
+      "kind": "studio"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_arts_row_1",
+      "name": "Ngozi",
+      "outfit": "#d98a5f",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 139.2,
+          "y": 47
+        },
+        {
+          "x": 139.2,
+          "y": 59.2
+        }
+      ]
+    },
+    {
+      "id": "npc_arts_row_2",
+      "name": "Kola",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 140.8,
+          "y": 59.2
+        },
+        {
+          "x": 140.8,
+          "y": 50
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

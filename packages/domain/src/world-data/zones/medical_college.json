@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "id": "medical_college",
+  "name": "College of Medicine",
+  "rect": {
+    "x": 200,
+    "y": 0,
+    "w": 40,
+    "h": 40
+  },
+  "color": "#e8644a",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "medical_01_student_health_cli",
+      "name": "Student Health Clinic",
+      "x": 201.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#e9a090",
+      "height": 2.8,
+      "kind": "clinic"
+    },
+    {
+      "id": "medical_02_anatomy_lab",
+      "name": "Anatomy Lab",
+      "x": 210.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#e8644a",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "medical_03_pharmacy_lab",
+      "name": "Pharmacy Lab",
+      "x": 222.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#f0b8a8",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "medical_04_nursing_skills_war",
+      "name": "Nursing Skills Ward",
+      "x": 231.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#d9826c",
+      "height": 2.8,
+      "kind": "clinic"
+    },
+    {
+      "id": "medical_05_dental_suite",
+      "name": "Dental Suite",
+      "x": 201.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#e8644a",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "medical_06_physiotherapy_room",
+      "name": "Physiotherapy Room",
+      "x": 210.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#f0b8a8",
+      "height": 2.8,
+      "kind": "clinic"
+    },
+    {
+      "id": "medical_07_radiology_room",
+      "name": "Radiology Room",
+      "x": 222.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#d9826c",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "medical_08_counselling_centre",
+      "name": "Counselling Centre",
+      "x": 231.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#e9a090",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "medical_09_medical_lecture_ro",
+      "name": "Medical Lecture Room",
+      "x": 201.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#f0b8a8",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "medical_10_clinical_skills_la",
+      "name": "Clinical Skills Lab",
+      "x": 210.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#d9826c",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "medical_11_pharmacy_dispensar",
+      "name": "Pharmacy Dispensary",
+      "x": 222.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#e9a090",
+      "height": 2.8,
+      "kind": "clinic"
+    },
+    {
+      "id": "medical_12_medical_dean_s_off",
+      "name": "Medical Dean's Office",
+      "x": 231.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#e8644a",
+      "height": 3,
+      "kind": "classroom"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_medical_college_1",
+      "name": "Ibrahim",
+      "outfit": "#e9a090",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 219.2,
+          "y": 11.3
+        },
+        {
+          "x": 219.2,
+          "y": 19.2
+        }
+      ]
+    },
+    {
+      "id": "npc_medical_college_2",
+      "name": "Zainab",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 220.8,
+          "y": 19.2
+        },
+        {
+          "x": 220.8,
+          "y": 11.3
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

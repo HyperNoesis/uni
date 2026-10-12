@@ -1,0 +1,35 @@
+{
+  "name": "campus",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "smoke": "node tests/smoke.mjs",
+    "start:local": "bash scripts/run-local.sh",
+    "check:repo": "node scripts/check-repo.mjs",
+    "gen:tokens": "node --no-warnings --import ./tests/visual/ts-resolve.mjs scripts/gen-tokens-css.mjs",
+    "check:ui": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/ui-tokens.mjs && node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/onboarding-draft.mjs",
+    "migrate": "bash infra/db/migrate.sh",
+    "load": "node tests/load/join-burst.mjs",
+    "e2e:realtime": "node tests/e2e/two-clients.mjs",
+    "e2e:phase4": "node tests/e2e/phase4-gates.mjs",
+    "check:3d": "node tests/visual/3d-renderer-contract.mjs && node tests/visual/3d-renderer-runtime-smoke.cjs && node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/zone-architecture.mjs && node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/camera-solver.mjs && node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/world-expansion.mjs && node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/landmarks.mjs && node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/district-kinds.mjs",
+    "check:assets": "node scripts/models/audit-glb.mjs",
+    "gen:inventory": "node scripts/models/audit-glb.mjs --write",
+    "check:sports": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/sports-game.mjs",
+    "check:minigames": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/minigames.mjs"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "typescript": "^5.6.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=22 <25",
+    "pnpm": ">=10"
+  }
+}

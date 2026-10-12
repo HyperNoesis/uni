@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "gate_road",
+  "name": "Gate Road",
+  "rect": {
+    "x": 48,
+    "y": 80,
+    "w": 24,
+    "h": 70
+  },
+  "color": "#477a60",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_gate_road_1",
+      "name": "Okada Rider",
+      "outfit": "#e8a24a",
+      "skin": "#7a4b2e",
+      "speed": 2.2,
+      "pauseMs": 2500,
+      "path": [
+        {
+          "x": 58.2,
+          "y": 84
+        },
+        {
+          "x": 58.2,
+          "y": 146
+        }
+      ]
+    },
+    {
+      "id": "npc_gate_road_2",
+      "name": "Fruit Seller",
+      "outfit": "#3f9a58",
+      "skin": "#b97a4f",
+      "speed": 1.2,
+      "pauseMs": 4000,
+      "path": [
+        {
+          "x": 64.5,
+          "y": 100
+        },
+        {
+          "x": 64.5,
+          "y": 130
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

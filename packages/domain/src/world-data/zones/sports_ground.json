@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "sports_ground",
+  "name": "Sports Ground",
+  "rect": {
+    "x": 78,
+    "y": 62,
+    "w": 38,
+    "h": 16
+  },
+  "color": "#3fae5a",
+  "ambientAudio": "cheer",
+  "spawnPoints": [],
+  "buildings": [],
+  "props": [],
+  "interactionPoints": [
+    {
+      "id": "hunt_sports",
+      "name": "Hidden clue \u00b7 Sports Ground",
+      "x": 108,
+      "y": 72,
+      "activity": "hunt",
+      "hidden": true
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc_coach",
+      "name": "Coach Musa",
+      "outfit": "#4fb286",
+      "skin": "#8a5a3b",
+      "speed": 2,
+      "pauseMs": 3000,
+      "path": [
+        {
+          "x": 84,
+          "y": 70
+        },
+        {
+          "x": 108,
+          "y": 70
+        },
+        {
+          "x": 108,
+          "y": 74
+        },
+        {
+          "x": 84,
+          "y": 74
+        }
+      ]
+    }
+  ],
+  "decor": [
+    {
+      "model": "goal_post",
+      "x": 81.6,
+      "y": 70,
+      "rot": 1.57
+    },
+    {
+      "model": "goal_post",
+      "x": 99.4,
+      "y": 70,
+      "rot": -1.57
+    },
+    {
+      "model": "palm_royal",
+      "x": 78,
+      "y": 66,
+      "scale": 1.05
+    },
+    {
+      "model": "palm_royal",
+      "x": 115.4,
+      "y": 66,
+      "scale": 1.05
+    }
+  ]
+}

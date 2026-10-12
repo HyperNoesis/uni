@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "id": "hostel_estate_east",
+  "name": "East Hostel Estate",
+  "rect": {
+    "x": 200,
+    "y": 40,
+    "w": 40,
+    "h": 40
+  },
+  "color": "#ffd166",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "hostel_01_east_hall_room_101",
+      "name": "East Hall Room 101",
+      "x": 201.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#f2c46b",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_02_east_hall_room_102",
+      "name": "East Hall Room 102",
+      "x": 210.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#e8a24a",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_03_east_hall_room_103",
+      "name": "East Hall Room 103",
+      "x": 222.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#f7d98a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_04_east_hall_room_104",
+      "name": "East Hall Room 104",
+      "x": 231.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#d99a4e",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_05_east_hall_room_201",
+      "name": "East Hall Room 201",
+      "x": 201.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#e8a24a",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_06_east_hall_room_202",
+      "name": "East Hall Room 202",
+      "x": 210.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#f7d98a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_07_east_hall_room_203",
+      "name": "East Hall Room 203",
+      "x": 222.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#d99a4e",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_08_east_hall_room_204",
+      "name": "East Hall Room 204",
+      "x": 231.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#f2c46b",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_09_east_hall_common_r",
+      "name": "East Hall Common Room",
+      "x": 201.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#f7d98a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_10_east_hall_laundry",
+      "name": "East Hall Laundry",
+      "x": 210.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#d99a4e",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_11_east_hall_study_ro",
+      "name": "East Hall Study Room",
+      "x": 222.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#f2c46b",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_12_east_hall_warden",
+      "name": "East Hall Warden",
+      "x": 231.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#e8a24a",
+      "height": 2.6,
+      "kind": "lounge"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_hostel_estate_east_1",
+      "name": "Halima",
+      "outfit": "#f2c46b",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 219.2,
+          "y": 47
+        },
+        {
+          "x": 219.2,
+          "y": 59.2
+        }
+      ]
+    },
+    {
+      "id": "npc_hostel_estate_east_2",
+      "name": "Chidi",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 220.8,
+          "y": 72.5
+        },
+        {
+          "x": 220.8,
+          "y": 66.8
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

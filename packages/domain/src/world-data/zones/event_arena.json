@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "event_arena",
+  "name": "Event Arena",
+  "rect": {
+    "x": 78,
+    "y": 4,
+    "w": 38,
+    "h": 32
+  },
+  "color": "#1fb7c9",
+  "ambientAudio": "crowd",
+  "spawnPoints": [],
+  "buildings": [],
+  "props": [
+    {
+      "kind": "stage",
+      "x": 90,
+      "y": 6,
+      "w": 14,
+      "h": 4
+    }
+  ],
+  "interactionPoints": [
+    {
+      "id": "arena_desk",
+      "name": "Event Staff Shift",
+      "x": 96,
+      "y": 20,
+      "activity": "shift"
+    },
+    {
+      "id": "arena_checkin",
+      "name": "Event Check-in",
+      "x": 97,
+      "y": 24,
+      "activity": "checkin"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc_runner",
+      "name": "Sade",
+      "outfit": "#e8a24a",
+      "skin": "#5e3b26",
+      "speed": 2.2,
+      "pauseMs": 1500,
+      "path": [
+        {
+          "x": 90,
+          "y": 24
+        },
+        {
+          "x": 108,
+          "y": 24
+        },
+        {
+          "x": 108,
+          "y": 32
+        },
+        {
+          "x": 90,
+          "y": 32
+        }
+      ]
+    },
+    {
+      "id": "npc_crew",
+      "name": "Crew",
+      "outfit": "#222831",
+      "skin": "#9a6a44",
+      "speed": 1.7,
+      "pauseMs": 2000,
+      "path": [
+        {
+          "x": 92,
+          "y": 20
+        },
+        {
+          "x": 104,
+          "y": 20
+        }
+      ]
+    }
+  ],
+  "decor": [
+    {
+      "model": "lamp_post",
+      "x": 80,
+      "y": 34
+    },
+    {
+      "model": "lamp_post",
+      "x": 90,
+      "y": 34
+    },
+    {
+      "model": "lamp_post",
+      "x": 100,
+      "y": 34
+    },
+    {
+      "model": "lamp_post",
+      "x": 110,
+      "y": 34
+    },
+    {
+      "model": "palm_royal",
+      "x": 90,
+      "y": 33.4
+    },
+    {
+      "model": "palm_royal",
+      "x": 105,
+      "y": 33.4,
+      "scale": 1.1
+    }
+  ]
+}

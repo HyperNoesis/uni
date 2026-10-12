@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "id": "hostel_village",
+  "name": "Hostel Village",
+  "rect": {
+    "x": 0,
+    "y": 80,
+    "w": 48,
+    "h": 70
+  },
+  "color": "#ffb24d",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "hostel_01_village_block_a_ro",
+      "name": "Village Block A Room 1",
+      "x": 1.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 3.5,
+        "w": 3
+      },
+      "color": "#f2b45e",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_02_village_block_a_ro",
+      "name": "Village Block A Room 2",
+      "x": 10.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 12.5,
+        "w": 3
+      },
+      "color": "#e89d4a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_03_village_block_a_ro",
+      "name": "Village Block A Room 3",
+      "x": 30.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 32.5,
+        "w": 3
+      },
+      "color": "#f7cb85",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_04_village_block_a_ro",
+      "name": "Village Block A Room 4",
+      "x": 39.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 41.5,
+        "w": 3
+      },
+      "color": "#d98f45",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_05_village_block_b_ro",
+      "name": "Village Block B Room 1",
+      "x": 1.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 3.5,
+        "w": 3
+      },
+      "color": "#e89d4a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_06_village_block_b_ro",
+      "name": "Village Block B Room 2",
+      "x": 10.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 12.5,
+        "w": 3
+      },
+      "color": "#f7cb85",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_07_village_block_b_ro",
+      "name": "Village Block B Room 3",
+      "x": 30.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 32.5,
+        "w": 3
+      },
+      "color": "#d98f45",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_08_village_block_b_ro",
+      "name": "Village Block B Room 4",
+      "x": 39.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 41.5,
+        "w": 3
+      },
+      "color": "#f2b45e",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_09_village_block_c_ro",
+      "name": "Village Block C Room 1",
+      "x": 1.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 3.5,
+        "w": 3
+      },
+      "color": "#f7cb85",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_10_village_block_c_ro",
+      "name": "Village Block C Room 2",
+      "x": 10.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 12.5,
+        "w": 3
+      },
+      "color": "#d98f45",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_11_village_block_c_ro",
+      "name": "Village Block C Room 3",
+      "x": 30.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 32.5,
+        "w": 3
+      },
+      "color": "#f2b45e",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_12_village_block_c_ro",
+      "name": "Village Block C Room 4",
+      "x": 39.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 41.5,
+        "w": 3
+      },
+      "color": "#e89d4a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_13_village_block_d_ro",
+      "name": "Village Block D Room 1",
+      "x": 1.5,
+      "y": 113.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 3.5,
+        "w": 3
+      },
+      "color": "#d98f45",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "hostel_14_village_block_d_ro",
+      "name": "Village Block D Room 2",
+      "x": 10.5,
+      "y": 113.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 12.5,
+        "w": 3
+      },
+      "color": "#f2b45e",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_15_village_block_d_ro",
+      "name": "Village Block D Room 3",
+      "x": 30.5,
+      "y": 113.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 32.5,
+        "w": 3
+      },
+      "color": "#e89d4a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_16_village_block_d_ro",
+      "name": "Village Block D Room 4",
+      "x": 39.5,
+      "y": 113.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 41.5,
+        "w": 3
+      },
+      "color": "#f7cb85",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_17_village_study_room",
+      "name": "Village Study Room",
+      "x": 1.5,
+      "y": 124,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 3.5,
+        "w": 3
+      },
+      "color": "#f2b45e",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_18_village_laundry",
+      "name": "Village Laundry",
+      "x": 10.5,
+      "y": 124,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 12.5,
+        "w": 3
+      },
+      "color": "#e89d4a",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_19_village_common_roo",
+      "name": "Village Common Room",
+      "x": 30.5,
+      "y": 124,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 32.5,
+        "w": 3
+      },
+      "color": "#f7cb85",
+      "height": 3.4,
+      "kind": "dorm"
+    },
+    {
+      "id": "hostel_20_village_porter_s_l",
+      "name": "Village Porter's Lodge",
+      "x": 39.5,
+      "y": 124,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 41.5,
+        "w": 3
+      },
+      "color": "#d98f45",
+      "height": 2.6,
+      "kind": "lounge"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_hostel_village_1",
+      "name": "Tunde",
+      "outfit": "#f2b45e",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 23.2,
+          "y": 83
+        },
+        {
+          "x": 23.2,
+          "y": 107.2
+        }
+      ]
+    },
+    {
+      "id": "npc_hostel_village_2",
+      "name": "Funke",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 24.8,
+          "y": 129.5
+        },
+        {
+          "x": 24.8,
+          "y": 116.8
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

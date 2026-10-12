@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "id": "business_law",
+  "name": "Business & Law Quarter",
+  "rect": {
+    "x": 160,
+    "y": 40,
+    "w": 40,
+    "h": 40
+  },
+  "color": "#8b6fd6",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "business_01_moot_court_room",
+      "name": "Moot Court Room",
+      "x": 161.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#9d85e0",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "business_02_law_library_room",
+      "name": "Law Library Room",
+      "x": 170.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#8b6fd6",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "business_03_accounting_lab",
+      "name": "Accounting Lab",
+      "x": 182.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#b19cec",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "business_04_finance_trading_ro",
+      "name": "Finance Trading Room",
+      "x": 191.5,
+      "y": 46,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#7a5fc4",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "business_05_entrepreneurship_h",
+      "name": "Entrepreneurship Hub",
+      "x": 161.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#8b6fd6",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "business_06_marketing_studio",
+      "name": "Marketing Studio",
+      "x": 170.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#b19cec",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "business_07_law_lecture_room",
+      "name": "Law Lecture Room",
+      "x": 182.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#7a5fc4",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "business_08_management_seminar",
+      "name": "Management Seminar",
+      "x": 191.5,
+      "y": 56.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#9d85e0",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "business_09_economics_room",
+      "name": "Economics Room",
+      "x": 161.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#b19cec",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "business_10_business_clinic",
+      "name": "Business Clinic",
+      "x": 170.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#7a5fc4",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "business_11_law_dean_s_office",
+      "name": "Law Dean's Office",
+      "x": 182.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#9d85e0",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "business_12_business_dean_s_of",
+      "name": "Business Dean's Office",
+      "x": 191.5,
+      "y": 67,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#8b6fd6",
+      "height": 2.6,
+      "kind": "office"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_business_law_1",
+      "name": "Seyi",
+      "outfit": "#9d85e0",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 179.2,
+          "y": 47
+        },
+        {
+          "x": 179.2,
+          "y": 60.2
+        }
+      ]
+    },
+    {
+      "id": "npc_business_law_2",
+      "name": "Bisi",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 180.8,
+          "y": 60.2
+        },
+        {
+          "x": 180.8,
+          "y": 50
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

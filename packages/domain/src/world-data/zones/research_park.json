@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "id": "research_park",
+  "name": "Research Park",
+  "rect": {
+    "x": 160,
+    "y": 80,
+    "w": 40,
+    "h": 70
+  },
+  "color": "#31c4d0",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "research_01_ai_research_lab",
+      "name": "AI Research Lab",
+      "x": 161.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#52cfd9",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "research_02_data_science_lab",
+      "name": "Data Science Lab",
+      "x": 170.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#31c4d0",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "research_03_biotech_lab",
+      "name": "Biotech Lab",
+      "x": 182.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#7adde4",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "research_04_clean_energy_lab",
+      "name": "Clean Energy Lab",
+      "x": 191.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#28a8b3",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "research_05_agritech_lab",
+      "name": "Agritech Lab",
+      "x": 161.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#31c4d0",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "research_06_materials_lab",
+      "name": "Materials Lab",
+      "x": 170.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#7adde4",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "research_07_drone_lab",
+      "name": "Drone Lab",
+      "x": 182.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#28a8b3",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "research_08_iot_lab",
+      "name": "IoT Lab",
+      "x": 191.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#52cfd9",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "research_09_research_office_1",
+      "name": "Research Office 1",
+      "x": 161.5,
+      "y": 103,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 167.5,
+        "w": 4
+      },
+      "color": "#7adde4",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "research_10_research_office_2",
+      "name": "Research Office 2",
+      "x": 182.5,
+      "y": 103,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 188.5,
+        "w": 4
+      },
+      "color": "#28a8b3",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "research_11_innovation_hall",
+      "name": "Innovation Hall",
+      "x": 161.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 163.5,
+        "w": 3
+      },
+      "color": "#31c4d0",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "research_12_prototype_lab",
+      "name": "Prototype Lab",
+      "x": 170.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 172.5,
+        "w": 3
+      },
+      "color": "#7adde4",
+      "height": 3.6,
+      "kind": "hall"
+    },
+    {
+      "id": "research_13_quantum_lab",
+      "name": "Quantum Lab",
+      "x": 182.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 184.5,
+        "w": 3
+      },
+      "color": "#28a8b3",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "research_14_photonics_lab",
+      "name": "Photonics Lab",
+      "x": 191.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 193.5,
+        "w": 3
+      },
+      "color": "#52cfd9",
+      "height": 2.9,
+      "kind": "lab"
+    }
+  ],
+  "props": [
+    {
+      "kind": "pillar",
+      "x": 165.83,
+      "y": 134.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 165.83,
+      "y": 141.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 170.33,
+      "y": 134.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 170.33,
+      "y": 141.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 189.33,
+      "y": 134.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 189.33,
+      "y": 141.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 193.83,
+      "y": 134.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "pillar",
+      "x": 193.83,
+      "y": 141.32,
+      "w": 0.35,
+      "h": 0.35
+    },
+    {
+      "kind": "block",
+      "x": 188,
+      "y": 129.5,
+      "w": 1.8,
+      "h": 1.8
+    },
+    {
+      "kind": "pillar",
+      "x": 170.7,
+      "y": 130.2,
+      "w": 0.6,
+      "h": 0.6
+    },
+    {
+      "kind": "tree",
+      "x": 164.4,
+      "y": 129.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 194.4,
+      "y": 144.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 164.4,
+      "y": 144.9,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "bench",
+      "x": 178.4,
+      "y": 146.75,
+      "w": 3.2,
+      "h": 0.5
+    }
+  ],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_research_park_1",
+      "name": "Seyi",
+      "outfit": "#52cfd9",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 179.2,
+          "y": 83
+        },
+        {
+          "x": 179.2,
+          "y": 95.7
+        }
+      ]
+    },
+    {
+      "id": "npc_research_park_2",
+      "name": "Bisi",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 180.8,
+          "y": 116.2
+        },
+        {
+          "x": 180.8,
+          "y": 104.3
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

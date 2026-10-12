@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "id": "market_town",
+  "name": "Market Town",
+  "rect": {
+    "x": 72,
+    "y": 80,
+    "w": 48,
+    "h": 70
+  },
+  "color": "#ff8fb3",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "market_01_campus_bookshop",
+      "name": "Campus Bookshop",
+      "x": 73.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 75.5,
+        "w": 3
+      },
+      "color": "#f08fa8",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_02_stationery_kiosk",
+      "name": "Stationery Kiosk",
+      "x": 82.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 84.5,
+        "w": 3
+      },
+      "color": "#ff8fb3",
+      "height": 2.6,
+      "kind": "canteen"
+    },
+    {
+      "id": "market_03_phone_repair_stall",
+      "name": "Phone Repair Stall",
+      "x": 102.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 104.5,
+        "w": 3
+      },
+      "color": "#f7b0c4",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_04_tailor_s_shop",
+      "name": "Tailor's Shop",
+      "x": 111.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 113.5,
+        "w": 3
+      },
+      "color": "#e07c97",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "market_05_barber_shop",
+      "name": "Barber Shop",
+      "x": 73.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 75.5,
+        "w": 3
+      },
+      "color": "#ff8fb3",
+      "height": 2.6,
+      "kind": "canteen"
+    },
+    {
+      "id": "market_06_salon",
+      "name": "Salon",
+      "x": 82.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 84.5,
+        "w": 3
+      },
+      "color": "#f7b0c4",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_07_mama_put_canteen",
+      "name": "Mama Put Canteen",
+      "x": 102.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 104.5,
+        "w": 3
+      },
+      "color": "#e07c97",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "market_08_suya_spot",
+      "name": "Suya Spot",
+      "x": 111.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 113.5,
+        "w": 3
+      },
+      "color": "#f08fa8",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_09_jollof_kitchen",
+      "name": "Jollof Kitchen",
+      "x": 73.5,
+      "y": 103,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 79.5,
+        "w": 4
+      },
+      "color": "#f7b0c4",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_10_bukka_canteen",
+      "name": "Bukka Canteen",
+      "x": 102.5,
+      "y": 103,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 108.5,
+        "w": 4
+      },
+      "color": "#e07c97",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "market_11_smoothie_bar",
+      "name": "Smoothie Bar",
+      "x": 73.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 75.5,
+        "w": 3
+      },
+      "color": "#ff8fb3",
+      "height": 2.6,
+      "kind": "canteen"
+    },
+    {
+      "id": "market_12_provision_store",
+      "name": "Provision Store",
+      "x": 82.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 84.5,
+        "w": 3
+      },
+      "color": "#f7b0c4",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_13_pharmacy",
+      "name": "Pharmacy",
+      "x": 102.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 104.5,
+        "w": 3
+      },
+      "color": "#e07c97",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "market_14_cyber_cafe",
+      "name": "Cyber Cafe",
+      "x": 111.5,
+      "y": 115,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 113.5,
+        "w": 3
+      },
+      "color": "#f08fa8",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_15_print_copy_centre",
+      "name": "Print & Copy Centre",
+      "x": 73.5,
+      "y": 125.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 75.5,
+        "w": 3
+      },
+      "color": "#f7b0c4",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_16_bank_branch",
+      "name": "Bank Branch",
+      "x": 82.5,
+      "y": 125.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 84.5,
+        "w": 3
+      },
+      "color": "#e07c97",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "market_17_atm_lobby",
+      "name": "ATM Lobby",
+      "x": 102.5,
+      "y": 125.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 104.5,
+        "w": 3
+      },
+      "color": "#f08fa8",
+      "height": 2.4,
+      "kind": "shop"
+    },
+    {
+      "id": "market_18_tech_gadget_shop",
+      "name": "Tech Gadget Shop",
+      "x": 111.5,
+      "y": 125.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 113.5,
+        "w": 3
+      },
+      "color": "#ff8fb3",
+      "height": 2.6,
+      "kind": "canteen"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_market_town_1",
+      "name": "Ibrahim",
+      "outfit": "#f08fa8",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 95.2,
+          "y": 83
+        },
+        {
+          "x": 95.2,
+          "y": 131
+        }
+      ]
+    },
+    {
+      "id": "npc_market_town_2",
+      "name": "Zainab",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 96.8,
+          "y": 131
+        },
+        {
+          "x": 96.8,
+          "y": 86
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

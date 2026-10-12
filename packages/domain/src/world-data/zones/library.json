@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "id": "library",
+  "name": "Library",
+  "rect": {
+    "x": 4,
+    "y": 4,
+    "w": 38,
+    "h": 22
+  },
+  "color": "#8b6fd6",
+  "ambientAudio": "quiet",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "library_hall",
+      "name": "Library",
+      "x": 8,
+      "y": 6,
+      "w": 20,
+      "h": 14,
+      "door": {
+        "x": 16,
+        "w": 4
+      },
+      "color": "#8b6fd6",
+      "height": 2.6
+    }
+  ],
+  "props": [
+    {
+      "kind": "shelf",
+      "x": 11,
+      "y": 8,
+      "w": 6,
+      "h": 1.2
+    },
+    {
+      "kind": "shelf",
+      "x": 19,
+      "y": 8,
+      "w": 6,
+      "h": 1.2
+    },
+    {
+      "kind": "shelf",
+      "x": 11,
+      "y": 12,
+      "w": 6,
+      "h": 1.2
+    },
+    {
+      "kind": "shelf",
+      "x": 19,
+      "y": 12,
+      "w": 6,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 30,
+      "y": 24,
+      "w": 1.2,
+      "h": 1.2
+    }
+  ],
+  "interactionPoints": [
+    {
+      "id": "library_counter",
+      "name": "Library Shift",
+      "x": 14,
+      "y": 16.5,
+      "activity": "shift"
+    },
+    {
+      "id": "hunt_library",
+      "name": "Hidden clue \u00b7 Library",
+      "x": 34,
+      "y": 24,
+      "activity": "hunt",
+      "hidden": true
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc_librarian",
+      "name": "Dr. Eze",
+      "outfit": "#8b6fd6",
+      "skin": "#b97a4f",
+      "speed": 1,
+      "pauseMs": 5000,
+      "path": [
+        {
+          "x": 14,
+          "y": 16
+        },
+        {
+          "x": 24,
+          "y": 16
+        }
+      ]
+    },
+    {
+      "id": "npc_student_9",
+      "name": "Chidi",
+      "outfit": "#f4f1ea",
+      "skin": "#5b3a24",
+      "speed": 1.1,
+      "pauseMs": 5000,
+      "path": [
+        {
+          "x": 10,
+          "y": 23
+        },
+        {
+          "x": 24,
+          "y": 23
+        }
+      ]
+    }
+  ],
+  "decor": [
+    {
+      "model": "flower_bed",
+      "x": 13,
+      "y": 23
+    },
+    {
+      "model": "flower_bed",
+      "x": 23,
+      "y": 23
+    },
+    {
+      "model": "shrub",
+      "x": 7.1,
+      "y": 20.5
+    },
+    {
+      "model": "shrub",
+      "x": 28.9,
+      "y": 20.5
+    },
+    {
+      "model": "signboard",
+      "x": 21.8,
+      "y": 21.1
+    }
+  ]
+}

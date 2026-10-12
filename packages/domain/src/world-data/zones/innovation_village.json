@@ -1,0 +1,345 @@
+{
+  "schemaVersion": 1,
+  "id": "innovation_village",
+  "name": "Innovation Village",
+  "rect": {
+    "x": 200,
+    "y": 80,
+    "w": 40,
+    "h": 70
+  },
+  "color": "#a15cff",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "innovation_01_startup_pod_1",
+      "name": "Startup Pod 1",
+      "x": 201.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#b07cf5",
+      "height": 2.8,
+      "kind": "studio"
+    },
+    {
+      "id": "innovation_02_startup_pod_2",
+      "name": "Startup Pod 2",
+      "x": 210.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#a15cff",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "innovation_03_startup_pod_3",
+      "name": "Startup Pod 3",
+      "x": 222.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#c49bff",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "innovation_04_startup_pod_4",
+      "name": "Startup Pod 4",
+      "x": 231.5,
+      "y": 82,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#8d4de6",
+      "height": 3.6,
+      "kind": "gym"
+    },
+    {
+      "id": "innovation_05_maker_space",
+      "name": "Maker Space",
+      "x": 201.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#a15cff",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "innovation_06_game_dev_studio",
+      "name": "Game Dev Studio",
+      "x": 210.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#c49bff",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "innovation_07_film_studio",
+      "name": "Film Studio",
+      "x": 222.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#8d4de6",
+      "height": 3.6,
+      "kind": "gym"
+    },
+    {
+      "id": "innovation_08_podcast_studio",
+      "name": "Podcast Studio",
+      "x": 231.5,
+      "y": 92.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#b07cf5",
+      "height": 2.8,
+      "kind": "studio"
+    },
+    {
+      "id": "innovation_09_design_studio",
+      "name": "Design Studio",
+      "x": 201.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 203.5,
+        "w": 3
+      },
+      "color": "#c49bff",
+      "height": 2.6,
+      "kind": "lounge"
+    },
+    {
+      "id": "innovation_10_co_working_room_a",
+      "name": "Co-working Room A",
+      "x": 210.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 212.5,
+        "w": 3
+      },
+      "color": "#8d4de6",
+      "height": 3.6,
+      "kind": "gym"
+    },
+    {
+      "id": "innovation_11_co_working_room_b",
+      "name": "Co-working Room B",
+      "x": 222.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 224.5,
+        "w": 3
+      },
+      "color": "#b07cf5",
+      "height": 2.8,
+      "kind": "studio"
+    },
+    {
+      "id": "innovation_12_pitch_room",
+      "name": "Pitch Room",
+      "x": 231.5,
+      "y": 103,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 233.5,
+        "w": 3
+      },
+      "color": "#a15cff",
+      "height": 2.6,
+      "kind": "office"
+    },
+    {
+      "id": "innovation_13_campus_gym",
+      "name": "Campus Gym",
+      "x": 201.5,
+      "y": 113.5,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 207.5,
+        "w": 4
+      },
+      "color": "#8d4de6",
+      "height": 3.6,
+      "kind": "gym"
+    },
+    {
+      "id": "innovation_14_wellness_studio",
+      "name": "Wellness Studio",
+      "x": 222.5,
+      "y": 113.5,
+      "w": 16,
+      "h": 8,
+      "door": {
+        "x": 228.5,
+        "w": 4
+      },
+      "color": "#b07cf5",
+      "height": 2.8,
+      "kind": "studio"
+    }
+  ],
+  "props": [
+    {
+      "kind": "stage",
+      "x": 215,
+      "y": 129.5,
+      "w": 10,
+      "h": 3.4
+    },
+    {
+      "kind": "block",
+      "x": 204.5,
+      "y": 137,
+      "w": 6,
+      "h": 2.4
+    },
+    {
+      "kind": "block",
+      "x": 229.5,
+      "y": 137,
+      "w": 6,
+      "h": 2.4
+    },
+    {
+      "kind": "pillar",
+      "x": 211.85,
+      "y": 133.85,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "pillar",
+      "x": 227.85,
+      "y": 133.85,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "pillar",
+      "x": 211.85,
+      "y": 145.35,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "pillar",
+      "x": 227.85,
+      "y": 145.35,
+      "w": 0.3,
+      "h": 0.3
+    },
+    {
+      "kind": "tree",
+      "x": 204.4,
+      "y": 145.1,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 234.4,
+      "y": 145.1,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "bench",
+      "x": 213.4,
+      "y": 146.05,
+      "w": 3.2,
+      "h": 0.5
+    },
+    {
+      "kind": "bench",
+      "x": 223.4,
+      "y": 146.05,
+      "w": 3.2,
+      "h": 0.5
+    }
+  ],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_innovation_village_1",
+      "name": "Halima",
+      "outfit": "#b07cf5",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 219.2,
+          "y": 83
+        },
+        {
+          "x": 219.2,
+          "y": 120.5
+        }
+      ]
+    },
+    {
+      "id": "npc_innovation_village_2",
+      "name": "Chidi",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 220.8,
+          "y": 120.5
+        },
+        {
+          "x": 220.8,
+          "y": 86
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

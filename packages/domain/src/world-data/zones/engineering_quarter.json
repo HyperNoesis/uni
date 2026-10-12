@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "id": "engineering_quarter",
+  "name": "Engineering Quarter",
+  "rect": {
+    "x": 120,
+    "y": 0,
+    "w": 40,
+    "h": 40
+  },
+  "color": "#5f74e8",
+  "ambientAudio": "town",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "engineering_01_civil_engineering_",
+      "name": "Civil Engineering Lab",
+      "x": 121.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#6f86c9",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "engineering_02_mechanical_worksho",
+      "name": "Mechanical Workshop",
+      "x": 130.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#5f74e8",
+      "height": 3,
+      "kind": "workshop"
+    },
+    {
+      "id": "engineering_03_electrical_machine",
+      "name": "Electrical Machines Lab",
+      "x": 142.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#7a8cff",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "engineering_04_fabrication_bay",
+      "name": "Fabrication Bay",
+      "x": 151.5,
+      "y": 2,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#4f6bd0",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "engineering_05_robotics_lab",
+      "name": "Robotics Lab",
+      "x": 121.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#5f74e8",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "engineering_06_power_systems_lab",
+      "name": "Power Systems Lab",
+      "x": 130.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#7a8cff",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "engineering_07_thermofluids_lab",
+      "name": "Thermofluids Lab",
+      "x": 142.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#4f6bd0",
+      "height": 3,
+      "kind": "workshop"
+    },
+    {
+      "id": "engineering_08_cad_studio",
+      "name": "CAD Studio",
+      "x": 151.5,
+      "y": 12.5,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#6f86c9",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "engineering_09_materials_testing_",
+      "name": "Materials Testing Lab",
+      "x": 121.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 123.5,
+        "w": 3
+      },
+      "color": "#7a8cff",
+      "height": 3,
+      "kind": "workshop"
+    },
+    {
+      "id": "engineering_10_control_systems_la",
+      "name": "Control Systems Lab",
+      "x": 130.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 132.5,
+        "w": 3
+      },
+      "color": "#4f6bd0",
+      "height": 3,
+      "kind": "classroom"
+    },
+    {
+      "id": "engineering_11_eng_lecture_room_a",
+      "name": "Eng. Lecture Room A",
+      "x": 142.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 144.5,
+        "w": 3
+      },
+      "color": "#6f86c9",
+      "height": 2.9,
+      "kind": "lab"
+    },
+    {
+      "id": "engineering_12_eng_dean_s_office",
+      "name": "Eng. Dean's Office",
+      "x": 151.5,
+      "y": 23,
+      "w": 7,
+      "h": 6.5,
+      "door": {
+        "x": 153.5,
+        "w": 3
+      },
+      "color": "#5f74e8",
+      "height": 3,
+      "kind": "workshop"
+    }
+  ],
+  "props": [],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_engineering_quarter_1",
+      "name": "Tunde",
+      "outfit": "#6f86c9",
+      "skin": "#7a4b2e",
+      "speed": 1.5,
+      "pauseMs": 2600,
+      "path": [
+        {
+          "x": 139.2,
+          "y": 3
+        },
+        {
+          "x": 139.2,
+          "y": 19.2
+        }
+      ]
+    },
+    {
+      "id": "npc_engineering_quarter_2",
+      "name": "Funke",
+      "outfit": "#f4f1ea",
+      "skin": "#b97a4f",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 140.8,
+          "y": 19.2
+        },
+        {
+          "x": 140.8,
+          "y": 6
+        }
+      ]
+    }
+  ],
+  "decor": []
+}

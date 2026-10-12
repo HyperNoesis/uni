@@ -1,0 +1,483 @@
+{
+  "schemaVersion": 1,
+  "id": "student_commons",
+  "name": "Student Commons",
+  "rect": {
+    "x": 45,
+    "y": 40,
+    "w": 30,
+    "h": 28
+  },
+  "color": "#4fb286",
+  "ambientAudio": "crowd",
+  "spawnPoints": [],
+  "buildings": [
+    {
+      "id": "student_centre",
+      "name": "Student Centre",
+      "x": 46,
+      "y": 58,
+      "w": 9,
+      "h": 9,
+      "door": {
+        "x": 49,
+        "w": 3
+      },
+      "color": "#2f6bff",
+      "height": 3.6
+    }
+  ],
+  "props": [
+    {
+      "kind": "fountain",
+      "x": 58.5,
+      "y": 48,
+      "w": 3,
+      "h": 3
+    },
+    {
+      "kind": "tree",
+      "x": 48,
+      "y": 44,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 72,
+      "y": 44,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 48,
+      "y": 62,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 72,
+      "y": 62,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "bench",
+      "x": 50,
+      "y": 56,
+      "w": 3,
+      "h": 1
+    },
+    {
+      "kind": "bench",
+      "x": 67,
+      "y": 56,
+      "w": 3,
+      "h": 1
+    },
+    {
+      "kind": "palm",
+      "x": 53.0,
+      "y": 43.6,
+      "w": 0.8,
+      "h": 0.8
+    },
+    {
+      "kind": "palm",
+      "x": 53.0,
+      "y": 47.6,
+      "w": 0.8,
+      "h": 0.8
+    },
+    {
+      "kind": "palm",
+      "x": 53.0,
+      "y": 51.6,
+      "w": 0.8,
+      "h": 0.8
+    },
+    {
+      "kind": "palm",
+      "x": 66.2,
+      "y": 43.6,
+      "w": 0.8,
+      "h": 0.8
+    },
+    {
+      "kind": "palm",
+      "x": 66.2,
+      "y": 47.6,
+      "w": 0.8,
+      "h": 0.8
+    },
+    {
+      "kind": "palm",
+      "x": 66.2,
+      "y": 51.6,
+      "w": 0.8,
+      "h": 0.8
+    },
+    {
+      "kind": "palm",
+      "x": 66.2,
+      "y": 63.6,
+      "w": 0.8,
+      "h": 0.8
+    }
+  ],
+  "interactionPoints": [
+    {
+      "id": "commons_board",
+      "name": "Reaction Challenge",
+      "x": 60,
+      "y": 54,
+      "activity": "reaction"
+    },
+    {
+      "id": "job_center",
+      "name": "Job Center",
+      "x": 56,
+      "y": 64,
+      "activity": "jobs"
+    },
+    {
+      "id": "commons_cart",
+      "name": "Cleaning Shift",
+      "x": 64,
+      "y": 64,
+      "activity": "shift"
+    },
+    {
+      "id": "quiz_board",
+      "name": "Campus Quiz",
+      "x": 55,
+      "y": 54,
+      "activity": "quiz"
+    },
+    {
+      "id": "hunt_board",
+      "name": "Scavenger Hunt",
+      "x": 64,
+      "y": 52,
+      "activity": "hunt"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc_student_1",
+      "name": "Tola",
+      "outfit": "#2f6bff",
+      "skin": "#f1d3b5",
+      "speed": 1.8,
+      "pauseMs": 2500,
+      "path": [
+        {
+          "x": 50,
+          "y": 38
+        },
+        {
+          "x": 70,
+          "y": 38
+        },
+        {
+          "x": 70,
+          "y": 46
+        },
+        {
+          "x": 50,
+          "y": 46
+        }
+      ]
+    },
+    {
+      "id": "npc_student_3",
+      "name": "Kemi",
+      "outfit": "#e8644a",
+      "skin": "#8d5a3b",
+      "speed": 1.5,
+      "pauseMs": 3200,
+      "path": [
+        {
+          "x": 56,
+          "y": 57
+        },
+        {
+          "x": 66,
+          "y": 57
+        },
+        {
+          "x": 66,
+          "y": 60
+        },
+        {
+          "x": 56,
+          "y": 60
+        }
+      ]
+    },
+    {
+      "id": "npc_student_4",
+      "name": "Dayo",
+      "outfit": "#ffd166",
+      "skin": "#c68b5e",
+      "speed": 1.9,
+      "pauseMs": 1800,
+      "path": [
+        {
+          "x": 62,
+          "y": 44
+        },
+        {
+          "x": 62,
+          "y": 56
+        }
+      ]
+    },
+    {
+      "id": "npc_student_5",
+      "name": "Ngozi",
+      "outfit": "#31c4d0",
+      "skin": "#6e4128",
+      "speed": 1.4,
+      "pauseMs": 4000,
+      "path": [
+        {
+          "x": 72,
+          "y": 50
+        },
+        {
+          "x": 74,
+          "y": 62
+        }
+      ]
+    }
+  ],
+  "decor": [
+    {
+      "model": "lamp_post",
+      "x": 56.3,
+      "y": 40
+    },
+    {
+      "model": "lamp_post",
+      "x": 63.7,
+      "y": 40,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 56.3,
+      "y": 48
+    },
+    {
+      "model": "lamp_post",
+      "x": 63.7,
+      "y": 48,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 56.3,
+      "y": 56
+    },
+    {
+      "model": "lamp_post",
+      "x": 63.7,
+      "y": 56,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 56.3,
+      "y": 64
+    },
+    {
+      "model": "lamp_post",
+      "x": 63.7,
+      "y": 64,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 50,
+      "y": 42,
+      "rot": 3.14
+    },
+    {
+      "model": "lamp_post",
+      "x": 70,
+      "y": 42,
+      "rot": 3.14
+    },
+    {
+      "model": "hedge_row",
+      "x": 52,
+      "y": 46.4
+    },
+    {
+      "model": "hedge_row",
+      "x": 68,
+      "y": 46.4
+    },
+    {
+      "model": "hedge_row",
+      "x": 68,
+      "y": 63
+    },
+    {
+      "model": "flower_bed",
+      "x": 51.5,
+      "y": 50
+    },
+    {
+      "model": "flower_bed",
+      "x": 68.5,
+      "y": 50
+    },
+    {
+      "model": "flower_bed",
+      "x": 67,
+      "y": 67.5
+    },
+    {
+      "model": "umbrella_table",
+      "x": 47,
+      "y": 51
+    },
+    {
+      "model": "umbrella_table",
+      "x": 73,
+      "y": 51
+    },
+    {
+      "model": "umbrella_table",
+      "x": 47,
+      "y": 56
+    },
+    {
+      "model": "umbrella_table",
+      "x": 73,
+      "y": 57
+    },
+    {
+      "model": "shrub",
+      "x": 45.1,
+      "y": 67.5
+    },
+    {
+      "model": "shrub",
+      "x": 55.9,
+      "y": 67.5
+    },
+    {
+      "model": "plaza_paving",
+      "x": 60,
+      "y": 54.5
+    },
+    {
+      "model": "bench_planter",
+      "x": 54.4,
+      "y": 49.5,
+      "rot": 1.57
+    },
+    {
+      "model": "bench_planter",
+      "x": 65.6,
+      "y": 49.5,
+      "rot": -1.57
+    },
+    {
+      "model": "commons_pergola",
+      "x": 50.8,
+      "y": 53.2
+    },
+    {
+      "model": "commons_pergola",
+      "x": 69.2,
+      "y": 53.2
+    },
+    {
+      "model": "notice_board",
+      "x": 55,
+      "y": 52.4
+    },
+    {
+      "model": "notice_board",
+      "x": 65,
+      "y": 61.2,
+      "rot": 3.14
+    },
+    {
+      "model": "banner_pole",
+      "x": 55.3,
+      "y": 46,
+      "rot": 0.35
+    },
+    {
+      "model": "banner_pole",
+      "x": 64.7,
+      "y": 46,
+      "rot": -0.35
+    },
+    {
+      "model": "banner_pole",
+      "x": 64.7,
+      "y": 62,
+      "rot": -0.35
+    },
+    {
+      "model": "palm_royal",
+      "x": 53.6,
+      "y": 38,
+      "scale": 1.12
+    },
+    {
+      "model": "palm_royal",
+      "x": 66.4,
+      "y": 36,
+      "scale": 1.1
+    },
+    {
+      "model": "palm_royal",
+      "x": 53.6,
+      "y": 47,
+      "scale": 1.24
+    },
+    {
+      "model": "palm_royal",
+      "x": 66.4,
+      "y": 45
+    },
+    {
+      "model": "palm_royal",
+      "x": 66.4,
+      "y": 54,
+      "scale": 1.1
+    },
+    {
+      "model": "palm_royal",
+      "x": 66.4,
+      "y": 63
+    },
+    {
+      "model": "palm_royal",
+      "x": 46,
+      "y": 52,
+      "scale": 1.05
+    },
+    {
+      "model": "palm_royal",
+      "x": 74,
+      "y": 52,
+      "scale": 1.05
+    },
+    {
+      "model": "palm_royal",
+      "x": 74,
+      "y": 59,
+      "scale": 1.05
+    }
+  ]
+}

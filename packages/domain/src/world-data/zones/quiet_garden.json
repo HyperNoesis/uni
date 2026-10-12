@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "quiet_garden",
+  "name": "Quiet Garden",
+  "rect": {
+    "x": 100,
+    "y": 42,
+    "w": 16,
+    "h": 20
+  },
+  "color": "#4fb286",
+  "ambientAudio": "birdsong",
+  "spawnPoints": [],
+  "buildings": [],
+  "props": [
+    {
+      "kind": "fountain",
+      "x": 100.7,
+      "y": 52.1,
+      "w": 6.2,
+      "h": 6.2
+    },
+    {
+      "kind": "pillar",
+      "x": 106.6,
+      "y": 48.2,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 110.6,
+      "y": 48.2,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 106.6,
+      "y": 52.2,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 110.6,
+      "y": 52.2,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 111.8,
+      "y": 57.8,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 114.8,
+      "y": 57.8,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 111.8,
+      "y": 60.8,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "pillar",
+      "x": 114.8,
+      "y": 60.8,
+      "w": 0.4,
+      "h": 0.4
+    },
+    {
+      "kind": "tree",
+      "x": 108,
+      "y": 60,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 113,
+      "y": 47,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "tree",
+      "x": 102.5,
+      "y": 44.5,
+      "w": 1.2,
+      "h": 1.2
+    },
+    {
+      "kind": "bench",
+      "x": 105.4,
+      "y": 53.1,
+      "w": 3.2,
+      "h": 0.5
+    }
+  ],
+  "interactionPoints": [],
+  "npcs": [
+    {
+      "id": "npc_gardener",
+      "name": "Baba Tunde",
+      "outfit": "#3f9a58",
+      "skin": "#4a2f1f",
+      "speed": 0.8,
+      "pauseMs": 7000,
+      "path": [
+        {
+          "x": 105.5,
+          "y": 46
+        },
+        {
+          "x": 109.5,
+          "y": 46
+        }
+      ]
+    }
+  ],
+  "decor": []
+}
