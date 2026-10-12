@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#2f6bff"><title>CAMPUS — offline</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b1530;color:#f4f7ff;font-family:system-ui,sans-serif;text-align:center;padding:24px}h1{font-size:28px;margin:0 0 8px}p{color:#9fb0d6;margin:0 0 20px;max-width:34ch}.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}a,button{min-height:48px;display:inline-flex;align-items:center;padding:0 24px;border:0;border-radius:14px;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer}button{background:#ffd166;color:#1b2540}a{background:#16254f;color:#f4f7ff}@media (prefers-reduced-motion:no-preference){button{transition:transform .2s}button:active{transform:scale(.97)}}</style></head>
+<body><main><h1>You're offline</h1><p id="msg" role="status">CAMPUS needs a connection to reach the live world. Your progress is saved on the server and will be here when you reconnect.</p>
+<div class="row"><button id="retry" type="button">Try again</button><a href="/">Back to start</a></div></main>
+<script>
+var msg=document.getElementById("msg");
+function go(){location.reload()}
+document.getElementById("retry").addEventListener("click",go);
+window.addEventListener("online",function(){msg.textContent="Back online. Reconnecting…";setTimeout(go,400)});
+</script></body></html>
