@@ -1,6 +1,6 @@
 // Pure test for the collision-aware orbit camera (no GL).
 import assert from "node:assert/strict";
-import { solveOrbitCamera, DEFAULT_PITCH, clampPitch, clampZoom } from "../../apps/web/lib/world-camera.ts";
+import { solveOrbitCamera, DEFAULT_PITCH, clampPitch, clampZoom, solveFirstPersonCamera, solveChaseCamera, headingForward, headingRight, clampLook, wrapHeading, FP_EYE } from "../../apps/web/lib/world-camera.ts";
 const open = solveOrbitCamera({ camX: 60, camY: 40, yaw: 0, pitch: DEFAULT_PITCH, zoom: 1, boxes: [] });
 assert.ok(Math.abs(open.eye[0] - 82) < 0.1 && Math.abs(open.eye[2] - 67) < 0.1, "default eye matches legacy offset (22,_,27)");
 assert.equal(open.clearance, 1);
@@ -16,4 +16,23 @@ for (const pitch of [-5, 0, 0.5, 3]) for (const yaw of [0, 1, 2.5, -3]) {
   const r = solveOrbitCamera({ camX: 5, camY: 5, yaw, pitch, zoom: 0.55, boxes: [wall] });
   assert.ok(r.eye.every(Number.isFinite) && r.eye[1] >= 0.7, "finite, above ground");
 }
+// First-person: eye at head height on the player, looking along the heading; NaN-safe; pitch clamped.
+const fp = solveFirstPersonCamera({ x: 10, y: 20, heading: 0, look: 0 });
+assert.deepEqual(fp.eye, [10, FP_EYE, 20]);
+assert.ok(fp.target[2] > fp.eye[2] && Math.abs(fp.target[0] - 10) < 1e-9, "heading 0 faces +z");
+const east = solveFirstPersonCamera({ x: 0, y: 0, heading: Math.PI / 2, look: 0 });
+assert.ok(east.target[0] > 9.9 && Math.abs(east.target[2]) < 1e-6, "heading pi/2 faces +x");
+assert.ok(solveFirstPersonCamera({ x: 1, y: 1, heading: NaN, look: NaN }).eye.every(Number.isFinite));
+assert.equal(clampLook(9), 1.25); assert.equal(clampLook(-9), -1.25); assert.ok(Math.abs(wrapHeading(7) - (7 - 2 * Math.PI)) < 1e-9);
+// Walk basis: right is perpendicular to forward and equals screen-right (f x up) for a right-handed lookAt.
+for (const h of [0, 0.7, 2, -2.4]) {
+  const [fx, fz] = headingForward(h), [rx, rz] = headingRight(h);
+  assert.ok(Math.abs(fx * rx + fz * rz) < 1e-9, "perpendicular");
+  assert.ok(Math.abs(rx - -fz) < 1e-9 && Math.abs(rz - fx) < 1e-9, "right = (-fz, fx)");
+}
+// Chase camera sits behind the avatar and slides in when a wall is behind it.
+const ch = solveChaseCamera({ x: 30, y: 30, heading: 0, look: 0, boxes: [] });
+assert.ok(ch.eye[2] < 30 && ch.clearance === 1, "behind (-z) when facing +z");
+const behindWall = solveChaseCamera({ x: 30, y: 30, heading: 0, look: 0, boxes: [{ x: 20, y: 26, w: 20, h: 3, height: 30 }] });
+assert.ok(behindWall.clearance < 1 && behindWall.eye[2] > 29.3, "pulled in front of wall, outside the box");
 console.log("camera solver test passed");

@@ -138,6 +138,19 @@ const lowStats = lowRenderer.render({
 assert.ok(lowStats.culled >= stats.culled + 5, "low quality should cull NPCs above the configured three-NPC cap");
 assert.ok(projectedLabels.includes("Student-0") && projectedLabels.includes("Student-2"), "first three NPC labels should remain available");
 assert.ok(!projectedLabels.includes("Student-3") && !projectedLabels.includes("Student-7"), "labels for NPCs above the low-quality cap should be hidden");
+// Skeleton animation: a walking, running, sitting and emoting player must render finite, stable frames at every quality (leg/arm FK + pelvis plant).
+for (const q of ["low", "medium", "high"]) {
+  const r = createRenderer(canvas);
+  for (const [label, speed, emote] of [["walk", 3, undefined], ["run", 6, undefined], ["sit", 0, "sit"], ["dance", 0, "dance"]]) {
+    for (let i = 0; i < 30; i++) {
+      const st = r.render({ width: 1280, height: 720, time: 10 + i / 30, camX: 60, camY: 72 + i * speed / 30, camMode: "chase", camHeading: 0, camLook: 0, meId: "you", quality: q,
+        entities: [{ id: "you", name: "You", x: 60, y: 72 + i * speed / 30, emote, avatar, tagColor: "#2f6bff" }] }, labels);
+      assert.ok(Number.isFinite(st.drawn) && st.drawn > 50, `${q}/${label}: frame ${i} produced a finite populated scene`);
+    }
+  }
+  r.destroy();
+}
+console.log("Skeleton animation smoke passed (walk/run/sit/dance x low/medium/high).");
 lowRenderer.destroy();
 assert.equal(deletedResources, createdResources, "both renderers should release all generated mesh buffers and linked shader programs");
 console.log(`3D renderer runtime smoke passed against current domain data: ${domain.ZONES.length} zones, ${domain.BUILDINGS.length} buildings, ${domain.SOLIDS.length} solids; ${stats.drawn} visible objects, ${stats.culled} culled, ${stats.labels} labels, ${drawCalls} mesh draw calls.`);

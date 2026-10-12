@@ -12,7 +12,7 @@ const PRECISION = `#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#e
 export const FRAG = PRECISION + `
 uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye;
 uniform float uEmissive; uniform float uAlpha; uniform float uNight;
-uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ;
+uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ; uniform float uDetail;
 uniform mat4 uLightVP; uniform sampler2D uShadowMap;
 varying vec3 vNormal; varying vec3 vWorld; varying vec3 vColor;
 
@@ -63,53 +63,68 @@ void main(){
  float wall=(1.0-step(.3,abs(n.y)))*(1.0-glass)*(1.0-foliage);
 
  // ---- procedural bump (grass blades, leaves, plaster) ----
- vec2 bp=vWorld.xz*6.0;
- vec2 gr=vec2(vn(bp+vec2(.37,0.0))-vn(bp-vec2(.37,0.0)),vn(bp+vec2(0.0,.37))-vn(bp-vec2(0.0,.37)));
- n=normalize(n+vec3(gr.x,0.0,gr.y)*.55*grassy*near);
+ // Each detail layer runs only on pixels of its own material (and only when near enough): a pixel pays for ONE material, not all of them.
  vec2 lp=vec2(vWorld.x+vWorld.z*.7,vWorld.y*1.6+vWorld.z*.3)*5.0;
- vec3 lg=vec3(vn(lp+vec2(.4,0.0))-vn(lp-vec2(.4,0.0)),vn(lp+vec2(0.0,.4))-vn(lp-vec2(0.0,.4)),vn(lp*1.7)-.5);
- n=normalize(n+lg*.85*foliage*mix(.45,1.0,near));
- vec2 wp=vec2(vWorld.x+vWorld.z,vWorld.y)*7.0;
- vec2 wg=vec2(vn(wp+vec2(.3,0.0))-vn(wp-vec2(.3,0.0)),vn(wp+vec2(0.0,.3))-vn(wp-vec2(0.0,.3)));
- n=normalize(n+vec3(wg.x*.5,wg.y*.6,wg.x*.5)*.18*wall*near);
+ if(grassy>0.0&&near>0.0&&uDetail>.9){
+  vec2 bp=vWorld.xz*6.0;
+  vec2 gr=vec2(vn(bp+vec2(.37,0.0))-vn(bp-vec2(.37,0.0)),vn(bp+vec2(0.0,.37))-vn(bp-vec2(0.0,.37)));
+  n=normalize(n+vec3(gr.x,0.0,gr.y)*.55*grassy*near);
+ }
+ if(foliage>0.0&&uDetail>.9){
+  vec3 lg=vec3(vn(lp+vec2(.4,0.0))-vn(lp-vec2(.4,0.0)),vn(lp+vec2(0.0,.4))-vn(lp-vec2(0.0,.4)),vn(lp*1.7)-.5);
+  n=normalize(n+lg*.85*foliage*mix(.45,1.0,near));
+ }
+ if(wall>0.0&&near>0.0&&uDetail>.9){
+  vec2 wp=vec2(vWorld.x+vWorld.z,vWorld.y)*7.0;
+  vec2 wg=vec2(vn(wp+vec2(.3,0.0))-vn(wp-vec2(.3,0.0)),vn(wp+vec2(0.0,.3))-vn(wp-vec2(0.0,.3)));
+  n=normalize(n+vec3(wg.x*.5,wg.y*.6,wg.x*.5)*.18*wall*near);
+ }
 
  // ---- albedo breakup per material ----
- float lf=vn(vWorld.xz*.07)*.65+vn(vWorld.xz*.31)*.35;
- float patch=fbm(vWorld.xz*.45);
- base=mix(base,base*vec3(1.20,1.12,.72),smoothstep(.5,.8,lf)*grassy*.75);
- base*=1.0+(lf-.5)*.30*grassy;
- base*=1.0+(patch-.5)*.22*grassy;
- base*=1.0+(h21(floor(vWorld.xz*9.0))-.5)*.16*grassy*near;
- base*=1.0+(step(.5,fract(vWorld.x*.28))-.5)*.04*grassy;
+ if(grassy>0.0){
+  float lf=vn(vWorld.xz*.07)*.65+vn(vWorld.xz*.31)*.35;
+  base=mix(base,base*vec3(1.20,1.12,.72),smoothstep(.5,.8,lf)*grassy*.75);
+  base*=1.0+(lf-.5)*.30*grassy;
+  if(uDetail>.5){
+   float patch=fbm(vWorld.xz*.45);
+   base*=1.0+(patch-.5)*.22*grassy;
+   base*=1.0+(h21(floor(vWorld.xz*9.0))-.5)*.16*grassy*near;
+  }
+  base*=1.0+(step(.5,fract(vWorld.x*.28))-.5)*.04*grassy;
+ }
  // paving: running-bond tiles with joints, per-tile tint, grime near edges
- {
+ if(paving>0.0){
   vec2 tp=vWorld.xz/.8; float row=floor(tp.y); tp.x+=row*.5; vec2 tf=fract(tp); vec2 tid=floor(tp);
   float jx=min(tf.x,1.0-tf.x), jy=min(tf.y,1.0-tf.y); float j=1.0-smoothstep(.0,.045,min(jx,jy*.9));
   float fade=1.0-smoothstep(16.0,48.0,dist);
   base*=1.0-.20*j*fade*paving;
   base*=1.0+(h21(tid)-.5)*.10*paving*(.35+.65*fade);
-  base*=1.0+(fbm(vWorld.xz*1.3)-.5)*.14*paving;
+  if(uDetail>.5) base*=1.0+(fbm(vWorld.xz*1.3)-.5)*.14*paving;
  }
  // roof tiles along the slope direction
- {
+ if(roofSlope>0.0){
   vec2 dr=normalize(n.xz+vec2(1e-4)); float t=dot(vWorld.xz,dr)*2.7; float c=dot(vWorld.xz,vec2(-dr.y,dr.x))*3.4;
   float fr=fract(t); float ridge=smoothstep(.0,.16,fr)*(1.0-smoothstep(.84,1.0,fr)*.0);
   float fadeR=1.0-smoothstep(25.0,85.0,dist);
   base*=mix(1.0,.80+.20*ridge,fadeR*roofSlope);
   base*=1.0+(h21(vec2(floor(t),floor(c)))-.5)*.14*roofSlope*fadeR;
-  base*=1.0+(fbm(vWorld.xz*.9)-.5)*.16*roofSlope;
+  if(uDetail>.5) base*=1.0+(fbm(vWorld.xz*.9)-.5)*.16*roofSlope;
  }
  // flat roofs / terraces
  float flatRoof=isUp*step(1.9,vWorld.y)*(1.0-glass)*(1.0-foliage);
- base*=1.0+(fbm(vWorld.xz*1.7)-.5)*.14*flatRoof;
+ if(flatRoof>0.0&&uDetail>.5) base*=1.0+(fbm(vWorld.xz*1.7)-.5)*.14*flatRoof;
  // plaster, soot at the plinth, floor-slab banding on tall walls
- base*=1.0+(fbm(vec2(vWorld.x+vWorld.z,vWorld.y)*1.6)-.5)*.13*wall;
- base*=1.0-wall*.20*smoothstep(1.1,.0,vWorld.y)*(.6+.4*fbm(vWorld.xz*3.0));
- { float sf=fract(vWorld.y/3.2); float sl=1.0-smoothstep(.0,.05,min(sf,1.0-sf)); base*=1.0-wall*.05*sl*step(3.0,vWorld.y)*near; }
+ if(wall>0.0){
+  base*=1.0+(fbm(vec2(vWorld.x+vWorld.z,vWorld.y)*1.6)-.5)*.13*wall*uDetail;
+  if(vWorld.y<1.1&&uDetail>.5) base*=1.0-wall*.20*smoothstep(1.1,.0,vWorld.y)*(.6+.4*fbm(vWorld.xz*3.0));
+  float sf=fract(vWorld.y/3.2); float sl=1.0-smoothstep(.0,.05,min(sf,1.0-sf)); base*=1.0-wall*.05*sl*step(3.0,vWorld.y)*near;
+ }
  // leaf colour variation: light catches the tips, deep green inside
- float lv=vn(lp*.6);
- base=mix(base,base*vec3(1.22,1.18,.74),smoothstep(.55,.9,lv)*foliage*.8);
- base*=1.0-foliage*.28*smoothstep(.5,.0,lv);
+ if(foliage>0.0){
+  float lv=vn(lp*.6);
+  base=mix(base,base*vec3(1.22,1.18,.74),smoothstep(.55,.9,lv)*foliage*.8);
+  base*=1.0-foliage*.28*smoothstep(.5,.0,lv);
+ }
 
  { // natural-material grade: pull toy-saturated paint toward chalky, sun-faded pigments (buildings, props, ground)
   float lm=dot(base,vec3(.299,.587,.114)); float mx=max(base.r,max(base.g,base.b)); float mn=min(base.r,min(base.g,base.b)); float sat=(mx-mn)/max(mx,.001);

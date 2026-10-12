@@ -1,0 +1,117 @@
+# Vision items not yet built (checklist PLANNED / MISSING tags; per-zone repeats omitted)
+
+- 
+-  are still described as unfinished or future.
+-  delivery/rhythm as evidence warrants.
+-  exists.
+-  loading.
+-  moderation state and version.
+-  reward → see Campus Wars contribution.
+-  rewards.
+-  software or hardware accelerated.
+-  validation.
+- A deploy can be rolled back to a known-good version.
+- AI dialogue is short, context-limited, cached and rate-limited if introduced.
+- AI generation has request/token/spend ceilings and graceful failure handling.
+- AI never falsely claims official university/health/legal information.
+- Add bevels on hero architectural edges where they catch light.
+- Add creator templates only after review/validation and publish/rollback works.
+- An AI image is never substituted for a real playable 3D asset.
+- Appeal pathway exists before public scale and has its own review permissions.
+- Apply transforms and use a sensible grounded origin/pivot.
+- Automate triangle/byte/texture budget checks in CI or project scripts.
+- Automate unpacking, format conversion, naming, manifest generation and asset registration.
+- Avoid routine 4K textures for ordinary mobile content.
+- Backup schedule exists and restoration is actually rehearsed.
+- Backup/restore and security incident runbooks are documented and rehearsed.
+- Batch-download/import only free/licensed asset packs with traceable source and rights.
+- Build modular walls, corners, windows, columns, trims, canopies, stairs and railings.
+- Capture hero vista and representative images from each major zone/quality mode.
+- Capture mobile layouts at 390x844 and 360x800 or real matching devices.
+- Complete doors/interiors, collision and real contextual interactions for the first slice.
+- Complete moderator console, appeals, incident workflows and two-account safety tests.
+- Complete visual bible and model/asset registry; select loader capabilities deliberately.
+- Content can be quarantined/suppressed pending review.
+- Creator analytics aggregate starts/completions/reports without exposing individual player data.
+- Creator attribution and version ownership persist.
+- Creator roles/quotas/rate limits prevent spam or world griefing.
+- Creator scavenger-hunt template with creator-defined clues under schema/rate/reward limits.
+- Creators can decorate rooms from approved catalogue items as first constrained scope.
+- Creators can draft a campus event with title, schedule, activity and audience rules.
+- Creators can draft a quiz/quest/scavenger-hunt template with bounded text/clues/time/reward.
+- Current JSON snapshot persistence is recognized as a development/small-scale limitation.
+- Day/night or event variation is added only where meaningful and still readable on mobile.
+- Defer sponsorship until traffic/safety are measurable and ad review/labels/reporting exist.
+- Do not use analytics to track precise real-world location or expose private player behaviour.
+- Do not use assets scraped from competitors or protected official university sites.
+- Document release/deployment steps and rollback path.
+- Evaluate KTX2/Basis texture compression only when the live renderer supports it.
+- Evaluate geometry compression (meshopt/Draco) only when load/runtime support is verified.
+- Extend the art kit and quality family to all 22 existing zones without changing IDs.
+- Fade LOD swaps so assets do not visibly pop.
+- Finish responsive HUD and screen overlays from shared tokens.
+- Freeze a working copy/branch and record the exact version of the project being changed.
+- Generated content output is structured data validated against schema.
+- Generated dialogue follows age-safe and non-harassing defaults.
+- Harden logging, admin permissions, rate limits and privacy disclosures.
+- Health checks/readiness checks exist for all services.
+- Human/automated moderation occurs before publishing generated text/asset packages.
+- Import/author real GLB/PBR hero assets and solve texture, lighting, scale and fallback support.
+- Improve Campus Wars season presentation, fairness analysis and snapshots.
+- Instrument client_error, websocket_disconnect, slow_api and low_fps_sample.
+- Instrument creator_opened, draft_created and package_published only when creator is real.
+- Instrument currency_earned, item_earned and item_purchased.
+- Instrument day_1_return, day_7_return and weekly_meaningful_session.
+- Instrument zone_joined, friend_added, group_joined, message_sent and event_rsvped.
+- Keep a fallback for every critical asset so one missing model does not break the world.
+- Keep hero landmark silhouettes unique while using modular kits for secondary buildings.
+- Lazy-load distant zones/cosmetics and prioritize spawn district.
+- List files changed, exact commands and results.
+- List known gaps and the next three highest-priority fixes.
+- Logs avoid tokens, private messages and sensitive personal data.
+- Make one safe social connection and RSVP/cancel a real event.
+- Migration execution is controlled and cannot automatically destroy production data.
+- Moderation actions are not exposed to ordinary users beyond appropriate status.
+- Moderation queue UI is usable by authorized moderators.
+- Moderator actions include reason, actor, target, timestamp and audit log.
+- Moderator privilege separation and least privilege are enforced.
+- NPCs continue deterministic fallback dialogue when AI is unavailable.
+- Never invent screenshots, performance figures, working features or tests.
+- No betting, casino, paid random rewards or gambling mechanics.
+- No sensitive user data is sent to third-party AI unless explicitly justified and disclosed.
+- North star is weekly meaningful campus sessions per retained player.
+- Postgres adapter and migrations are implemented/tested before production scale.
+- Prefer complete ZIP/model packs over manually downloading models one by one.
+- Produce a world/renderer/zone audit with blockers.
+- Provide LOD0 for hero distance, lower LODs at medium/far and impostors only where justified.
+- Published packages are declarative JSON validated with runtime schema.
+- Realtime server supports graceful drain and reconnect during deploy.
+- Record CC0/license/attribution or permission notes for every non-original asset.
+- Refresh/reconnect and prove avatar, progress, ledger and event state persist.
+- Repeat offender/escalation policy is documented.
+- Report evidence is minimal, access-controlled, protected and reviewable.
+- Reports can suspend/quarantine/rollback a published package.
+- Resolve failing/stale API tests and any compile/build errors before adding features.
+- Review normals, holes, hidden faces, broken UVs, z-fighting and internal geometry.
+- Run product experiments with explicit hypotheses and guardrails, not vanity metrics alone.
+- Run two-browser Phase 4 movement/reconnect and reward tests.
+- Save browser console and network evidence for the tested flows.
+- Save short route video/screen recording when possible.
+- Save test output and performance table.
+- Sensitive admin actions require strong authentication/MFA where available.
+- Server never executes arbitrary user-supplied JavaScript/scripts.
+- Share atlases/materials for repeated props when that reduces draw calls and memory.
+- Test 2D fallback and real WebGL context-loss scenarios.
+- Unreviewed creator content never appears in public world.
+- Use 1 world unit = 1 metre and consistent forward/up axes.
+- Use 512/1K textures for most props and reserve 2K maps for justified hero assets.
+- Use GLB/glTF as the 3D delivery format where supported by the active renderer.
+- Use anonymous/session identifiers where possible; collect no unnecessary personal data.
+- Use coherent UVs and class-appropriate texel density.
+- Use plausible metallic/roughness values; do not use one flat material on every surface.
+- Use real 3D avatars/rigs with walk/run/idle/sit/emote states and validated multiplayer sync.
+- Validate models in the real runtime lighting, not only the modelling viewport.
+- Verify no console exceptions, broken requests, dead controls or fake data.
+
+Per zone (all 22): day/night variation, zone screenshot + walkthrough evidence.
+Open verification: real-device FPS, clean full build, two-client reconnect, moderation console, creator publishing, push notifications, Postgres/Redis scale path, AI NPCs.

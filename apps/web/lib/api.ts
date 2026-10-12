@@ -24,6 +24,16 @@ export const WS_URL = process.env.NEXT_PUBLIC_REALTIME_URL ?? "ws://localhost:40
 
 const KEY = "campus.token";
 
+/** Free-tier hosts sleep when idle. A no-cors ping to each service's health route starts waking them while the page loads. */
+let warmed = false;
+export function warmServers(): void {
+  if (warmed || typeof fetch !== "function") return;
+  warmed = true;
+  for (const u of [API_URL, WS_URL.replace(/^ws/, "http")]) {
+    try { void fetch(`${u}/healthz`, { mode: "no-cors", cache: "no-store" }).catch(() => undefined); } catch { /* best effort */ }
+  }
+}
+
 export function getToken(): string | null {
   try {
     return localStorage.getItem(KEY);

@@ -7,7 +7,7 @@ registerArchitecture(EXT_ARCH);
 import { buildDistrict } from "./world-districts";
 import { buildKindDetail } from "./world-district-kinds";
 import { roofCrown, zoneGateway, southLawn, gateRoadExtras } from "./world-landmarks";
-import { solveOrbitCamera, DEFAULT_PITCH } from "./world-camera";
+import { solveOrbitCamera, solveFirstPersonCamera, solveChaseCamera, DEFAULT_PITCH, FP_FOV } from "./world-camera";
 import { environment } from "./world-environment";
 import { palmTree } from "./world-flora";
 import { FRAG, SHADOW_VERT, SHADOW_VERT_I, SHADOW_FRAG, SKY_VERT, SKY_FRAG, SUN_DIR } from "./world-shaders";
@@ -149,7 +149,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS))
         throw new Error(gl.getProgramInfoLog(program) || "WebGL program link failed");
     gl.useProgram(program);
-    const loc = { pos: gl.getAttribLocation(program, "aPos"), normal: gl.getAttribLocation(program, "aNormal"), vcolor: gl.getAttribLocation(program, "aColor"), mvp: gl.getUniformLocation(program, "uMvp"), model: gl.getUniformLocation(program, "uModel"), color: gl.getUniformLocation(program, "uColor"), light: gl.getUniformLocation(program, "uLight"), emissive: gl.getUniformLocation(program, "uEmissive"), eye: gl.getUniformLocation(program, "uEye"), alpha: gl.getUniformLocation(program, "uAlpha"), lightVP: gl.getUniformLocation(program, "uLightVP"), shadowOn: gl.getUniformLocation(program, "uShadowOn"), shadowTexel: gl.getUniformLocation(program, "uShadowTexel"), shadowQ: gl.getUniformLocation(program, "uShadowQ"), shadowMap: gl.getUniformLocation(program, "uShadowMap") };
+    const loc = { pos: gl.getAttribLocation(program, "aPos"), normal: gl.getAttribLocation(program, "aNormal"), vcolor: gl.getAttribLocation(program, "aColor"), mvp: gl.getUniformLocation(program, "uMvp"), model: gl.getUniformLocation(program, "uModel"), color: gl.getUniformLocation(program, "uColor"), light: gl.getUniformLocation(program, "uLight"), emissive: gl.getUniformLocation(program, "uEmissive"), eye: gl.getUniformLocation(program, "uEye"), alpha: gl.getUniformLocation(program, "uAlpha"), lightVP: gl.getUniformLocation(program, "uLightVP"), shadowOn: gl.getUniformLocation(program, "uShadowOn"), shadowTexel: gl.getUniformLocation(program, "uShadowTexel"), shadowQ: gl.getUniformLocation(program, "uShadowQ"), detail: gl.getUniformLocation(program, "uDetail"), shadowMap: gl.getUniformLocation(program, "uShadowMap") };
     const ext = gl.getExtension("ANGLE_instanced_arrays");
     const nightLoc = gl.getUniformLocation(program, "uNight"); let nightLocI = null; let night = 0; let camClear = 1;
     let iprog = null, iloc = null, ibuf = null;
@@ -163,7 +163,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             gl.linkProgram(p2);
             if (!gl.getProgramParameter(p2, gl.LINK_STATUS)) throw new Error("instanced program link failed");
             iprog = p2; ibuf = gl.createBuffer(); nightLocI = gl.getUniformLocation(p2, "uNight");
-            iloc = { vp: gl.getUniformLocation(p2, "uVP"), color: gl.getUniformLocation(p2, "uColor"), light: gl.getUniformLocation(p2, "uLight"), eye: gl.getUniformLocation(p2, "uEye"), emissive: gl.getUniformLocation(p2, "uEmissive"), alpha: gl.getUniformLocation(p2, "uAlpha"), lightVP: gl.getUniformLocation(p2, "uLightVP"), shadowOn: gl.getUniformLocation(p2, "uShadowOn"), shadowTexel: gl.getUniformLocation(p2, "uShadowTexel"), shadowQ: gl.getUniformLocation(p2, "uShadowQ"), shadowMap: gl.getUniformLocation(p2, "uShadowMap") };
+            iloc = { vp: gl.getUniformLocation(p2, "uVP"), color: gl.getUniformLocation(p2, "uColor"), light: gl.getUniformLocation(p2, "uLight"), eye: gl.getUniformLocation(p2, "uEye"), emissive: gl.getUniformLocation(p2, "uEmissive"), alpha: gl.getUniformLocation(p2, "uAlpha"), lightVP: gl.getUniformLocation(p2, "uLightVP"), shadowOn: gl.getUniformLocation(p2, "uShadowOn"), shadowTexel: gl.getUniformLocation(p2, "uShadowTexel"), shadowQ: gl.getUniformLocation(p2, "uShadowQ"), detail: gl.getUniformLocation(p2, "uDetail"), shadowMap: gl.getUniformLocation(p2, "uShadowMap") };
             gl.useProgram(program);
         } catch (e) { iprog = null; }
     }
@@ -210,7 +210,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     gl.clearColor(.70, .85, .97, 1);
     gl.uniform3f(loc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]);
     let width = canvas.clientWidth || 800, height = canvas.clientHeight || 600;
-    let pixelRatioCap = 1.25; let shadowQ = 1;
+    let pixelRatioCap = 1.25; let shadowQ = 1; let detailQ = 1; // detailQ: 0 low, .6 medium (no bump maps), 1 high
     const resize = () => { const dpr = Math.min(window.devicePixelRatio || 1, pixelRatioCap); width = Math.max(1, canvas.clientWidth); height = Math.max(1, canvas.clientHeight); canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr); gl.viewport(0, 0, canvas.width, canvas.height); };
     resize();
     let curAlpha = 1, calls = 0, recorder = null;
@@ -318,7 +318,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             for (let i = 0; i < n; i++) { const m = model(l[i * 7], l[i * 7 + 1], l[i * 7 + 2], l[i * 7 + 3], l[i * 7 + 4], l[i * 7 + 5], l[i * 7 + 6]); data.set(m, i * 19); data[i * 19 + 16] = 1; data[i * 19 + 17] = 1; data[i * 19 + 18] = 1; }
             if (shadowOn) shadowInst.push(mesh, data, n);
             gl.useProgram(iprog);
-            gl.uniformMatrix4fv(iloc.vp, false, vp); gl.uniform3f(iloc.color, 1, 1, 1); gl.uniform3f(iloc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1i(iloc.shadowMap, 0); gl.uniformMatrix4fv(iloc.lightVP, false, lightVP); gl.uniform1f(iloc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(iloc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(iloc.shadowQ, shadowQ); gl.uniform3f(iloc.eye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(nightLocI, night); gl.uniform1f(iloc.emissive, 0); gl.uniform1f(iloc.alpha, 1);
+            gl.uniformMatrix4fv(iloc.vp, false, vp); gl.uniform3f(iloc.color, 1, 1, 1); gl.uniform3f(iloc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1i(iloc.shadowMap, 0); gl.uniformMatrix4fv(iloc.lightVP, false, lightVP); gl.uniform1f(iloc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(iloc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(iloc.shadowQ, shadowQ); gl.uniform1f(iloc.detail, detailQ); gl.uniform3f(iloc.eye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(nightLocI, night); gl.uniform1f(iloc.emissive, 0); gl.uniform1f(iloc.alpha, 1);
             [[mesh.p, 0], [mesh.n, 1], [mesh.c, 2]].forEach(([buf, loc]) => { gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0); ext.vertexAttribDivisorANGLE(loc, 0); });
             gl.bindBuffer(gl.ARRAY_BUFFER, ibuf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
             for (let k = 0; k < 4; k++) { gl.enableVertexAttribArray(3 + k); gl.vertexAttribPointer(3 + k, 4, gl.FLOAT, false, 76, k * 16); ext.vertexAttribDivisorANGLE(3 + k, 1); }
@@ -458,6 +458,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     };
     const render = (input, overlay) => {
         const q = input.quality ?? "medium";
+        detailQ = (input.quality ?? "medium") === "high" ? 1 : (input.quality ?? "medium") === "low" ? 0 : .6;
         calls = 0; trisFrame = 0; for (const k in callBy) delete callBy[k]; buckets.clear(); shadowBuckets.clear();
         pixelRatioCap = q === "low" ? 0.85 : q === "high" ? 1.5 : 1.2;
         const dpr = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
@@ -469,28 +470,41 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         gl.clearColor(.70 - .65 * night, .85 - .78 * night, .97 - .81 * night, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Collision-aware orbit: eases in fast when a wall intrudes, out slowly so the view never pops.
-        const base = { camX: input.camX, camY: input.camY, yaw: input.camYaw ?? 0, pitch: input.camPitch ?? DEFAULT_PITCH, zoom: input.zoom ?? 1, worldW: domain_1.WORLD.width, worldH: domain_1.WORLD.height };
-        const cam = solveOrbitCamera({ ...base, boxes: domain_1.BUILDINGS });
-        camClear += (cam.clearance - camClear) * (cam.clearance < camClear ? .5 : .08); if (Math.abs(cam.clearance - camClear) < .002) camClear = cam.clearance;
-        const target = cam.target, eye = solveOrbitCamera({ ...base, boxes: [], scale: camClear }).eye;
-        const view = lookAt(eye, target, [0, 1, 0]), proj = perspective(Math.PI / 3, Math.max(.2, input.width / input.height), .1, 170), vp = multiply(proj, view);
+        // Walk cameras (first-person / chase) look where the avatar looks; "orbit" is the legacy overview.
+        const camMode = input.camMode === "fp" || input.camMode === "chase" ? input.camMode : "orbit", walkCam = camMode !== "orbit", fpCam = camMode === "fp";
+        let eye, target, fov = Math.PI / 3;
+        if (walkCam) {
+            const wi = { x: input.camX, y: input.camY, heading: input.camHeading ?? 0, look: input.camLook ?? 0, bob: input.camBob ?? 0 };
+            if (fpCam) { const c = solveFirstPersonCamera(wi); eye = c.eye; target = c.target; fov = FP_FOV; }
+            else { const c = solveChaseCamera({ ...wi, boxes: domain_1.BUILDINGS }); camClear += (c.clearance - camClear) * (c.clearance < camClear ? .6 : .1); eye = solveChaseCamera({ ...wi, boxes: [], dist: 4.3 * camClear }).eye; target = c.target; fov = 1.1; }
+        } else {
+            const base = { camX: input.camX, camY: input.camY, yaw: input.camYaw ?? 0, pitch: input.camPitch ?? DEFAULT_PITCH, zoom: input.zoom ?? 1, worldW: domain_1.WORLD.width, worldH: domain_1.WORLD.height };
+            const cam = solveOrbitCamera({ ...base, boxes: domain_1.BUILDINGS });
+            camClear += (cam.clearance - camClear) * (cam.clearance < camClear ? .5 : .08); if (Math.abs(cam.clearance - camClear) < .002) camClear = cam.clearance;
+            target = cam.target; eye = solveOrbitCamera({ ...base, boxes: [], scale: camClear }).eye;
+        }
+        const aspect = Math.max(.2, input.width / input.height);
+        const view = lookAt(eye, target, [0, 1, 0]), proj = perspective(fov, aspect, walkCam ? .12 : .1, walkCam ? 150 : 170), vp = multiply(proj, view);
+        // Heading frustum for culling in walk views: anything clearly behind or beside the view cone is skipped (static meshes only; labels/entities have their own rules).
+        const hdg = walkCam ? (input.camHeading ?? 0) : 0, fwdX = Math.sin(hdg), fwdZ = Math.cos(hdg), halfH = Math.atan(Math.tan(fov / 2) * aspect) + .42;
+        const inCone = (x, z, pad) => { if (!walkCam) return true; const dx = x - eye[0], dz = z - eye[2], d = Math.hypot(dx, dz); if (d <= pad + 6) return true; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * fwdX + dz * fwdZ) / d))); return ang <= halfH + Math.asin(Math.min(1, pad / d)); };
         if (skyProg) {
             const fw = [target[0] - eye[0], target[1] - eye[1], target[2] - eye[2]], fl = Math.hypot(...fw) || 1, F = [fw[0] / fl, fw[1] / fl, fw[2] / fl];
             let R = [-F[2], 0, F[0]]; const rl = Math.hypot(...R) || 1; R = [R[0] / rl, 0, R[2] / rl];
             const U = [R[1] * F[2] - R[2] * F[1], R[2] * F[0] - R[0] * F[2], R[0] * F[1] - R[1] * F[0]];
             gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.useProgram(skyProg);
             gl.uniform3f(skyLoc.f, F[0], F[1], F[2]); gl.uniform3f(skyLoc.r, R[0], R[1], R[2]); gl.uniform3f(skyLoc.u, U[0], U[1], U[2]);
-            gl.uniform1f(skyLoc.tan, Math.tan(Math.PI / 6)); gl.uniform1f(skyLoc.aspect, Math.max(.2, input.width / input.height));
+            gl.uniform1f(skyLoc.tan, Math.tan(fov / 2)); gl.uniform1f(skyLoc.aspect, aspect);
             gl.uniform3f(skyLoc.sun, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1f(skyLoc.night, night); gl.uniform1f(skyLoc.time, input.time || 0);
             gl.bindBuffer(gl.ARRAY_BUFFER, skyBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
         }
-        shadowPass(target, q);
+        shadowPass(walkCam ? [eye[0] + fwdX * 14, 0, eye[2] + fwdZ * 14] : target, q);
         shadowList = []; shadowInst = [];
         gl.useProgram(program);
         gl.uniform3f(loc.eye, eye[0], eye[1], eye[2]); lastEye = eye; gl.uniform1f(nightLoc, night);
-        gl.uniform1i(loc.shadowMap, 0); gl.uniformMatrix4fv(loc.lightVP, false, lightVP); gl.uniform1f(loc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(loc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(loc.shadowQ, shadowQ);
+        gl.uniform1i(loc.shadowMap, 0); gl.uniformMatrix4fv(loc.lightVP, false, lightVP); gl.uniform1f(loc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(loc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(loc.shadowQ, shadowQ); gl.uniform1f(loc.detail, detailQ);
         floor(-140, -120, domain_1.WORLD.width + 280, domain_1.WORLD.height + 250, "#5f8f48", vp, -.2); // outer ground so the horizon is land, not clear-colour
         {
             // Surrounding environment (treeline, distant wings, skyline, hills): ONE baked mesh per quality.
@@ -547,7 +561,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         for (let i = 0; i < 4; i++) { box(103.2, 64.4 + i * 3.8, .5, .35, .45, "#6b5a45", vp, 0); } // spectator benches
         }, vp);
         const propRadius = q === "low" ? 26 : q === "high" ? 72 : 48;
-        const nearCamera = (x, z, pad = 0) => Math.hypot(x - input.camX, z - input.camY) <= propRadius + pad;
+        const nearCamera = (x, z, pad = 0) => Math.hypot(x - input.camX, z - input.camY) <= propRadius + pad && inCone(x, z, pad);
         let dressing = 0;
         const flagCols = ["#3675e7", "#ffd166", "#e8644a", "#4ce4d9", "#a15cff", "#ff8fb3", "#65c7ff", "#8bd450", "#ffb24d"];
         if (q !== "low") {
@@ -934,6 +948,8 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             return true;
         };
         for (const e of input.entities) {
+            if (fpCam && e.id === input.meId) continue; // you are the camera: no body inside your own eyes
+            if (walkCam && e.id !== input.meId && !inCone(e.x, e.y, 2)) { culled++; continue; } // people behind you are not drawn
             if (e.npc && ++npcCount > npcLimit) {
                 culled++;
                 continue;
@@ -941,8 +957,9 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             let mo = motion.get(e.id); if (!mo) { if (motion.size > 300) motion.clear(); mo = { x: e.x, y: e.y, dx: 0, dz: 1, yaw: 0, phase: hash2(e.x, e.y) * 6, speed: 0, t: input.time }; motion.set(e.id, mo); }
             const dtm = Math.max(.001, Math.min(.2, input.time - mo.t)), vx = (e.x - mo.x) / dtm, vz = (e.y - mo.y) / dtm, spd = Math.hypot(vx, vz);
             if (spd > .3) { mo.dx = vx / spd; mo.dz = vz / spd; }
-            { const want = Math.atan2(mo.dx, mo.dz); let dy = want - (mo.yaw ?? 0); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); mo.yaw = (mo.yaw ?? 0) + dy * Math.min(1, dtm * 12); }
+            { const own = e.id === input.meId && camMode === "chase" && spd <= .3; const want = own ? (input.camHeading ?? 0) : Math.atan2(mo.dx, mo.dz); let dy = want - (mo.yaw ?? 0); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); mo.yaw = (mo.yaw ?? 0) + dy * Math.min(1, dtm * 12); }
             mo.speed += (Math.min(1, spd / 4.5) - mo.speed) * Math.min(1, dtm * 10);
+            mo.rn = (mo.rn ?? 0) + (Math.max(0, Math.min(1, (spd - 4.2) / 1.6)) - (mo.rn ?? 0)) * Math.min(1, dtm * 8); // walk -> run blend
             mo.phase += dtm * (5 + Math.min(spd, 7) * 1.5) * (mo.speed > .05 ? 1 : .25);
             mo.x = e.x; mo.y = e.y; mo.t = input.time;
             const swg = Math.sin(mo.phase) * .24 * mo.speed;
@@ -968,17 +985,20 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     draw("box", lx(sx, .6), .07, lz(sx, .6), .2, .14, .34, BOOT, vp, 0, body);
                 }
             } else {
-                for (const s of [-1, 1]) {
-                    const oz = s * swg, lift = Math.max(0, s < 0 ? Math.sin(mo.phase) : -Math.sin(mo.phase)) * .06 * mo.speed;
-                    draw("box", lx(s * .16, oz * .55), .55 + lift * .5, lz(s * .16, oz * .55), .23, .28, .25, PANTS, vp, 0, body);   // thigh
-                    draw("box", lx(s * .16, oz), .3 + lift, lz(s * .16, oz), .17, .34, .19, PANTS, vp, 0, body);                     // shin
-                    draw("box", lx(s * .16, oz + .04), .07 + lift, lz(s * .16, oz + .04), .2, .14, .34, BOOT, vp, 0, body);          // boot
-                    if (hiQ) {
-                        draw("box", lx(s * .16, oz + .1), .47 + lift * .7, lz(s * .16, oz + .1), .19, .1, .1, GLOVE, vp, 0, body);     // knee pad
-                        draw("box", lx(s * .29, oz * .55), .52 + lift * .5, lz(s * .29, oz * .55), .06, .16, .14, shadeHex(PANTS, .12), vp, 0, body); // cargo pocket
+                // Skeleton: hip -> knee -> ankle forward kinematics in the sagittal plane (y up, z forward). Thigh/shin are chains of small boxes along each bone.
+                const rn = mo.rn ?? 0, A = (.45 + .35 * rn) * mo.speed, nseg = hiQ ? 3 : 2, L1 = .3, L2 = .3;
+                const legPose = (s) => { const ph = mo.phase + (s < 0 ? 0 : Math.PI), a = Math.sin(ph) * A, k = (.08 + Math.max(0, Math.cos(ph)) * .95 * (1 + .5 * rn)) * mo.speed, kz = L1 * Math.sin(a), ky = -L1 * Math.cos(a); return { kz, ky, az: kz + L2 * Math.sin(a - k), ay: ky - L2 * Math.cos(a - k) }; };
+                const lp = [legPose(-1), legPose(1)], excess = Math.max(0, Math.min(.68 + lp[0].ay, .68 + lp[1].ay) - .08);
+                bob -= Math.min(.14, excess); // pelvis drops so the planted foot stays on the ground
+                const seg = (sx, y0, z0, y1, z1, w, d, color) => { const dy = y1 - y0, dz = z1 - z0, len = Math.hypot(dy, dz), h = Math.max(.1, len / nseg * 1.25); for (let i = 0; i < nseg; i++) { const f = (i + .5) / nseg; draw("box", lx(sx, z0 + dz * f), y0 + dy * f, lz(sx, z0 + dz * f), w, h, d, color, vp, 0, body); } };
+                [-1, 1].forEach((s, idx) => {
+                    const P = lp[idx], hy = .68 + bob, sx = s * .16;
+                    seg(sx, hy, 0, hy + P.ky, P.kz, .22, .24, PANTS);                         // thigh
+                    seg(sx, hy + P.ky, P.kz, hy + P.ay, P.az, .17, .19, PANTS);               // shin
+                    draw("box", lx(sx, P.az + .05), hy + P.ay - .01, lz(sx, P.az + .05), .2, .14, .34, BOOT, vp, 0, body); // boot
+                    if (hiQ) draw("box", lx(sx, P.kz + .08), hy + P.ky, lz(sx, P.kz + .08), .19, .1, .1, GLOVE, vp, 0, body); // knee pad
+                });
                     }
-                }
-            }
             draw("box", e.x, .68 + bob, e.y, .5, .14, .33, "#16181d", vp, 0, body);                                                  // belt
             if (hiQ) draw("box", lx(0, .17), .68 + bob, lz(0, .17), .1, .09, .03, "#d4a64a", vp, 0, body);                           // buckle
             draw("box", e.x, .8 + bob, e.y, .46, .2, .3, shadeHex(outfit, -.2), vp, 0, body);                                        // waist
@@ -1014,15 +1034,17 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                 draw("box", lx(s * .43, .03), 1.66 + bob + hy, lz(s * .43, .03), .14, .3, .15, skin, vp, 0, body + wig);
                 draw("sphere", lx(s * .43, .03), 1.84 + bob + hy, lz(s * .43, .03), .16, .16, .16, GLOVE, vp);
             };
-            const armDown = (s, oz) => {
-                draw("box", lx(s * .4, oz), 1.1 + bob, lz(s * .4, oz), .16, .32, .17, sleeve, vp, 0, body);
-                draw("box", lx(s * .4, oz * 1.25 + .02), .84 + bob, lz(s * .4, oz * 1.25 + .02), .14, .28, .15, skin, vp, 0, body);
-                draw("sphere", lx(s * .4, oz * 1.3 + .03), .68 + bob, lz(s * .4, oz * 1.3 + .03), .15, .15, .15, GLOVE, vp);
+            const armDown = (s) => { // shoulder -> elbow -> wrist, swinging opposite the same-side leg; elbows bend more when running
+                const rn2 = mo.rn ?? 0, ph = mo.phase + (s < 0 ? Math.PI : 0), b = Math.sin(ph) * (.55 + .3 * rn2) * mo.speed, ef = .12 + (.18 + .55 * rn2) * mo.speed;
+                const sy = 1.24 + bob, sx = s * .4, ez = .3 * Math.sin(b), ey = sy - .3 * Math.cos(b), wz = ez + .27 * Math.sin(b + ef), wy = ey - .27 * Math.cos(b + ef);
+                const n = hiQ ? 3 : 2, put = (y0, z0, y1, z1, w, d, c) => { const dy = y1 - y0, dz = z1 - z0, h = Math.max(.1, Math.hypot(dy, dz) / n * 1.25); for (let i = 0; i < n; i++) { const f = (i + .5) / n; draw("box", lx(sx, z0 + dz * f), y0 + dy * f, lz(sx, z0 + dz * f), w, h, d, c, vp, 0, body); } };
+                put(sy, 0, ey, ez, .16, .17, sleeve); put(ey, ez, wy, wz, .14, .15, skin);
+                draw("sphere", lx(sx, wz + .02), wy - .05, lz(sx, wz + .02), .15, .15, .15, GLOVE, vp);
             };
-            if (em === "cheer" || em === "dance") armUp(-1, em === "dance" ? Math.sin(tt * 7) * .5 : -.2, 0); else armDown(-1, swg);
+            if (em === "cheer" || em === "dance") armUp(-1, em === "dance" ? Math.sin(tt * 7) * .5 : -.2, 0); else armDown(-1);
             if (waving || em === "cheer" || em === "dance") armUp(1, Math.sin(tt * 9) * .5, 1.3);
             else if (em === "laugh") { draw("box", lx(.32, .12), 1.0 + bob, lz(.32, .12), .16, .3, .17, sleeve, vp, 0, body); draw("box", lx(.24, .2), .9 + bob, lz(.24, .2), .14, .26, .15, skin, vp, 0, body); }
-            else armDown(1, -swg);
+            else armDown(1);
             if (hiQ && !part(e, slots.backpack)) draw("box", lx(0, -.27), 1.06 + bob, lz(0, -.27), .38, .46, .18, shadeHex(outfit, -.38), vp, 0, body); // small tactical pack
             drawn += hiQ ? 34 : 22;
             part(e, slots.shoes);

@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_PITCH, clampPitch, clampZoom } from "../../lib/world-camera";
+import { DEFAULT_PITCH, clampPitch, clampZoom, clampLook, wrapHeading, headingForward, headingRight } from "../../lib/world-camera";
 import { JobsSheet } from "../../components/JobsSheet";
 import { ShiftSheet } from "../../components/ShiftSheet";
 import { TasksPanel } from "../../components/TasksPanel";
@@ -40,7 +40,7 @@ import {
   type PlayerSnapshot,
   type ServerMessage,
 } from "@campus/domain";
-import { api, clearToken, getToken, WS_URL } from "../../lib/api";
+import { api, clearToken, getToken, warmServers, WS_URL } from "../../lib/api";
 import { drawWorld, type Entity } from "../../lib/world-render";
 import { createWorld3DRenderer } from "../../lib/world-3d-render";
 import { createAssetStreamer, type AssetStreamer } from "../../lib/asset-loader";
@@ -79,7 +79,10 @@ export default function Play() {
   const [population, setPopulation] = useState(1);
   const [zoneName, setZoneName] = useState("Main Gate");
   const [renderMode, setRenderMode] = useState<"3D" | "2D">("3D");
-  const [mapPosition, setMapPosition] = useState<{ x: number; y: number }>({ x: SPAWN.x, y: SPAWN.y });
+  // The minimap marker is updated straight on the DOM (no React re-render of the whole world screen while walking).
+  const mapDot = useRef<SVGCircleElement>(null);
+  const mapRing = useRef<SVGCircleElement>(null);
+  const mapCone = useRef<SVGPolygonElement>(null);
   const [near, setNear] = useState<string | null>(null);
   const [sitOk, setSitOk] = useState(false);
   const gateRef = useRef<GateState>({ gx: GATE_POST.x, gy: GATE_POST.y, open: 0 });
@@ -117,6 +120,16 @@ export default function Play() {
   const knob = useRef<HTMLDivElement>(null);
   const camRef = useRef({ x: SPAWN.x, y: SPAWN.y });
   const orbit = useRef({ yaw: 0, zoom: 1, pitch: DEFAULT_PITCH });
+  // Walk views: "fp" is you looking out of your own eyes, "chase" is a close over-the-shoulder view, "orbit" is the old overview camera.
+  type ViewMode = "fp" | "chase" | "orbit";
+  const viewRef = useRef<ViewMode>("chase");
+  const [viewMode, setViewMode] = useState<ViewMode>("chase");
+  const lookRef = useRef({ heading: Math.atan2(60 - SPAWN.x, 48 - SPAWN.y), pitch: -0.03 }); // spawn facing up the boulevard toward the Commons
+  const walkRef = useRef({ phase: 0, amp: 0 });
+  const sprintRef = useRef(false);
+  const [sprintOn, setSprintOn] = useState(false);
+  const [hudOpen, setHudOpen] = useState(false);
+  const [slowConnect, setSlowConnect] = useState(false);
   /** Showcase camera: a short eased reveal (gate -> boulevard -> commons) on the first entry of a session. The live world stays controllable; any camera input cancels it. */
   const intro = useRef<{ t0: number } | null>(null);
   const introChecked = useRef(false);
@@ -155,6 +168,14 @@ export default function Play() {
     if (stageLabels.current) stageLabels.current.style.opacity = next === "3D" ? "1" : "0";
     say(next === "3D" ? "3D campus view enabled" : "Lightweight 2D view enabled");
   }
+  function cycleView() {
+    const order: ViewMode[] = ["chase", "fp", "orbit"];
+    const next = order[(order.indexOf(viewRef.current) + 1) % order.length]!;
+    viewRef.current = next; setViewMode(next); intro.current = null;
+    if (next === "orbit") { orbit.current = { yaw: 0, zoom: 1, pitch: DEFAULT_PITCH }; setCompassYaw(0); try { document.exitPointerLock?.(); } catch { /* not locked */ } }
+    say(next === "fp" ? "First-person view" : next === "chase" ? "Third-person: see your avatar walk" : "Overview camera");
+  }
+  function toggleSprint() { sprintRef.current = !sprintRef.current; setSprintOn(sprintRef.current); }
   function cycleQuality() {
     const order: (QualityLevel | "auto")[] = ["auto", "low", "medium", "high"];
     const next = order[(order.indexOf(quality) + 1) % order.length]!;
@@ -195,6 +216,7 @@ export default function Play() {
   // ---- bootstrap profile ----
   useEffect(() => {
     if (!getToken()) return void router.replace("/start");
+    warmServers(); // wake sleeping free-tier services while the profile loads
     api.me().then((r) => setProfile(r.profile)).catch(() => {
       clearToken();
       router.replace("/start");
@@ -229,6 +251,7 @@ export default function Play() {
             others.current.clear(); // welcome is a full resync
             ingest(m.players);
             setPhase("live");
+            setSlowConnect(false);
             break;
           case "snapshot":
             ingest(m.players); // newly visible players, sent in full once
@@ -270,9 +293,9 @@ export default function Play() {
         window.clearInterval(pingTimer);
         if (closed) return;
         const n = ++reconnect.current.tries;
-        if (n > 8) return setPhase("failed");
-        setPhase("reconnecting");
-        timer = window.setTimeout(connect, Math.min(4000, 400 * n));
+        if (n > 45) return setPhase("failed"); // free-tier servers can need ~1-2 minutes to wake: keep trying, keep the player walking
+        setPhase((p) => (p === "connecting" ? p : "reconnecting"));
+        timer = window.setTimeout(connect, Math.min(3000, 400 * n));
       };
     };
 
@@ -294,33 +317,51 @@ export default function Play() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile]);
 
-  // ---- orbit camera: drag to rotate, pinch / wheel to zoom (canvas only; HUD controls are untouched) ----
+  // ---- look: drag the world to turn your head (first-person / chase), or orbit in overview. HUD controls are untouched. ----
   useEffect(() => {
     const ptrs = new Map<number, { x: number; y: number }>();
     let pinch = 0;
     const onCanvas = (e: Event) => (e.target as HTMLElement | null)?.tagName === "CANVAS";
-        const down = (e: PointerEvent) => { if (!onCanvas(e)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); pinch = 0; };
+    const turn = (dx: number, dy: number, k: number) => {
+      const l = lookRef.current;
+      l.heading = wrapHeading(l.heading - dx * 0.0062 * k);
+      l.pitch = clampLook(l.pitch - dy * 0.0052 * k);
+    };
+    const down = (e: PointerEvent) => {
+      if (!onCanvas(e)) return;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); pinch = 0;
+      // Desktop: click the world to capture the mouse for true FPS look (Esc releases it).
+      if (e.pointerType === "mouse" && viewRef.current !== "orbit" && !overlayRef.current) { try { void (stage3d.current as HTMLCanvasElement | null)?.requestPointerLock?.(); } catch { /* unsupported */ } }
+    };
     const move = (e: PointerEvent) => {
       const p = ptrs.get(e.pointerId); if (!p) return;
       intro.current = null;
-      if (ptrs.size === 1) { orbit.current.yaw += (e.clientX - p.x) * 0.008; orbit.current.pitch = clampPitch(orbit.current.pitch + (e.clientY - p.y) * 0.004); setCompassYaw(orbit.current.yaw); }
-      p.x = e.clientX; p.y = e.clientY;
-      if (ptrs.size === 2) {
-        const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (pinch) orbit.current.zoom = clampZoom(orbit.current.zoom * (pinch / d));
-        pinch = d;
+      const dx = e.clientX - p.x, dy = e.clientY - p.y;
+      if (viewRef.current !== "orbit") { if (ptrs.size === 1 && !document.pointerLockElement) turn(dx, dy, 1); }
+      else {
+        if (ptrs.size === 1) { orbit.current.yaw += dx * 0.008; orbit.current.pitch = clampPitch(orbit.current.pitch + dy * 0.004); setCompassYaw(orbit.current.yaw); }
+        if (ptrs.size === 2) {
+          const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (pinch) orbit.current.zoom = clampZoom(orbit.current.zoom * (pinch / d));
+          pinch = d;
+        }
       }
+      p.x = e.clientX; p.y = e.clientY;
     };
+    const locked = (e: MouseEvent) => { if (document.pointerLockElement && viewRef.current !== "orbit") turn(e.movementX, e.movementY, 0.8); };
     const up = (e: PointerEvent) => { ptrs.delete(e.pointerId); pinch = 0; };
-    const wheel = (e: WheelEvent) => { if (!onCanvas(e)) return; intro.current = null; orbit.current.zoom = clampZoom(orbit.current.zoom * (e.deltaY > 0 ? 1.08 : 0.92)); };
+    const wheel = (e: WheelEvent) => { if (!onCanvas(e) || viewRef.current !== "orbit") return; intro.current = null; orbit.current.zoom = clampZoom(orbit.current.zoom * (e.deltaY > 0 ? 1.08 : 0.92)); };
     for (const c of [stage3d.current, stageLabels.current]) if (c) c.style.touchAction = "none";
     window.addEventListener("pointerdown", down); window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+    window.addEventListener("mousemove", locked);
     window.addEventListener("wheel", wheel, { passive: true });
     return () => {
       window.removeEventListener("pointerdown", down); window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
+      window.removeEventListener("mousemove", locked);
       window.removeEventListener("wheel", wheel);
+      try { document.exitPointerLock?.(); } catch { /* not locked */ }
     };
   }, []);
 
@@ -330,6 +371,7 @@ export default function Play() {
       const k = e.key.toLowerCase();
       keys.current.add(k);
       if ((k === "e" || k === "enter") && !overlayRef.current) interact();
+      if (k === "v" && !e.repeat && !overlayRef.current) cycleView();
     };
     const up = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase());
     window.addEventListener("keydown", down);
@@ -422,39 +464,60 @@ export default function Play() {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const k = keys.current;
-      let ix = (k.has("d") || k.has("arrowright") ? 1 : 0) - (k.has("a") || k.has("arrowleft") ? 1 : 0);
-      let iy = (k.has("s") || k.has("arrowdown") ? 1 : 0) - (k.has("w") || k.has("arrowup") ? 1 : 0);
-      ix += stick.current.x;
-      iy += stick.current.y;
+      const walk = renderModeRef.current === "3D" && viewRef.current !== "orbit";
+      let ix: number, iy: number;
+      if (walk) { // WASD / stick are relative to where you are looking; arrows, Q and R turn
+        ix = (k.has("d") ? 1 : 0) - (k.has("a") ? 1 : 0) + stick.current.x;
+        iy = (k.has("s") || k.has("arrowdown") ? 1 : 0) - (k.has("w") || k.has("arrowup") ? 1 : 0) + stick.current.y;
+        const turn = (k.has("arrowleft") || k.has("q") ? 1 : 0) - (k.has("arrowright") || k.has("r") ? 1 : 0);
+        if (turn) lookRef.current.heading = wrapHeading(lookRef.current.heading + turn * dt * 2.3);
+      } else {
+        ix = (k.has("d") || k.has("arrowright") ? 1 : 0) - (k.has("a") || k.has("arrowleft") ? 1 : 0) + stick.current.x;
+        iy = (k.has("s") || k.has("arrowdown") ? 1 : 0) - (k.has("w") || k.has("arrowup") ? 1 : 0) + stick.current.y;
+      }
       if (!introChecked.current && me.current.id) {
         introChecked.current = true;
         let seen = false;
         try { seen = sessionStorage.getItem("campus.intro") === "1"; sessionStorage.setItem("campus.intro", "1"); } catch { /* storage unavailable: still show once per mount */ }
         const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-        if (!seen && !reduce) intro.current = { t0: now };
+        if (!seen && !reduce && viewRef.current === "orbit") intro.current = { t0: now };
       }
       if (intro.current) {
         const u = Math.min(1, (now - intro.current.t0) / 5200), e = 1 - Math.pow(1 - u, 3);
         if (k.has("q") || k.has("r")) intro.current = null;
         else { orbit.current.yaw = 0.75 * (1 - e); orbit.current.pitch = 0.5 + (DEFAULT_PITCH - 0.5) * e; orbit.current.zoom = 1.55 - 0.55 * e; setCompassYaw(orbit.current.yaw); if (u >= 1) intro.current = null; }
       }
-      if (k.has("q")) orbit.current.yaw -= dt * 1.6;
-      if (k.has("r")) orbit.current.yaw += dt * 1.6;
-      if (renderModeRef.current === "3D" && orbit.current.yaw) {
-        const yc = Math.cos(orbit.current.yaw), ys = Math.sin(orbit.current.yaw);
-        const rx = ix * yc + iy * ys, ry = -ix * ys + iy * yc;
-        ix = rx; iy = ry;
+      if (!walk) {
+        if (k.has("q")) orbit.current.yaw -= dt * 1.6;
+        if (k.has("r")) orbit.current.yaw += dt * 1.6;
+        if (renderModeRef.current === "3D" && orbit.current.yaw) {
+          const yc = Math.cos(orbit.current.yaw), ys = Math.sin(orbit.current.yaw);
+          const rx = ix * yc + iy * ys, ry = -ix * ys + iy * yc;
+          ix = rx; iy = ry;
+        }
       }
       const mag = Math.hypot(ix, iy);
-      const live = phaseRef.current === "live" && !overlayRef.current;
-      if (live && mag > 0.05) {
-        const sp = WORLD.maxSpeed * 0.9 * Math.min(1, mag);
-        const m = slideMove(me.current.x, me.current.y, me.current.x + (ix / mag) * sp * dt, me.current.y + (iy / mag) * sp * dt);
+      // You can walk the moment the page loads: the server link may still be waking (free hosting), and it catches up when it connects.
+      const canWalk = phaseRef.current !== "failed" && !overlayRef.current;
+      const online = phaseRef.current === "live" && !overlayRef.current;
+      let speedNow = 0;
+      if (canWalk && mag > 0.05) {
+        const sprint = k.has("shift") || sprintRef.current;
+        const sp = WORLD.maxSpeed * (sprint ? 1.22 : 0.88) * Math.min(1, mag); // sprint stays under the server's speed tolerance (1.35x)
+        let dx = ix / mag, dy = iy / mag;
+        if (walk) {
+          const h = lookRef.current.heading, [fx, fz] = headingForward(h), [rx, rz] = headingRight(h), fw = -iy / mag, st = ix / mag;
+          dx = fx * fw + rx * st; dy = fz * fw + rz * st;
+        }
+        const m = slideMove(me.current.x, me.current.y, me.current.x + dx * sp * dt, me.current.y + dy * sp * dt);
+        speedNow = Math.hypot(m.x - me.current.x, m.y - me.current.y) / Math.max(dt, 1e-3);
         me.current.x = m.x;
         me.current.y = m.y;
       }
+      { const w = walkRef.current; w.amp += (Math.min(1, speedNow / 5) - w.amp) * Math.min(1, dt * 9); if (speedNow > 0.3) w.phase += dt * (7.5 + speedNow * 0.7); }
+      if (document.pointerLockElement && overlayRef.current) { try { document.exitPointerLock(); } catch { /* ignore */ } }
       sendAcc += dt;
-      if (sendAcc >= 0.05 && live) {
+      if (sendAcc >= 0.05 && online) {
         sendAcc = 0;
         send({ t: "input", seq: ++me.current.seq, x: me.current.x, y: me.current.y });
       }
@@ -466,9 +529,12 @@ export default function Play() {
       // zone + proximity HUD state
       const z = buildingAt(me.current.x, me.current.y)?.name ?? zoneAt(me.current.x, me.current.y)?.name ?? "Campus Paths";
       if (z !== lastZone) { lastZone = z; setZoneName(z); }
-      if (now - lastMapPublish >= 400) {
+      if (now - lastMapPublish >= 90) { // minimap marker + view cone move on the DOM directly: no React re-render while walking
         lastMapPublish = now;
-        setMapPosition({ x: me.current.x, y: me.current.y });
+        const mx = me.current.x, my = me.current.y, hd = lookRef.current.heading, fov = viewRef.current === "orbit" ? 0 : 0.62;
+        for (const c of [mapDot.current, mapRing.current]) if (c) { c.setAttribute("cx", mx.toFixed(2)); c.setAttribute("cy", my.toFixed(2)); }
+        const cone = mapCone.current;
+        if (cone) cone.setAttribute("points", fov ? `${mx.toFixed(2)},${my.toFixed(2)} ${(mx + Math.sin(hd - fov) * 11).toFixed(2)},${(my + Math.cos(hd - fov) * 11).toFixed(2)} ${(mx + Math.sin(hd + fov) * 11).toFixed(2)},${(my + Math.cos(hd + fov) * 11).toFixed(2)}` : "");
       }
       let nearest: string | null = null;
       let nearestDistance = Number.POSITIVE_INFINITY;
@@ -528,6 +594,11 @@ export default function Play() {
   const overlayRef = useRef(false);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => {
+    if (phase === "live") return setSlowConnect(false);
+    const t = window.setTimeout(() => setSlowConnect(true), 5000);
+    return () => window.clearTimeout(t);
+  }, [phase]);
+  useEffect(() => {
     huntRef.current = hunt;
     huntTargetRef.current = hunt && hunt.stage !== "complete" ? HUNT_STOPS[hunt.step]?.pointId ?? null : null;
     overlayRef.current = !!sport || !!mini || !!reaction || !!quiz || !!board || jobsOpen || shiftOpen || hunt?.stage === "complete" || phoneOpen || (phase === "live" && !gateDone);
@@ -559,8 +630,14 @@ export default function Play() {
     // camera eases toward the player (smooth follow)
     const cam = camRef.current;
     const vo = viewOverride.current; // dev-only visual camera override (?view=x,y); never affects the server-side position
-    cam.x += ((vo ? vo.x : me.current.x) - cam.x) * 0.18;
-    cam.y += ((vo ? vo.y : me.current.y) - cam.y) * 0.18;
+    const walkView = renderModeRef.current === "3D" && viewRef.current !== "orbit" && !vo;
+    if (walkView) { cam.x = me.current.x; cam.y = me.current.y; } // walking views are locked to the avatar: zero camera lag
+    else {
+      cam.x += ((vo ? vo.x : me.current.x) - cam.x) * 0.18;
+      cam.y += ((vo ? vo.y : me.current.y) - cam.y) * 0.18;
+    }
+    const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const camBob = viewRef.current === "fp" && !reducedMotion ? Math.sin(walkRef.current.phase) * 0.042 * walkRef.current.amp : 0;
     const renderInput = { w, h, scale, time, camX: cam.x, camY: cam.y, meId: me.current.id || "me", entities, emoji: EMOTES, quality: q, activeHuntPointId: huntTargetRef.current };
     if (renderer3dRef.current && renderModeRef.current === "3D") {
       try {
@@ -571,7 +648,7 @@ export default function Play() {
           assetStreamerRef.current?.setZone(zoneAt(px, py)?.id, near);
         }
         const stats = renderer3dRef.current.render({
-          width: w, height: h, time, camX: cam.x, camY: cam.y, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
+          width: w, height: h, time, camX: cam.x, camY: cam.y, camMode: walkView ? viewRef.current : "orbit", camHeading: lookRef.current.heading, camLook: lookRef.current.pitch, camBob, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
           meId: me.current.id || "me", entities, quality: qualityRef.current, lighting: lightingRef.current,
           activeHuntPointId: huntTargetRef.current, gateOpen: gateRef.current.open,
         }, labelsCtx);
@@ -792,8 +869,9 @@ export default function Play() {
             <text x={zone.x + zone.w / 2} y={zone.y + zone.h / 2 + 1.4} fontSize="3.1" textAnchor="middle" fontWeight="700" fill="#fff" stroke="#172443" strokeWidth=".5" paintOrder="stroke">{zone.id === "student_commons" ? "COMMONS" : zone.id === "academic_block" ? "ACADEMIC" : zone.id === "hostel_street" ? "HOSTELS" : zone.id === "food_court" ? "FOOD" : zone.id === "sports_ground" ? "SPORTS" : zone.id === "creator_hub" ? "CREATOR" : zone.id === "event_arena" ? "ARENA" : zone.id === "main_gate" ? "GATE" : "LIBRARY"}</text>
           </g>)}
           {INTERACTION_POINTS.filter((point) => !point.hidden).map((point) => <g key={point.id}><circle cx={point.x} cy={point.y} r="2.1" fill={point.activity === "quiz" ? "#53d6d1" : point.activity === "reaction" ? "#ffd166" : point.activity === "hunt" ? "#65c7ff" : "#fff"} stroke="#0c1730" strokeWidth=".8" /><text x={point.x + 2.2} y={point.y + .9} fontSize="3.2" fill="#fff" stroke="#0c1730" strokeWidth=".5" paintOrder="stroke">{point.activity === "quiz" ? "Q" : point.activity === "reaction" ? "!" : point.activity === "hunt" ? "H" : "i"}</text></g>)}
-          <circle cx={mapPosition.x} cy={mapPosition.y} r="2.7" fill="#fff" stroke="#2f6bff" strokeWidth="1.5" />
-          <circle cx={mapPosition.x} cy={mapPosition.y} r="5" fill="none" stroke="#fff" strokeWidth=".65" opacity=".75" />
+          <polygon ref={mapCone} points="" fill="#7fb2ff" opacity=".38" />
+          <circle ref={mapDot} cx={SPAWN.x} cy={SPAWN.y} r="2.7" fill="#fff" stroke="#2f6bff" strokeWidth="1.5" />
+          <circle ref={mapRing} cx={SPAWN.x} cy={SPAWN.y} r="5" fill="none" stroke="#fff" strokeWidth=".65" opacity=".75" />
         </svg>
         <div className="minimap-legend"><span><i className="you-dot" /> YOU</span><span><i className="quiz-dot" /> QUIZ</span><span><i className="reaction-dot" /> REACTION</span><span><i className="hunt-dot" /> HUNT</span></div>
       </aside>
@@ -801,17 +879,19 @@ export default function Play() {
       {mini && <MiniGame kind={mini} onExit={() => setMini(null)} />}
       {sport && <SportsGame sport={sport} onExit={() => setSport(null)} />}
       <div className="hud-top">
-        <div className="hud-group">
-          <div className="pill">{profile ? CAMPUSES[profile.campus].name : "…"}</div>
+        <div className="hud-group hud-main">
+          <div className="pill campus-name">{profile ? CAMPUSES[profile.campus].name : "…"}</div>
           <div className="pill" aria-live="polite"><HudIcon n="coin" /> {profile?.coins ?? 0}</div>
           <div className="pill"><HudIcon n="star" /> {profile?.reputation ?? 0}</div>
-          <div className="pill lvl">Lv {levelFor(profile?.reputation ?? 0).level} · {levelFor(profile?.reputation ?? 0).title}</div>
-          <button className="pill" onClick={() => setTasksOpen((o) => !o)} aria-pressed={tasksOpen}><HudIcon n="tasks" /> Tasks</button>
+          <div className="pill lvl">Lv {levelFor(profile?.reputation ?? 0).level}<span className="lvl-title"> · {levelFor(profile?.reputation ?? 0).title}</span></div>
+          <button className="pill hud-more" onClick={() => setHudOpen((o) => !o)} aria-expanded={hudOpen} aria-label="More controls">{hudOpen ? "✕" : "☰"}</button>
         </div>
-        <div className="hud-group">
+        <div className={`hud-group hud-secondary${hudOpen ? " open" : ""}`}>
+          <button className="pill" onClick={() => setTasksOpen((o) => !o)} aria-pressed={tasksOpen}><HudIcon n="tasks" /> Tasks</button>
+          <button className="pill" onClick={cycleView} aria-label="Change camera view (V)"><HudIcon n="cube" /> {viewMode === "fp" ? "First-person" : viewMode === "chase" ? "Third-person" : "Overview"}</button>
           <button className="pill" onClick={cycleRenderer} aria-label="Switch between 3D and lightweight 2D campus graphics"><HudIcon n="cube" /> {renderMode}</button>
           <button className="pill" onClick={cycleQuality} aria-label="Graphics quality"><HudIcon n="gauge" /> {quality === "auto" ? "Auto" : quality}</button>
-          <button className="pill" onClick={() => { orbit.current = { yaw: 0, zoom: 1, pitch: DEFAULT_PITCH }; setCompassYaw(0); }} aria-label="Reset camera (compass)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: `rotate(${compassYaw}rad)`, transition: "transform .1s" }}><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg> Reset</button>
+          {viewMode === "orbit" && <button className="pill" onClick={() => { orbit.current = { yaw: 0, zoom: 1, pitch: DEFAULT_PITCH }; setCompassYaw(0); }} aria-label="Reset camera (compass)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: `rotate(${compassYaw}rad)`, transition: "transform .1s" }}><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg> Reset</button>}
           <button className="pill" onClick={cycleLighting} aria-label="Time of day"><HudIcon n={lighting === "day" ? "sun" : lighting === "night" ? "moon" : "festival"} /> {lighting === "day" ? "Day" : lighting === "night" ? "Night" : "Festival"}</button>
           <button className="pill" onClick={openBoard}><HudIcon n="trophy" /> Campus Wars</button>
           <div className="pill"><small>online</small> {population}</div>
@@ -823,10 +903,14 @@ export default function Play() {
       {diag && canDiag && <button className="diag-btn" onClick={() => { if (sampler.current.recording) { sampler.current.stop(); setPerfMsg("Stopped"); } else { sampler.current.start(performance.now()); setPerfMsg("REC 0s"); } }}>{sampler.current.recording ? "■ Stop" : "● Record 60s route"} {perfMsg}</button>}
       {toast && <div className="toast" role="status">{toast}</div>}
 
+      {viewMode === "fp" && renderMode === "3D" && <div className="reticle" aria-hidden="true" />}
       <div className="hud-bottom">
-        <div className="stick" onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); onStick(e); }}
-          onPointerMove={onStick} onPointerUp={onStick} onPointerCancel={onStick} aria-label="Move">
-          <div className="knob" ref={knob} />
+        <div className="left-controls">
+          <button className={`emote sprint${sprintOn ? " on" : ""}`} aria-label="Sprint (hold Shift)" aria-pressed={sprintOn} onClick={toggleSprint}>⚡</button>
+          <div className="stick" onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); onStick(e); }}
+            onPointerMove={onStick} onPointerUp={onStick} onPointerCancel={onStick} aria-label="Move">
+            <div className="knob" ref={knob} />
+          </div>
         </div>
         <div className="actions">
           <div className="emotes">
@@ -848,16 +932,18 @@ export default function Play() {
 
       <PlayNav />
 
-      {phase !== "live" && (
+      {(phase === "connecting" || phase === "reconnecting") && (
+        <div className="conn-chip" role="status">
+          <i className="conn-dot" />{phase === "connecting" ? "Connecting to campus…" : "Reconnecting…"}
+          {slowConnect && <small>Waking the campus server, it can take a minute. Keep exploring.</small>}
+        </div>
+      )}
+      {phase === "failed" && (
         <div className="conn">
-          {phase === "connecting" && "Connecting to campus…"}
-          {phase === "reconnecting" && "Reconnecting…"}
-          {phase === "failed" && (
-            <div className="card sheet">
-              <h3>Can't reach campus</h3>
-              <button className="btn" onClick={() => location.reload()}>Try again</button>
-            </div>
-          )}
+          <div className="card sheet">
+            <h3>Can't reach campus</h3>
+            <button className="btn" onClick={() => location.reload()}>Try again</button>
+          </div>
         </div>
       )}
 
