@@ -1,0 +1,22 @@
+/* Phase 2: identity editor, achievements, home room editor. Uses the existing design tokens. */
+.ok-msg { color: var(--good); margin: 4px 0; font-weight: 600; }
+.input.bio { resize: vertical; min-height: 84px; font: inherit; }
+.room-card { display: grid; gap: 12px; margin-top: 16px; }
+.room-head { display: flex; align-items: baseline; justify-content: space-between; }
+.room-head h3 { margin: 0; }
+.room-box { width: 100%; display: flex; justify-content: center; }
+.room-canvas { border-radius: var(--radius-sm); touch-action: manipulation; max-width: 100%; box-shadow: 0 0 0 1px var(--line); }
+.room-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.room-actions .btn { min-height: var(--touch); }
+.tray { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
+.tray-item { position: relative; flex: 0 0 auto; width: 76px; min-height: var(--touch); display: grid; justify-items: center; gap: 2px; padding: 6px 4px;
+  background: var(--surface-2); border: 2px solid transparent; border-radius: var(--radius-sm); color: var(--text); cursor: pointer; scroll-snap-align: start; }
+.tray-item[aria-pressed="true"] { border-color: var(--accent); }
+.tray-item:disabled { opacity: 0.4; cursor: not-allowed; }
+.tray-item span { font-size: 11px; line-height: 1.2; text-align: center; }
+.tray-item i { position: absolute; top: 2px; right: 4px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--accent); }
+.ach { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ach li { display: grid; gap: 2px; opacity: 0.6; }
+.ach li.got { opacity: 1; }
+.ach span { color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .tray { scroll-behavior: auto; } }
