@@ -22,7 +22,20 @@ const bench = (p: P, x: number, z: number, along: "x" | "z" = "x") => {
   else { p.box(x + .1, z + .1, .35, .12, .45, K.steelDk); p.box(x + .1, z + w - .22, .35, .12, .45, K.steelDk); }
 };
 const planter = (p: P, x: number, z: number, w: number, d: number, plant = K.green) => { p.box(x, z, w, d, .5, K.terra); p.sph(x + w / 2, .85, z + d / 2, w * .95, .7, d * .95, plant); };
-const tree = (p: P, x: number, z: number, s = 1, c = K.green) => { p.cyl(x, z, .35 * s, 2.2 * s, K.woodDk); p.sph(x, 3.1 * s, z, 2.6 * s, 2.0 * s, 2.6 * s, c); p.sph(x + .5 * s, 3.7 * s, z - .3 * s, 1.8 * s, 1.4 * s, 1.8 * s, K.leaf); };
+const treeHash = (x: number, z: number) => { const v = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return v - Math.floor(v); };
+/** Campus tree with species variety (seeded by position): round shade tree, flat-topped acacia, tall neem/mango. */
+const tree = (p: P, x: number, z: number, s = 1, c = K.green) => {
+  const h = treeHash(x, z);
+  if (h < .4) { p.cyl(x, z, .35 * s, 2.2 * s, K.woodDk); p.sph(x, 3.1 * s, z, 2.6 * s, 2.0 * s, 2.6 * s, c); p.sph(x + .5 * s, 3.7 * s, z - .3 * s, 1.8 * s, 1.4 * s, 1.8 * s, K.leaf); return; }
+  if (h < .7) { // acacia: forked trunk, wide layered umbrella crown
+    const lean = (h * 9 % 1 - .5) * .5 * s;
+    p.cyl(x, z, .34 * s, 1.9 * s, K.woodDk); p.cyl(x + lean, z, .22 * s, 1.5 * s, K.woodDk, 1.7 * s); p.cyl(x - lean * 1.2, z + .15, .18 * s, 1.4 * s, K.woodDk, 1.8 * s);
+    p.sph(x, 3.55 * s, z, 4.4 * s, .75 * s, 3.9 * s, "#4f7d36"); p.sph(x + .5 * s, 3.95 * s, z - .3 * s, 3.1 * s, .55 * s, 2.7 * s, "#6c9a42"); p.sph(x - .9 * s, 3.75 * s, z + .5 * s, 2.1 * s, .5 * s, 1.9 * s, "#86b24c");
+    return;
+  }
+  p.cyl(x, z, .3 * s, 2.4 * s, "#5f432f"); // neem/mango: tall dense oval crown
+  p.sph(x, 4.0 * s, z, 2.5 * s, 3.1 * s, 2.4 * s, c === K.green ? "#2b6a3a" : c); p.sph(x + .5 * s, 4.5 * s, z - .3 * s, 1.6 * s, 1.8 * s, 1.5 * s, "#3f8a48"); p.sph(x - .5 * s, 3.7 * s, z + .4 * s, 1.3 * s, 1.5 * s, 1.3 * s, "#58a255");
+};
 const palm = (p: P, x: number, z: number, h = 4.6) => palmTree(p, x, z, h);
 const flag = (p: P, x: number, z: number, c: string, h = 6) => { p.cyl(x, z, .1, h, "#d9d9e4"); p.box(x + .05, z - .03, 1.5, .06, .9, c, h - .95); };
 const steps = (p: P, x: number, z: number, w: number, n: number, c = K.stone) => { for (let i = 0; i < n; i++) p.box(x, z + i * .6, w, .6, .12 * (n - i), c); };

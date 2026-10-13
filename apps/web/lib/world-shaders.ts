@@ -14,6 +14,7 @@ uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye;
 uniform float uEmissive; uniform float uAlpha; uniform float uNight;
 uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ; uniform float uDetail;
 uniform mat4 uLightVP; uniform sampler2D uShadowMap;
+uniform sampler2D uTexP; uniform sampler2D uTexG; uniform sampler2D uTexW; uniform float uTexOn;
 varying vec3 vNormal; varying vec3 vWorld; varying vec3 vColor;
 
 float h21(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
@@ -61,6 +62,16 @@ void main(){
  float roofSlope=(1.0-isUp)*step(.22,n.y)*step(1.9,vWorld.y)*(1.0-glass)*(1.0-foliage);
  float paving=ground*(1.0-grassy);
  float wall=(1.0-step(.3,abs(n.y)))*(1.0-glass)*(1.0-foliage);
+ // ---- sampled material-detail textures (original, tileable: R albedo detail, GB normal xy, A cavity). Taps are unconditional so mip selection stays valid. ----
+ vec4 tP=texture2D(uTexP,vWorld.xz*.6); vec4 tG=texture2D(uTexG,vWorld.xz*.9); vec4 tW=texture2D(uTexW,vec2(vWorld.x+vWorld.z,vWorld.y)*.85);
+ float dAo=1.0;
+ if(uTexOn>.5&&uDetail>.5){
+  float tf=1.0-smoothstep(35.0,110.0,dist);
+  vec2 pn=(tP.gb-.5)*2.0, gn=(tG.gb-.5)*2.0, wn=(tW.gb-.5)*2.0;
+  base*=mix(vec3(1.0),vec3(tP.r*2.0),paving*(.30+.20*tf)); base*=mix(vec3(1.0),vec3(tG.r*2.0),grassy*(.30+.25*tf)); base*=mix(vec3(1.0),vec3(tW.r*2.0),wall*(.18+.17*tf));
+  n=normalize(n+vec3(pn.x,0.0,pn.y)*.35*paving*tf+vec3(gn.x,0.0,gn.y)*.30*grassy*tf+vec3(wn.x*.7,wn.y*.8,wn.x*.7)*.22*wall*tf);
+  dAo=mix(1.0,tP.a,paving*tf)*mix(1.0,tG.a,grassy*tf)*mix(1.0,tW.a,wall*tf);
+ }
 
  // ---- procedural bump (grass blades, leaves, plaster) ----
  // Each detail layer runs only on pixels of its own material (and only when near enough): a pixel pays for ONE material, not all of them.
@@ -143,6 +154,7 @@ void main(){
  float hemi=n.y*.5+.5;
  float ao=mix(.55,1.0,smoothstep(0.0,2.6,vWorld.y));
  ao*=mix(1.0,.8,wall*(1.0-smoothstep(.0,.5,vWorld.y)));
+ ao*=dAo;
  vec3 sunCol=mix(vec3(2.35,1.98,1.5),vec3(.42,.55,1.05),uNight);
  vec3 skyAmb=mix(vec3(.46,.62,.98),vec3(.10,.14,.34),uNight)*mix(.50,.62,hemi);
  vec3 gndAmb=mix(vec3(.46,.36,.24),vec3(.07,.07,.12),uNight)*.55;

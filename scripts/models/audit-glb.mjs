@@ -128,7 +128,9 @@ for (const dir of ['assets/props', 'assets/characters']) {
   const d = join(PUBLIC, dir);
   if (existsSync(d)) for (const f of readdirSync(d)) if (f.endsWith('.glb')) onDisk.push(`${dir}/${f}`);
 }
-for (const f of onDisk) if (!registered.has(basename(f))) warnings.push(`${f}: GLB on disk but not in assets.json`);
+// Skinned characters are loaded by apps/web/lib/skinned-character.ts (not the static-mesh streamer), so they are not in assets.json.
+const SKINNED = new Set(['campus_body.glb', 'campus_body_lod.glb']);
+for (const f of onDisk) if (!registered.has(basename(f)) && !SKINNED.has(basename(f))) warnings.push(`${f}: GLB on disk but not in assets.json`);
 
 const rb = manifest.residentBudget;
 if (rb) {

@@ -1,0 +1,21 @@
+{
+  "_doc": "Curated Kenney (CC0) pieces for CAMPUS. generate-props.mjs bakes each via import-kenney.py (scale = metres), registers it as decor:<id> and places it. Campus-niche rule: only pieces that fit a Nigerian campus market/quad. Source staging: assets-library/kenney (see docs/ASSET_SOURCES.md).",
+  "items": [
+    { "id": "kn_stall_red", "kit": "fantasy-town", "model": "stall-red", "scale": 2.2 },
+    { "id": "kn_stall_green", "kit": "fantasy-town", "model": "stall-green", "scale": 2.2 },
+    { "id": "kn_produce_fruit", "kit": "mini-market", "model": "display-fruit", "scale": 2.4 },
+    { "id": "kn_produce_bread", "kit": "mini-market", "model": "display-bread", "scale": 2.4 }
+  ],
+  "placements": [
+    { "model": "kn_stall_red", "x": 91.6, "y": 88, "rot": 1.5708 },
+    { "model": "kn_stall_green", "x": 100.4, "y": 93, "rot": -1.5708 },
+    { "model": "kn_produce_fruit", "x": 91.2, "y": 99, "rot": 1.5708 },
+    { "model": "kn_stall_green", "x": 91.6, "y": 108, "rot": 1.5708 },
+    { "model": "kn_stall_red", "x": 100.4, "y": 112, "rot": -1.5708 },
+    { "model": "kn_produce_bread", "x": 100.8, "y": 101, "rot": -1.5708 },
+    { "model": "kn_stall_red", "x": 91.6, "y": 121, "rot": 1.5708 },
+    { "model": "kn_stall_green", "x": 100.4, "y": 124, "rot": -1.5708 },
+    { "model": "kn_produce_fruit", "x": 100.8, "y": 134, "rot": -1.5708 },
+    { "model": "kn_produce_bread", "x": 91.2, "y": 132, "rot": 1.5708 }
+  ]
+}

@@ -1,0 +1,26 @@
+# Third-party asset sources and licences (vetted 12 Oct 2026)
+
+Rule: nothing third-party enters `apps/web/public/assets` unless it is listed here with source, pinned commit, licence evidence and what was changed.
+
+| Asset | Source | Pinned commit | Licence | Evidence | Used for |
+|---|---|---|---|---|---|
+| Universal Animation Library (Standard/free) by Quaternius | github.com/J-Ponzo/gltf-universal-animation-library (third-party mirror of the itch.io download, 2025-06-10) | `e24c23cf2a1323488a3faa226ea7ea21f644b73e` | CC0 1.0 | Full CC0 text in the repo `LICENSE` (copy: `docs/licenses/quaternius-ual-CC0.txt`); README says CC0; quaternius.com pack page says CC0 and free for commercial use | Rig + mannequin + clips -> `apps/web/public/assets/characters/campus_body.glb` (derived, see below) |
+| Kenney full library (3D kits) | github.com/shorepine/kenney (mirror) | `3694c6879e487c108f55677be7dd2ca75b07cc3b` | CC0 | kenney.nl/support states all assets are CC0, commercial use OK, credit optional. CAUTION: the mirror's only `LICENSE.txt` is the Castle Kit's text (copy: `docs/licenses/kenney-mirror-LICENSE.txt`), not one per kit - rely on the kenney.nl statement, not that file | NOT YET USED. Candidate kits: `building`, `city-commercial`, `city-suburban`, `modular-buildings`, `nature`, `furniture`, `food`, `retro-urban`, `road`, `city-roads`, `mini-market`, `mini-arena`, `prototype` |
+
+Both mirrors are third-party. The originals are at quaternius.com and kenney.nl; before shipping, re-download the specific pack from the original and diff against the mirror file.
+
+## Derived asset: `campus_body.glb`
+Built by `python3 scripts/models/build-character.py --src <ual>/glTF --tris 2400` (numpy only, deterministic, ~5 s).
+Changes from the source: primitives merged and welded; 30 finger joints folded into the hands (53 -> 23 joints); quadric edge-collapse decimation 13,743 -> 2,399 triangles with a skin-weight penalty; smooth normals; top-4 weights; 10 clips kept (Idle_Loop, Idle_Talking_Loop, Walk_Loop, Jog_Fwd_Loop, Sprint_Loop, Sitting_Enter, Sitting_Idle_Loop, Sitting_Exit, Dance_Loop, Interact); static animation tracks dropped; one self-contained GLB (228 KiB). Credit: "Quaternius" (optional under CC0; recommended in the credits screen).
+
+## Kenney import caveat (important)
+`apps/web/lib/glb.ts` ignores textures (flat / vertex colour only). Kenney kits colour everything from a shared palette texture (`Textures/colormap.png`), so imported as-is they render WHITE. Before using any Kenney model, write an importer that bakes the palette colour into COLOR_0 per vertex (sample the colormap at each vertex UV; palette swatches are flat so this is exact), re-centres/scales to metres, welds, and writes a single GLB under the triangle/byte budgets in `assets.json`. Register each in `assets.json` with its source kit and this file.
+
+## Kenney importer (built 13 Oct 2026) and candidate results
+`python3 scripts/models/import-kenney.py --src <kenney>/3d/<kit>/<model>.glb --out <path>.glb [--max-tris N] [--scale S] [--tint "#src:#dst"]` bakes baseColorFactor and the palette texture (nearest texel at each vertex UV) into COLOR_0, applies node transforms, welds, writes one texture-less GLB, and prints its tris/size/bounds. Kits differ: Nature uses plain material colours, City/Retro kits use a palette texture; `KHR_materials_unlit` is accepted.
+Imported as candidates ONLY (NOT adopted, NOT in assets.json): `apps/web/public/assets/kenney-candidates/` = nature/tree_palmBend, furniture/bench, retro-urban/detail-light-single, nature/plant_bushLarge (all Kenney, CC0). `tests/visual/kenney-import.mjs` proves they load through the real `parseGlb` with baked colour.
+Visual verdict from a real render (docs/evidence/kenney/): the Kenney palm/bush/lamp render correctly but look flatter and more toy-like than the existing generated props (teal fronds, orange trunk), so they were NOT swapped into the live world. Use Kenney for filler and interiors (furniture, food, signage, market stalls) where the art brief tolerates simple shapes, recolour with `--tint` to the campus palette, and keep hero buildings/landmarks custom. Remember `assets.json` `size` stretches non-uniformly: derive w/d from the model's proportions at the wanted height.
+
+## Kenney importer (13 Oct 2026) and candidate results
+`python3 scripts/models/import-kenney.py --src <kenney>/3d/<kit>/<model>.glb --out <path>.glb [--max-tris N] [--scale S] [--tint "#src:#dst"]` bakes baseColorFactor and the palette texture into COLOR_0 (textures are ignored by the loader), applies node transforms, welds, writes one texture-less GLB. Four candidates (nature/tree_palmBend, furniture/bench, retro-urban/detail-light-single, nature/plant_bushLarge; all CC0) are in `apps/web/public/assets/kenney-candidates/` - NOT adopted, NOT in assets.json. `tests/visual/kenney-import.mjs` proves they load via the real `parseGlb`.
+Real-render verdict (docs/evidence/kenney/): they render correctly but look flatter and more toy-like than the current generated props, so they were not swapped in. Use Kenney for filler/interiors (furniture, food, signs, stalls), recolour with `--tint`, keep hero buildings custom. `assets.json` `size` stretches non-uniformly: derive w/d from model proportions.

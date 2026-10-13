@@ -225,6 +225,10 @@ export function gateRoadExtras(rect: { x: number; y: number; w: number; h: numbe
   p.cyl(tx, ty, .22, 3.6, K.steelDk); litSph(p, tx, 3.75, ty, .4, .3, .4, K.lamp);
   const plates: [string, number][] = [[K.blue, 3.1], [K.red, 2.5], [K.purple, 1.9], [K.green, 1.3]];
   plates.forEach(([c, py], i) => { const dir = i % 2 ? -1 : 1; p.box(tx - (dir > 0 ? .1 : 1.5), ty - .05, 1.6, .1, .42, c, py); p.box(tx + (dir > 0 ? 1.5 : -1.7), ty - .05, .2, .1, .42, c, py); });
+  if (!lowQ) for (let ly = y + 14; ly < y + h - 8; ly += 12) for (const sd of [-1, 1]) { // planted kerb strips with shrubs and a flower band, outside the walking lanes
+    const px = cx + sd * 9.4; p.box(px - .55, ly, 1.1, 5.2, .22, K.stone); p.box(px - .45, ly + .1, .9, 5.0, .06, K.leaf, .22);
+    p.sph(px, .6, ly + 1.2, .9, .6, .9, K.green); p.sph(px, .6, ly + 3.6, .9, .6, .9, K.leaf); p.box(px - .3, ly + 2.2, .6, .5, .12, FLAGS[(Math.floor(ly / 12) + (sd > 0 ? 2 : 0)) % 6]!, .3);
+  }
   if (!lowQ) for (let ly = y + 8; ly < y + h - 4; ly += 12) { p.cyl(cx - 7.4, ly, .1, 3.4, K.steel); p.box(cx - 7.3, ly - .03, .6, .05, 1.1, FLAGS[Math.floor(ly / 12) % 6]!, 1.8); }
 }
 

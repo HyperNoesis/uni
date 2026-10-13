@@ -177,8 +177,9 @@ function sports(p: P, q: Quality) {
   if (q !== "low") p.box(sx - .3, sz + 3.3, sw + .6, .12, .5, PAL.navy, 3.3);
   // Scoreboard on two poles, north side.
   p.box(94, 61.4, .3, .3, 3.2, PAL.steelDk); p.box(100, 61.4, .3, .3, 3.2, PAL.steelDk);
-  p.box(93.4, 61.2, 7.2, .5, 1.5, PAL.black, 3.2); p.box(93.7, 61.0, 6.6, .1, 1.1, "#0b1a33", 3.4);
-  for (let i = 0; i < 4; i++) p.box(94.2 + i * 1.5, 60.9, .9, .05, .6, i % 2 ? PAL.yellow : PAL.leaf, 3.6);
+  p.box(93.4, 61.2, 7.2, .5, 1.5, PAL.black, 3.2); p.box(93.7, 61.7, 6.6, .1, 1.1, "#0b1a33", 3.4); // display face on the SOUTH side, toward the pitch (was on the back)
+  for (let i = 0; i < 4; i++) p.box(94.2 + i * 1.5, 61.8, .9, .05, .6, i % 2 ? PAL.yellow : PAL.leaf, 3.6);
+  p.box(93.3, 61.65, 7.4, .08, .12, PAL.blue, 4.6); p.box(93.3, 61.65, 7.4, .08, .12, PAL.blue, 3.1); // blue trim frames the display
   // Corner floodlights + team benches/dugouts.
   floodlight(p, 80.5, 63, 8, .4); floodlight(p, 113.5, 63, 8, -.4);
   if (q !== "low") { floodlight(p, 80.5, 77, 8, -.4); floodlight(p, 113.5, 77, 8, .4); }
@@ -369,6 +370,10 @@ export function gate(p: P, q: Quality) {
   text3d(p, "CAMPUS", cx, z0 + 1.7, 5.55, .22, C.white, 1, .16, true);
   text3d(p, "CAMPUS", cx, z0 - .1, 5.55, .22, C.white, -1, .16, true);
   p.box(52.9, z0 + 1.6, 12.6, .12, .12, C.yellow, 5.4); p.box(52.9, z0 + 1.6, 12.6, .12, .12, C.yellow, 6.98);
+  // Roofed gatehouse: flat roof slab with parapet, yellow fascia, timber soffit and solar-canopy ribs spanning the pylons.
+  p.box(50.4, z0 - .7, 17.6, 3.4, .22, C.concreteDk, 7.55); p.box(50.4, z0 - .7, 17.6, .18, .5, C.navy, 7.77); p.box(50.4, z0 + 2.5, 17.6, .18, .5, C.navy, 7.77);
+  p.box(50.4, z0 - .72, 17.6, .1, .12, C.yellow, 7.43); p.box(51.0, z0 - .2, 16.4, 2.4, .08, C.wood, 7.47);
+  if (q !== "low") for (let i = 0; i < 9; i++) p.box(51.6 + i * 1.8, z0 + .1, .7, 1.8, .1, C.steelDk, 7.95);
   // Flag masts on the piers.
   for (const fx of [50.5, 68.0]) { p.cyl(fx, z0 + 1, .12, 3.2, C.steel, 7.4); p.box(fx, z0 + .95, 1.3, .06, .8, fx < 59 ? C.blue : C.yellow, 9.7); }
   // Gatehouse booths with canopy and glowing glazing.

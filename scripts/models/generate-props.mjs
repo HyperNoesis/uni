@@ -232,7 +232,14 @@ decorModels.goal_post = { build() {
   box(m, 0, H, 0, W + 0.16, 0.16, 0.16, "#ffffff");
   for (const sx of [-W / 2, W / 2]) { box(m, sx, H / 2, -D, 0.05, H, 0.05, "#ffffff"); box(m, sx, H, -D / 2, 0.05, 0.05, D, "#ffffff"); box(m, sx, 0.03, -D / 2, 0.05, 0.05, D, "#d9e2ec"); }
   box(m, 0, H, -D, W, 0.05, 0.05, "#ffffff");
-  box(m, 0, H / 2, -D, W, H, 0.015, "#e9eef5"); // back net panel
+  // Net: thin cords on a 0.5 m mesh (back + both sides, sagging toward the ground) instead of a solid opaque slab.
+  const NET = "#dfe6ee", nx = Math.round(W / 0.5), ny = 5;
+  for (let i = 0; i <= nx; i++) box(m, -W / 2 + i * (W / nx), H / 2, -D, 0.02, H, 0.02, NET);
+  for (let j = 1; j <= ny; j++) box(m, 0, j * (H / (ny + 1)), -D, W, 0.02, 0.02, NET);
+  for (const sx of [-W / 2, W / 2]) {
+    for (let j = 1; j <= ny; j++) box(m, sx, j * (H / (ny + 1)), -D / 2, 0.02, 0.02, D, NET);
+    for (let i = 1; i <= 3; i++) box(m, sx, H / 2, -i * (D / 4), 0.02, H, 0.02, NET);
+  }
   return m;
 } };
 

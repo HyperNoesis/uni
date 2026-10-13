@@ -875,8 +875,8 @@
       "zones": [
         "sports_ground"
       ],
-      "maxBytes": 24000,
-      "maxTriangles": 200,
+      "maxBytes": 85000,
+      "maxTriangles": 800,
       "size": {
         "w": 7.46,
         "h": 2.48,
@@ -1076,6 +1076,70 @@
         "d": 12.8
       },
       "yOffset": 0.12
+    },
+    {
+      "id": "kn_stall_red",
+      "url": "/assets/props/kn_stall_red.glb",
+      "slot": "decor:kn_stall_red",
+      "zones": [
+        "market_town"
+      ],
+      "maxBytes": 22000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 2.2,
+        "h": 2.72,
+        "d": 2.2
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "kn_stall_green",
+      "url": "/assets/props/kn_stall_green.glb",
+      "slot": "decor:kn_stall_green",
+      "zones": [
+        "market_town"
+      ],
+      "maxBytes": 25000,
+      "maxTriangles": 500,
+      "size": {
+        "w": 2.2,
+        "h": 2.72,
+        "d": 2.2
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "kn_produce_fruit",
+      "url": "/assets/props/kn_produce_fruit.glb",
+      "slot": "decor:kn_produce_fruit",
+      "zones": [
+        "market_town"
+      ],
+      "maxBytes": 32000,
+      "maxTriangles": 900,
+      "size": {
+        "w": 1.44,
+        "h": 1.24,
+        "d": 1.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "kn_produce_bread",
+      "url": "/assets/props/kn_produce_bread.glb",
+      "slot": "decor:kn_produce_bread",
+      "zones": [
+        "market_town"
+      ],
+      "maxBytes": 21000,
+      "maxTriangles": 500,
+      "size": {
+        "w": 1.68,
+        "h": 1.2,
+        "d": 1.44
+      },
+      "yOffset": 0
     }
   ]
 }

@@ -10,6 +10,7 @@ import { roofCrown, zoneGateway, southLawn, gateRoadExtras } from "./world-landm
 import { solveOrbitCamera, solveFirstPersonCamera, solveChaseCamera, DEFAULT_PITCH, FP_FOV } from "./world-camera";
 import { environment } from "./world-environment";
 import { palmTree } from "./world-flora";
+import { createCharacterAnimator, stepAnimation } from "./skinned-character";
 import { FRAG, SHADOW_VERT, SHADOW_VERT_I, SHADOW_FRAG, SKY_VERT, SKY_FRAG, SUN_DIR } from "./world-shaders";
 // Camera blockers: thin wall segments only (not whole building footprints), so the chase camera can follow you through a
 // doorway and sit inside a room instead of collapsing against your head. Visual only.
@@ -170,6 +171,31 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             gl.useProgram(program);
         } catch (e) { iprog = null; }
     }
+    // ---- Material-detail textures (paving / grass / wall): original tileable PNGs, units 1-3. Neutral 1x1 until loaded; uTexOn gates the shader. Failure just leaves the procedural look. ----
+    const texUnits = [["uTexP", 1, "detail_paving"], ["uTexG", 2, "detail_grass"], ["uTexW", 3, "detail_wall"]];
+    const setTexUniforms = (on) => { for (const pr of [program, iprog]) { if (!pr) continue; gl.useProgram(pr); texUnits.forEach(([n, u]) => gl.uniform1i(gl.getUniformLocation(pr, n), u)); gl.uniform1f(gl.getUniformLocation(pr, "uTexOn"), on); } gl.useProgram(program); };
+    try {
+        const texs = texUnits.map(([, u]) => { gl.activeTexture(gl.TEXTURE0 + u); const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([128, 128, 128, 255])); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); return t; });
+        gl.activeTexture(gl.TEXTURE0); setTexUniforms(0);
+        if (typeof Image !== "undefined") {
+            const aniso = gl.getExtension("EXT_texture_filter_anisotropic"); let loaded = 0;
+            texUnits.forEach(([, u, name], i) => {
+                const im = new Image();
+                im.onload = () => { try {
+                    gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, texs[i]);
+                    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im); gl.generateMipmap(gl.TEXTURE_2D);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                    if (aniso) gl.texParameterf(gl.TEXTURE_2D, aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(4, gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1));
+                    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.BROWSER_DEFAULT_WEBGL);
+                    gl.activeTexture(gl.TEXTURE0);
+                    if (++loaded === texUnits.length) setTexUniforms(1);
+                } catch (e) { /* keep procedural look */ } };
+                im.src = `/assets/textures/${name}.png`;
+            });
+        }
+    } catch (e) { /* no detail textures */ }
     // ---- Sun shadow map (WEBGL_depth_texture) and sky dome. Any failure just disables the feature. ----
     const makeProgram = (vs, fs, binds) => { const pr = gl.createProgram(); gl.attachShader(pr, shader(gl, gl.VERTEX_SHADER, vs)); gl.attachShader(pr, shader(gl, gl.FRAGMENT_SHADER, fs)); (binds || []).forEach(([nm, i]) => gl.bindAttribLocation(pr, i, nm)); gl.linkProgram(pr); if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error("program link failed"); return pr; };
     let shadowOn = false, shadowFbo = null, shadowDepth = null, shadowColor = null, shadowSize = 0, sprog = null, sprogI = null, sloc = null, slocI = null, skyProg = null, skyLoc = null, skyBuf = null, sdynBuf = null, sdynCount = 0;
@@ -346,10 +372,10 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         const npcLimit = domain_1.QUALITY_PROFILES[input.quality]?.npcs ?? 6;
         for (const e of input.entities) {
             if (e.npc && ++labelledNpcs > npcLimit) continue;
-            const p = project(e.x, e.npc ? 2.15 : 2.45, e.y);
+            const p = project(e.x, e.npc ? 1.95 : 2.1, e.y);
             if (!p || p.x < 0 || p.x > input.width || p.y < 0 || p.y > input.height)
                 continue;
-            const text = e.emote ? `${e.emote} ${e.name}` : e.name;
+            const text = e.name;
             ctx.font = `700 ${Math.max(10, Math.min(13, input.width / 75))}px system-ui`;
             const w = ctx.measureText(text).width + 16;
             ctx.fillStyle = "rgba(9,18,39,.82)";
@@ -360,6 +386,15 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             ctx.fillRect(p.x - w / 2, p.y - 10, 3, 20);
             ctx.fillStyle = e.id === input.meId ? "#ffffff" : e.npc ? "#d7e2fa" : "#f6f8ff";
             ctx.fillText(text, p.x, p.y);
+            if (e.emote) { // emote = its own gold pill, stacked above the nameplate
+                const et = String(e.emote).toUpperCase(), ew = ctx.measureText(et).width + 14, ey = p.y - 10 - 4 - 9;
+                ctx.fillStyle = "#ffd166";
+                ctx.beginPath();
+                ctx.roundRect(p.x - ew / 2, ey - 9, ew, 18, 9);
+                ctx.fill();
+                ctx.fillStyle = "#3b2a00";
+                ctx.fillText(et, p.x, ey);
+            }
             labels++;
         }
         // Building names: nearest first, hero buildings ahead of numbered rooms, capped per quality, and never overlapping another name.
@@ -409,6 +444,9 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         return labels;
     };
     const motion = new Map();
+    // Skinned character (optional). Until a model is registered, or when it is unavailable / quality is low, the code-drawn box avatar is used.
+    let character = null, characterLod = null;
+    const setSkinnedCharacter = (model, lodModel) => { character = model ? createCharacterAnimator(model) : null; characterLod = model && lodModel && lodModel.jointCount === model.jointCount ? createCharacterAnimator(lodModel) : null; };
     // Depth-only pass from the sun using LAST frame's casters (one-frame lag, texel-snapped so it never shimmers).
     const shadowPass = (center, q) => {
         if (!shadowOn) return;
@@ -813,7 +851,13 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                 if (s.kind !== "fountain" && !useSlot) return;
                 if (!nearCamera(x, z, Math.max(s.w, s.h))) { culled++; return; }
                 if (q !== "low") softShadow(x + s.w * .25, z - s.h * .3, Math.max(s.w, s.h) * .62, vp, .22);
-                if (s.kind === "fountain" && q !== "low") for (let j = 0; j < 4; j++) { const a = j * 1.57 + input.time * .8; draw("sphere", x + Math.cos(a) * .6, 1.25 + Math.sin(input.time * 2.4 + j) * .18, z + Math.sin(a) * .6, .3, .5, .3, "#bfeeff", vp, .35); drawn++; }
+                if (s.kind === "fountain" && q !== "low") { // spray: small elongated droplets on parabolic jets from the upper bowl into the basin (not blobs)
+                    const nJ = q === "high" ? 6 : 4, nD = q === "high" ? 4 : 3;
+                    for (let j = 0; j < nJ; j++) for (let k = 0; k < nD; k++) {
+                        const u = (input.time * .7 + k / nD + j * .13) % 1, a = j * (6.2832 / nJ) + .4, r = .15 + u * s.w * .52, hy = 1.35 + 2.6 * u * (1 - u) - .85 * u;
+                        draw("sphere", x + Math.cos(a) * r, hy, z + Math.sin(a) * r, .07, .15, .07, "#e6f7ff", vp, .35); drawn++;
+                    }
+                }
                 if (!useSlot) return;
                 const sz = slotted.entry.size ?? { w: s.w, h: Math.max(1, Math.max(s.w, s.h)), d: s.h };
                 queue(slotted.name, x, (slotted.entry.yOffset ?? 0) + sz.h / 2, z, sz.w, sz.h, sz.d, 0);
@@ -826,6 +870,23 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                 case "tree":
                     {
                         const th = hash2(x, z), k = .85 + th * .5, sw = 0;
+                        if (th >= .4) { // species variety (campus trees are not all lollipops): flat-topped acacia and tall neem/mango
+                            const acacia = th < .7, kk = .9 + (th * 7 % 1) * .45, lean = ((th * 13) % 1 - .5) * .5;
+                            draw("cylinder", x, .8 * kk, z, .34 * kk, 1.6 * kk, .34 * kk, "#6a4a36", vp);
+                            if (acacia) { // forked trunk + wide layered umbrella canopy
+                                draw("cylinder", x + lean * .5, 2.0 * kk, z, .22 * kk, 1.5 * kk, .22 * kk, "#6a4a36", vp, 0, lean);
+                                draw("cylinder", x - lean * .6, 2.1 * kk, z + .15, .18 * kk, 1.4 * kk, .18 * kk, "#6a4a36", vp, 0, -lean * 1.3);
+                                draw("sphere", x, 3.05 * kk, z, 4.6 * kk, .75 * kk, 4.0 * kk, "#4f7d36", vp);
+                                draw("sphere", x + .5 * kk, 3.45 * kk, z - .3 * kk, 3.3 * kk, .55 * kk, 2.9 * kk, "#6c9a42", vp);
+                                if (q !== "low") draw("sphere", x - .9 * kk, 3.25 * kk, z + .5 * kk, 2.2 * kk, .5 * kk, 2.0 * kk, "#86b24c", vp);
+                            } else { // tall, dense oval crown
+                                draw("cylinder", x, 2.0 * kk, z, .26 * kk, 1.6 * kk, .26 * kk, "#5f432f", vp);
+                                draw("sphere", x, 3.5 * kk, z, 2.5 * kk, 3.2 * kk, 2.4 * kk, "#2b6a3a", vp);
+                                if (q !== "low") { draw("sphere", x + .5 * kk, 4.0 * kk, z - .3 * kk, 1.6 * kk, 1.9 * kk, 1.5 * kk, "#3f8a48", vp); draw("sphere", x - .5 * kk, 3.2 * kk, z + .4 * kk, 1.3 * kk, 1.5 * kk, 1.3 * kk, "#58a255", vp); }
+                            }
+                            drawn += 5;
+                            break;
+                        }
                         const pal = th < .33 ? ["#2b6f33", "#4a9040", "#7fb04c"] : th < .66 ? ["#2f6a34", "#558f3e", "#8fb856"] : ["#26623a", "#437f45", "#74a954"];
                         draw("cylinder", x, .75 * k, z, .3 * k, 1.5 * k, .3 * k, "#6e4a33", vp);
                         draw("cylinder", x + .05 * k, 1.9 * k, z, .2 * k, 1.2 * k, .2 * k, "#6e4a33", vp, 0, .3);
@@ -846,10 +907,17 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     { const ph = hash2(x, z); palmTree(mkP(vp), x, z, 4.6 * (.9 + ph * .35), q); drawn += 6; }
                     break;
                 case "fountain":
-                    draw("cylinder", x, .24, z, s.w, .36, s.h, "#aebbd1", vp);
-                    draw("cylinder", x, .45, z, s.w * .76, .12, s.h * .76, "#4da9e9", vp);
-                    draw("cylinder", x, .82, z, .22, .7, .22, "#6fd8f0", vp);
-                    drawn += 3;
+                    // Tiered sculptural fountain: plinth, stone basin with a sitting ledge, water, pedestal, upper bowl, campus-blue/gold finial.
+                    draw("cylinder", x, .08, z, s.w * 1.32, .16, s.h * 1.32, "#c9b99a", vp); // plinth ring
+                    draw("cylinder", x, .34, z, s.w * 1.12, .36, s.h * 1.12, "#d8cdb5", vp); // basin wall (ledge top ~.52 m = seat height)
+                    draw("cylinder", x, .5, z, s.w * 1.2, .06, s.h * 1.2, "#efe6d2", vp); // rim cap
+                    draw("cylinder", x, .47, z, s.w * .9, .06, s.h * .9, "#3fa6e6", vp); // water
+                    draw("cylinder", x, .85, z, .42, .66, .42, "#b9a98a", vp); // pedestal
+                    draw("cylinder", x, 1.22, z, s.w * .52, .14, s.h * .52, "#d8cdb5", vp); // upper bowl
+                    draw("cylinder", x, 1.3, z, s.w * .42, .05, s.h * .42, "#5bc0f0", vp); // upper water
+                    draw("cylinder", x, 1.75, z, .16, .9, .16, "#2f5fc4", vp); // blue column
+                    draw("sphere", x, 2.28, z, .34, .34, .34, "#f0b429", vp); // gold finial
+                    drawn += 9;
                     break;
                 case "pillar":
                     box(s.x, s.y, s.w, s.h, 2.5, "#e4d4b9", vp, .1);
@@ -950,6 +1018,14 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             drawn++;
             return true;
         };
+        // Skinned bodies cost ~2.4k triangles each, so only the nearest few avatars (always you) get one; everyone else keeps the box body.
+        const skinSet = new Map(); // id -> true (full body) | false (~900-tri LOD body, same skeleton so animation state is shared)
+        if (character && q !== "low") {
+            const budget = q === "high" ? 12 : 6, range = q === "high" ? 40 : 26;
+            const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
+            const hi = characterLod ? (q === "high" ? 6 : 3) : budget, total = characterLod ? (q === "high" ? 16 : 8) : budget;
+            for (let i = 0; i < Math.min(total, near.length); i++) skinSet.set(near[i].id, i < hi);
+        }
         for (const e of input.entities) {
             if (fpCam && e.id === input.meId) continue; // you are the camera: no body inside your own eyes
             if (walkCam && e.id !== input.meId && !inCone(e.x, e.y, 2)) { culled++; continue; } // people behind you are not drawn
@@ -980,6 +1056,16 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             if (q !== "low") { const rr = recorder; recorder = null; softShadow(e.x + .1, e.y - .1, .5, vp, .3); recorder = rr; }
             // Pass N: articulated "operator" body. Same anchor heights as the old chibi (head 1.58, torso ~.98) so streamed GLB parts still line up.
             const PANTS = "#2a3144", BOOT = "#1c1f26", GLOVE = "#1c1f26", VEST = "#2d3340", hiQ = q !== "low", kaf = e.avatar.top === "kaftan", sleeve = shadeHex(outfit, -.14);
+            const useSkin = !!character && !!recorder && skinSet.has(e.id);
+            let head = null;
+            if (useSkin) {
+                if (!mo.sk) mo.sk = character.create();
+                stepAnimation(character.model, mo.sk, spd, em, dtm);
+                const anim = skinSet.get(e.id) || !characterLod ? character : characterLod;
+                const res = anim.emit(mo.sk, { x: e.x, z: e.y, yaw }, anim.colors(skin, outfit), recorder);
+                trisFrame += res.tris; head = res.head; bob = res.head[1]; // emote bubble etc. follow the animated head
+            }
+            if (!useSkin) {
             const topPart = part(e, slots.top);
             if (sitting) { // thighs forward over the seat, shins down, boots planted
                 for (const sx of [-.17, .17]) {
@@ -1049,14 +1135,35 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             else if (em === "laugh") { draw("box", lx(.32, .12), 1.0 + bob, lz(.32, .12), .16, .3, .17, sleeve, vp, 0, body); draw("box", lx(.24, .2), .9 + bob, lz(.24, .2), .14, .26, .15, skin, vp, 0, body); }
             else armDown(1);
             if (hiQ && !part(e, slots.backpack)) draw("box", lx(0, -.27), 1.06 + bob, lz(0, -.27), .38, .46, .18, shadeHex(outfit, -.38), vp, 0, body); // small tactical pack
+            }
+            if (useSkin) {
+                // Head dressing on the animated skinned head. Parts/fallbacks were authored for the chibi head (centre y 1.6, width .4), so map them onto it.
+                const hs = Math.max(.45, Math.min(1.4, character.headWidth / .4)), hc = character.restHeadTop - .21 * hs;
+                const hy = (y) => hc + (y - 1.6) * hs + head[1], hxz = (ox, oz) => [e.x + head[0] + (ox * yc + oz * ys) * hs, e.y + head[2] + (-ox * ys + oz * yc) * hs];
+                const skinPart = (slot) => {
+                    const h = slot ? slotToName[slot] : undefined; if (!h || !meshes[h.name]) return false;
+                    const en = h.entry, an = en.anchor ?? { x: 0, y: 0, z: 0 }, sz = en.size, t = en.tint === "hair" ? hair : en.tint === "outfit" ? outfit : en.tint === "skin" ? skin : "#ffffff";
+                    const [px, pz] = hxz(an.x, an.z);
+                    draw(h.name, px, hy(an.y + sz.h / 2), pz, sz.w * hs, sz.h * hs, sz.d * hs, t, vp, 0, yaw); drawn++; return true;
+                };
+                const faceOk = q !== "low" && skinPart(slots.face);
+                if (!faceOk) for (const s of [-1, 1]) { const [px, pz] = hxz(s * .08, .17); draw("sphere", px, hy(1.62), pz, .05 * hs, .05 * hs, .04 * hs, "#14161c", vp); }
+                if (e.avatar.hair !== "bald" && !skinPart(slots.hair)) {
+                    const [hx, hz] = hxz(0, 0);
+                    draw("sphere", hx, hy(1.76), hz, .43 * hs, .2 * hs, .43 * hs, hair, vp);
+                    if (e.avatar.hair === "afro") draw("sphere", hx, hy(1.82), hz, .62 * hs, .38 * hs, .6 * hs, hair, vp);
+                    if (e.avatar.hair === "cap") { const [cx, cz] = hxz(0, .26); draw("cylinder", hx, hy(1.84), hz, .46 * hs, .12 * hs, .46 * hs, "#e8644a", vp); draw("box", cx, hy(1.8), cz, .38 * hs, .03, .2 * hs, "#e8644a", vp, 0, yaw); }
+                }
+                if (q !== "low") skinPart(slots.accessory);
+                drawn += 6;
+            } else {
             drawn += hiQ ? 34 : 22;
             part(e, slots.shoes);
             if (q !== "low") {
                 part(e, slots.face);
                 part(e, slots.accessory);
             }
-            if (e.emote && !sitting)
-                draw("sphere", e.x, 2.25 + bob, e.y, .28, .28, .28, "#ffd166", vp);
+            }
         }
         { // Main gate leaves (iron bars + gold rail) swing open about the pillars; input.gateOpen 0..1 (visual only)
             const go = Math.max(0, Math.min(1, input.gateOpen ?? 0));
@@ -1124,7 +1231,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         const labels = overlayLabels(overlay, input, vp);
         return { drawn, culled, labels, calls, tris: Math.round(trisFrame), shadows: shadowOn, byShape: callBy };
     };
-    return { render, resize, registerMesh, unregisterMesh, destroy: () => { for (const m of Object.values(meshes)) {
+    return { render, resize, registerMesh, unregisterMesh, setSkinnedCharacter, destroy: () => { for (const m of Object.values(meshes)) {
             gl.deleteBuffer(m.p);
             gl.deleteBuffer(m.n);
             gl.deleteBuffer(m.c);

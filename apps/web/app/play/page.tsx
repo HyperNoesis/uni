@@ -46,6 +46,7 @@ import { api, clearToken, getToken, warmServers, WS_URL } from "../../lib/api";
 import { drawWorld, type Entity } from "../../lib/world-render";
 import { createWorld3DRenderer } from "../../lib/world-3d-render";
 import { createAssetStreamer, type AssetStreamer } from "../../lib/asset-loader";
+import { loadSkinnedCharacter, CHARACTER_LOD_URL } from "../../lib/skinned-character";
 
 const EMOTES = { wave: "👋", dance: "💃", laugh: "😂", cheer: "🎉" } as const; // "sit" is a contextual action, not in this strip
 type EmoteKey = keyof typeof EMOTES;
@@ -415,6 +416,8 @@ export default function Play() {
       try {
         const r3d = createWorld3DRenderer(canvas3d);
         renderer3dRef.current = r3d;
+        // Optional skinned character body (nearest avatars). Never throws: on any failure the built-in box avatar stays (lib/skinned-character.ts).
+        void Promise.all([loadSkinnedCharacter(), loadSkinnedCharacter(CHARACTER_LOD_URL)]).then(([model, lod]) => { if (model && renderer3dRef.current === r3d) r3d.setSkinnedCharacter(model, lod); });
         // Optional GLB models, streamed per zone; any failure keeps the built-in shapes (see lib/asset-loader.ts).
         assetStreamerRef.current?.destroy();
         assetStreamerRef.current = ASSET_MANIFEST.assets.length ? createAssetStreamer({
