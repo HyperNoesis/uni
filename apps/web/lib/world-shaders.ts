@@ -23,6 +23,7 @@ float vn(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.0-2.0*f);
 float fbm(vec2 p){ return vn(p)*.55+vn(p*2.03+7.1)*.30+vn(p*4.1+3.3)*.15; }
 vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.0,1.0); }
 
+float ign(vec2 p){ return fract(52.9829189*fract(dot(p,vec2(.06711056,.00583715)))); }
 float shadowAt(vec3 wp, vec3 ng, float ndl){
   if(uShadowOn<.5) return 1.0;
   vec4 sc=uLightVP*vec4(wp+ng*(.07+.16*(1.0-ndl)),1.0);
@@ -32,16 +33,27 @@ float shadowAt(vec3 wp, vec3 ng, float ndl){
   float bias=.0005+.0016*(1.0-ndl);
   float s=0.0;
   if(uShadowQ<.5){ s=step(p.z-bias,texture2D(uShadowMap,p.xy).r); }
-  else if(uShadowQ<1.5){
-    float t=uShadowTexel*.7;
-    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+vec2(-t,-t)).r);
-    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+vec2( t,-t)).r);
-    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+vec2(-t, t)).r);
-    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+vec2( t, t)).r);
-    s*=.25;
-  } else {
-    for(int i=-1;i<=1;i++) for(int j=-1;j<=1;j++) s+=step(p.z-bias,texture2D(uShadowMap,p.xy+vec2(float(i),float(j))*uShadowTexel*1.1).r);
-    s/=9.0;
+  else {
+    // Per-pixel rotated Poisson-disc PCF: turns the stair-stepped shadow-map texels into a smooth, dithered penumbra.
+    float a=6.2831853*ign(gl_FragCoord.xy); float ca=cos(a), sa=sin(a); mat2 rot=mat2(ca,sa,-sa,ca);
+    float r=uShadowTexel*(uShadowQ<1.5?1.7:2.1);
+    vec2 d0=vec2(-.94,-.40), d1=vec2(.95,-.77), d2=vec2(-.09,-.93), d3=vec2(.34,.29), d4=vec2(-.92,.46), d5=vec2(-.38,.28);
+    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*d0*r).r);
+    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*d1*r).r);
+    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*d2*r).r);
+    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*d3*r).r);
+    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*d4*r).r);
+    s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*d5*r).r);
+    if(uShadowQ>1.5){
+      vec2 e0=vec2(.80,.93), e1=vec2(.18,-.40), e2=vec2(-.62,-.92), e3=vec2(.66,.04), e4=vec2(-.30,.88), e5=vec2(.52,-.55);
+      s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*e0*r).r);
+      s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*e1*r).r);
+      s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*e2*r).r);
+      s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*e3*r).r);
+      s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*e4*r).r);
+      s+=step(p.z-bias,texture2D(uShadowMap,p.xy+rot*e5*r).r);
+      s/=12.0;
+    } else s/=6.0;
   }
   return mix(1.0,s,edge);
 }

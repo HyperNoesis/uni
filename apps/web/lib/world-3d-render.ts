@@ -454,7 +454,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         if (size !== shadowSize) ensureShadow(size);
         if (!shadowOn) return;
         shadowQ = q === "high" ? 2 : q === "medium" ? 1 : 0;
-        const R = q === "high" ? 58 : q === "medium" ? 46 : 36, texel = 2 * R / size;
+        const R = q === "high" ? 48 : q === "medium" ? 40 : 34, texel = 2 * R / size;
         const Ln = Math.hypot(...SUN_DIR), Lv = [SUN_DIR[0] / Ln, SUN_DIR[1] / Ln, SUN_DIR[2] / Ln];
         let rx = Lv[2], rz = -Lv[0]; const rl = Math.hypot(rx, rz) || 1; rx /= rl; rz /= rl; // cross([0,1,0], L)
         const right = [rx, 0, rz], up = [Lv[1] * rz, Lv[2] * rx - Lv[0] * rz, -Lv[1] * rx];
