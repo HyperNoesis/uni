@@ -78,3 +78,7 @@ Read first: this file, `docs/ROAD_TO_FINISHED.md` (ordered gate list), `docs/RES
 - WARNING: do NOT run `scripts/models/generate-props.mjs` against the repo. It is stale: it regenerates facades for all 160 buildings (12 MB) and rewrites every zone's decor and the manifest. To rebuild one model, run it in a temp copy (scripts + world-data + props dir) and copy only that GLB + its manifest budget back (how goal_post was done). Its decor bounds are also the old 120x80 world.
 - Verified after edits: see final message of this session (check:assets / check:3d).
 - Next: typecheck/build; ext `tree()` variety; hide or declutter QUIZ/REACTION labels at distance; fix label truncation; Kenney stalls look small next to trees (consider scale 2.6); remaining items in ROAD_TO_FINISHED.md.
+
+
+## Update 2026-10-13 (graphics pass, no npm)
+See `docs/GRAPHICS_VISION.md` for the full pass log, unverified items, and next steps. Short version: soft shadows, minimap/label fixes, structured PBR-style textures (wall block coursing, roof pantiles), foliage translucency; last edit (wallT mask) not re-rendered. Deployed from main to Render.

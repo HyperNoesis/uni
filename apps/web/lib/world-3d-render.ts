@@ -172,7 +172,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         } catch (e) { iprog = null; }
     }
     // ---- Material-detail textures (paving / grass / wall): original tileable PNGs, units 1-3. Neutral 1x1 until loaded; uTexOn gates the shader. Failure just leaves the procedural look. ----
-    const texUnits = [["uTexP", 1, "detail_paving"], ["uTexG", 2, "detail_grass"], ["uTexW", 3, "detail_wall"]];
+    const texUnits = [["uTexP", 1, "detail_paving"], ["uTexG", 2, "detail_grass"], ["uTexW", 3, "detail_wall"], ["uTexR", 4, "detail_roof"]];
     const setTexUniforms = (on) => { for (const pr of [program, iprog]) { if (!pr) continue; gl.useProgram(pr); texUnits.forEach(([n, u]) => gl.uniform1i(gl.getUniformLocation(pr, n), u)); gl.uniform1f(gl.getUniformLocation(pr, "uTexOn"), on); } gl.useProgram(program); };
     try {
         const texs = texUnits.map(([, u]) => { gl.activeTexture(gl.TEXTURE0 + u); const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([128, 128, 128, 255])); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); return t; });

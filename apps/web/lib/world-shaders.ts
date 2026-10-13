@@ -14,7 +14,7 @@ uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye;
 uniform float uEmissive; uniform float uAlpha; uniform float uNight;
 uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ; uniform float uDetail;
 uniform mat4 uLightVP; uniform sampler2D uShadowMap;
-uniform sampler2D uTexP; uniform sampler2D uTexG; uniform sampler2D uTexW; uniform float uTexOn;
+uniform sampler2D uTexP; uniform sampler2D uTexG; uniform sampler2D uTexW; uniform sampler2D uTexR; uniform float uTexOn;
 varying vec3 vNormal; varying vec3 vWorld; varying vec3 vColor;
 
 float h21(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
@@ -74,15 +74,27 @@ void main(){
  float roofSlope=(1.0-isUp)*step(.22,n.y)*step(1.9,vWorld.y)*(1.0-glass)*(1.0-foliage);
  float paving=ground*(1.0-grassy);
  float wall=(1.0-step(.3,abs(n.y)))*(1.0-glass)*(1.0-foliage);
+ // block coursing belongs on painted building walls only: not on brown timber/trunks (orange-brown hue) or near-black poles
+ float lumB=dot(base,vec3(.299,.587,.114)); float brown=step(1.18,base.r/(base.g+.004))*step(1.08,base.g/(base.b+.004));
+ float wallT=wall*(1.0-brown)*smoothstep(.09,.18,lumB);
  // ---- sampled material-detail textures (original, tileable: R albedo detail, GB normal xy, A cavity). Taps are unconditional so mip selection stays valid. ----
  vec4 tP=texture2D(uTexP,vWorld.xz*.6); vec4 tG=texture2D(uTexG,vWorld.xz*.9); vec4 tW=texture2D(uTexW,vec2(vWorld.x+vWorld.z,vWorld.y)*.85);
- float dAo=1.0;
+ vec4 tP2=texture2D(uTexP,vWorld.xz*3.1+.37); vec4 tG2=texture2D(uTexG,vWorld.xz*4.3+.11); // second, finer tap: keeps ground sharp at close range
+ vec2 rDir=normalize(ng.xz+vec2(1e-4)); vec2 rAx=vec2(-rDir.y,rDir.x);
+ vec4 tR=texture2D(uTexR,vec2(dot(vWorld.xz,rAx)*3.4,dot(vWorld.xz,rDir)*2.7)/4.0);
+ float dAo=1.0; float dSpec=1.0;
  if(uTexOn>.5&&uDetail>.5){
-  float tf=1.0-smoothstep(35.0,110.0,dist);
-  vec2 pn=(tP.gb-.5)*2.0, gn=(tG.gb-.5)*2.0, wn=(tW.gb-.5)*2.0;
-  base*=mix(vec3(1.0),vec3(tP.r*2.0),paving*(.30+.20*tf)); base*=mix(vec3(1.0),vec3(tG.r*2.0),grassy*(.30+.25*tf)); base*=mix(vec3(1.0),vec3(tW.r*2.0),wall*(.18+.17*tf));
-  n=normalize(n+vec3(pn.x,0.0,pn.y)*.35*paving*tf+vec3(gn.x,0.0,gn.y)*.30*grassy*tf+vec3(wn.x*.7,wn.y*.8,wn.x*.7)*.22*wall*tf);
-  dAo=mix(1.0,tP.a,paving*tf)*mix(1.0,tG.a,grassy*tf)*mix(1.0,tW.a,wall*tf);
+  float tf=1.0-smoothstep(35.0,110.0,dist); float tn=1.0-smoothstep(4.0,20.0,dist);
+  vec2 pn=(tP.gb-.5)*2.0, gn=(tG.gb-.5)*2.0, wn=(tW.gb-.5)*2.0, rn=(tR.gb-.5)*2.0, pn2=(tP2.gb-.5)*2.0, gn2=(tG2.gb-.5)*2.0;
+  base*=mix(vec3(1.0),vec3(tP.r*2.0),paving*(.46+.26*tf)); base*=mix(vec3(1.0),vec3(tP2.r*2.0),paving*.22*tn);
+  base*=mix(vec3(1.0),vec3(tG.r*2.0),grassy*(.34+.26*tf)); base*=mix(vec3(1.0),vec3(tG2.r*2.0),grassy*.20*tn);
+  base*=mix(vec3(1.0),vec3(tW.r*2.0),wallT*(.50+.30*tf));
+  base*=mix(vec3(1.0),vec3(tR.r*2.0),roofSlope*(.55+.30*tf));
+  n=normalize(n+vec3(pn.x,0.0,pn.y)*.55*paving*tf+vec3(pn2.x,0.0,pn2.y)*.25*paving*tn+vec3(gn.x,0.0,gn.y)*.34*grassy*tf+vec3(gn2.x,0.0,gn2.y)*.22*grassy*tn
+   +vec3(wn.x*.7,wn.y*.8,wn.x*.7)*.55*wallT*tf
+   +(vec3(rAx.x,0.0,rAx.y)*rn.x+vec3(rDir.x,0.0,rDir.y)*rn.y)*.60*roofSlope*tf);
+  dAo=mix(1.0,tP.a,paving*tf)*mix(1.0,tG.a,grassy*tf)*mix(1.0,tW.a,wallT*tf)*mix(1.0,tR.a,roofSlope*tf);
+  dSpec=mix(1.0,.35+.65*tP.a,paving*tf)*mix(1.0,.4+.6*tR.a,roofSlope*tf);
  }
 
  // ---- procedural bump (grass blades, leaves, plaster) ----
@@ -183,7 +195,7 @@ void main(){
  col+=albedo*emis*(1.0+uNight*9.0)*1.3;
 
  // specular + glass reflection
- vec3 H=normalize(L+V); float spec=pow(max(dot(n,H),0.0),mix(30.0,140.0,glass))*(.05+glass*1.0+roofSlope*.04+wall*.0)*lit*(1.0-uNight*.75);
+ vec3 H=normalize(L+V); float spec=pow(max(dot(n,H),0.0),mix(30.0,140.0,glass))*(.05*dSpec+glass*1.0+roofSlope*.09*dSpec+wall*.0)*lit*(1.0-uNight*.75);
  col+=sunCol*spec*.5;
  float fres=pow(1.0-max(dot(n,V),0.0),3.0); vec3 R=reflect(-V,n);
  vec3 skyR=mix(vec3(.60,.74,.92),vec3(.14,.34,.78),clamp(R.y,0.0,1.0))*mix(1.0,.12,uNight);
