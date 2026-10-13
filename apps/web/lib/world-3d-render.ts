@@ -423,21 +423,39 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
                 labels++;
             }
         }
-        const points = domain_1.INTERACTION_POINTS.filter(p => (!p.hidden || p.id === input.activeHuntPointId) && Math.hypot(p.x - input.camX, p.y - input.camY) <= (input.quality === "low" ? 27 : input.quality === "high" ? 72 : 48));
-        for (const p of points) {
-            const t = project(p.x, 0.35, p.y);
-            if (!t || t.x < 0 || t.x > input.width || t.y < 0 || t.y > input.height)
-                continue;
-            const label = p.activity === "quiz" ? "QUIZ" : p.activity === "reaction" ? "REACTION" : p.activity === "hunt" ? "HUNT" : p.activity === "shootout" ? "SHOOTOUT" : String(p.name || "INFO").toUpperCase().slice(0, 16);
+        // Activity markers: nearest first, capped per quality, never overlapping another marker, faded with distance (was: every point within 48-72 m, which piled dozens of QUIZ/REACTION pills on screen).
+        {
+            const maxD = input.quality === "low" ? 16 : input.quality === "high" ? 30 : 24, cap = input.quality === "low" ? 3 : input.quality === "high" ? 7 : 5;
+            const near = [];
+            for (const p of domain_1.INTERACTION_POINTS) {
+                const active = p.id === input.activeHuntPointId;
+                if (p.hidden && !active) continue;
+                const d = Math.hypot(p.x - input.camX, p.y - input.camY);
+                if (d > maxD && !active) continue;
+                const t = project(p.x, 0.35, p.y);
+                if (!t || t.x < 0 || t.x > input.width || t.y < 0 || t.y > input.height) continue;
+                near.push({ p, t, d: active ? -1 : d });
+            }
+            near.sort((m, n) => m.d - n.d);
+            const taken = [];
             ctx.font = "800 10px system-ui";
-            const w = ctx.measureText(label).width + 12;
-            ctx.fillStyle = "rgba(9,18,39,.85)";
-            ctx.beginPath();
-            ctx.roundRect(t.x - w / 2, t.y - 7, w, 14, 5);
-            ctx.fill();
-            ctx.fillStyle = p.activity === "quiz" ? "#78fff4" : p.activity === "reaction" ? "#ffe29b" : p.activity === "hunt" ? "#a7ddff" : p.activity === "shootout" ? "#d3e1ff" : "#fff";
-            ctx.fillText(label, t.x, t.y);
-            labels++;
+            for (const { p, t, d } of near) {
+                if (taken.length >= cap) break;
+                const label = p.activity === "quiz" ? "QUIZ" : p.activity === "reaction" ? "REACTION" : p.activity === "hunt" ? "HUNT" : p.activity === "shootout" ? "SHOOTOUT" : String(p.name || "INFO").toUpperCase().slice(0, 16);
+                const w = ctx.measureText(label).width + 12;
+                const r = { x0: t.x - w / 2 - 4, x1: t.x + w / 2 + 4, y0: t.y - 11, y1: t.y + 11 };
+                if (taken.some((o) => r.x0 < o.x1 && r.x1 > o.x0 && r.y0 < o.y1 && r.y1 > o.y0)) continue;
+                taken.push(r);
+                ctx.globalAlpha = d < 0 ? 1 : Math.max(.35, 1 - Math.max(0, d - maxD * .55) / (maxD * .6));
+                ctx.fillStyle = "rgba(9,18,39,.85)";
+                ctx.beginPath();
+                ctx.roundRect(t.x - w / 2, t.y - 7, w, 14, 5);
+                ctx.fill();
+                ctx.fillStyle = p.activity === "quiz" ? "#78fff4" : p.activity === "reaction" ? "#ffe29b" : p.activity === "hunt" ? "#a7ddff" : p.activity === "shootout" ? "#d3e1ff" : "#fff";
+                ctx.fillText(label, t.x, t.y);
+                labels++;
+            }
+            ctx.globalAlpha = 1;
         }
         ctx.textAlign = "left";
         ctx.textBaseline = "alphabetic";

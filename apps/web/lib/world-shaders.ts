@@ -176,6 +176,10 @@ void main(){
  vec3 direct=sunCol*(d*lit+wrap*.07*sh)*(1.0-uNight*.45);
  vec3 bounce=vec3(.55,.40,.22)*max(-n.y,0.0)*.5*(1.0-uNight)+vec3(.30,.24,.16)*max(dot(n,-normalize(vec3(L.x,0.0,L.z))),0.0)*.30*(1.0-uNight);
  vec3 col=albedo*(direct+amb+bounce);
+ // leaf translucency: sun glowing through canopies seen from the shaded side (palms/trees read lush instead of flat dark green)
+ col+=albedo*vec3(1.05,1.0,.42)*foliage*sh*pow(max(dot(-V,L),0.0),2.0)*max(1.0-d,0.0)*.55*(1.0-uNight);
+ // soft sheen on sun-lit paving and roof tiles (stone and ceramic are never perfectly matte)
+ col+=sunCol*lit*(paving*.018+roofSlope*.02)*pow(max(dot(n,normalize(L+V)),0.0),8.0);
  col+=albedo*emis*(1.0+uNight*9.0)*1.3;
 
  // specular + glass reflection
