@@ -43,3 +43,16 @@ const room = [{ x: 10, y: 10, w: 10, h: 0.8, height: 3 }, { x: 10, y: 10, w: 0.8
 const inRoom = solveChaseCamera({ x: 15, y: 14, heading: 0, look: 0, boxes: room }); // facing +z (the door wall), camera behind toward the north wall
 assert.ok(inRoom.clearance > 0.3 && inRoom.eye[2] > 11.1, "inside a room the eye stays inside the room, not behind the wall");
 console.log("camera solver test passed");
+
+// First-person eye is pushed out of decorative pillars (not server colliders); unaffected when clear or when the pillar is lower than the eye.
+{
+  const pillar = { x: 10, y: 10, w: 1, h: 1, height: 4 };
+  const inside = solveFirstPersonCamera({ x: 10.5, y: 10.5, heading: 0, look: 0, boxes: [pillar] });
+  const outside = inside.eye[0] < pillar.x || inside.eye[0] > pillar.x + pillar.w || inside.eye[2] < pillar.y || inside.eye[2] > pillar.y + pillar.h;
+  assert.ok(outside, "eye must end outside the pillar footprint");
+  const clear = solveFirstPersonCamera({ x: 20, y: 20, heading: 0, look: 0, boxes: [pillar] });
+  assert.deepEqual([clear.eye[0], clear.eye[2]], [20, 20]);
+  const low = solveFirstPersonCamera({ x: 10.5, y: 10.5, heading: 0, look: 0, boxes: [{ ...pillar, height: 1 }] });
+  assert.deepEqual([low.eye[0], low.eye[2]], [10.5, 10.5]);
+  console.log("first-person pillar push-out test passed");
+}

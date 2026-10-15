@@ -24,6 +24,8 @@ export interface P {
   /** optional emissive box / sphere (baked into the glow mesh; lit at night/festival) */
   lbox?(x: number, z: number, w: number, d: number, h: number, color: string, y0?: number): void;
   lsph?(cx: number, cy: number, cz: number, w: number, h: number, d: number, color: string): void;
+  /** optional single triangle in world space (leaf blades). Only present while baking static meshes; normal is flipped to face up. */
+  tri?(ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number, color: string): void;
 }
 
 const PAL = {

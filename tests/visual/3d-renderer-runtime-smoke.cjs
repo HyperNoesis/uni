@@ -83,6 +83,7 @@ const sandbox = {
     if (name === "./world-landmarks") return loadTypeScript(path.join(root, "apps/web/lib/world-landmarks.ts"));
     if (name === "./world-camera") return loadTypeScript(path.join(root, "apps/web/lib/world-camera.ts"));
     if (name === "./world-environment") return loadTypeScript(path.join(root, "apps/web/lib/world-environment.ts"));
+    if (name === "./world-backdrop") return loadTypeScript(path.join(root, "apps/web/lib/world-backdrop.ts"));
     if (name === "./world-flora") return loadTypeScript(path.join(root, "apps/web/lib/world-flora.ts"));
     if (name === "./skinned-character") return loadTypeScript(path.join(root, "apps/web/lib/skinned-character.ts"));
     if (name === "./world-shaders") return loadTypeScript(path.join(root, "apps/web/lib/world-shaders.ts"));
@@ -117,7 +118,7 @@ for (const q of ["low", "medium", "high"]) for (const lighting of ["night", "fes
   const before = createdResources;
   const r = createRenderer(canvas); let calls0 = 0, calls1 = 0, st;
   const input = (l) => ({ width: 1280, height: 720, time: 3.5, camX: 92, camY: 66, meId: "you", quality: q, lighting: l, entities: [{ id: "you", name: "You", x: 92, y: 66, avatar, tagColor: "#2f6bff" }] });
-  const d0 = drawCalls; r.render(input("day"), labels); calls0 = drawCalls - d0;
+  for (let i = 0; i < 14; i++) { const d0 = drawCalls; r.render(input("day"), labels); calls0 = drawCalls - d0; } // same frame count as night: the triangle governor adapts over frames
   for (let i = 0; i < 14; i++) { const d1 = drawCalls; st = r.render(input(lighting), labels); calls1 = drawCalls - d1; }
   assert.ok(Number.isFinite(st.drawn) && st.drawn > 50, `${lighting}/${q}: scene should still render`);
   assert.ok(calls1 >= calls0, `${lighting}/${q}: night should add the baked light mesh (day ${calls0}, night ${calls1})`);

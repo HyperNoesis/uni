@@ -4,6 +4,7 @@
  * land, a small park. Derived entirely from zone data, so adding a district needs no code change.
  * Baked by the renderer into ONE mesh per zone/quality. Pure + dependency-free: unit-testable with a recording stub. */
 import type { P, Quality } from "./world-architecture";
+import { leafFringe } from "./world-flora";
 
 export interface DistrictBuilding { x: number; y: number; w: number; h: number; height: number; door: { x: number; w: number } | null; kind?: string | undefined }
 export interface DistrictZone { id: string; rect: { x: number; y: number; w: number; h: number }; buildings: readonly DistrictBuilding[] }
@@ -18,7 +19,9 @@ const STONE = "#d9ccae", STONE_LT = "#e6dcc2", PAVE = "#cdbf9d", ROAD = "#7d8a78
 
 function tree(p: P, x: number, z: number, s: number) {
   p.cyl(x, z, .3 * s, 1.5 * s, "#6d4a2e");
-  p.sph(x, 2.1 * s, z, 2.2 * s, 1.9 * s, 2.2 * s, GREENS[Math.floor(rnd(x, z) * GREENS.length)]!);
+  const g = GREENS[Math.floor(rnd(x, z) * GREENS.length)]!;
+  p.sph(x, 2.1 * s, z, 2.2 * s, 1.9 * s, 2.2 * s, g);
+  leafFringe(p, x, 2.1 * s, z, 1.1 * s, .95 * s, 1.1 * s, g, 54, x * 3 + z);
 }
 function lamp(p: P, x: number, z: number) {
   p.cyl(x, z, .14, 3, "#4a5468"); p.box(x - .3, z - .05, .6, .1, .08, "#4a5468", 3);

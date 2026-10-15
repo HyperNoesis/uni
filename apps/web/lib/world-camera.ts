@@ -50,6 +50,12 @@ export interface WalkIn { x: number; y: number; heading: number; look: number; b
 export function solveFirstPersonCamera(i: WalkIn): CamOut {
   const h = Number.isFinite(i.heading) ? i.heading : 0, p = clampLook(i.look), cp = Math.cos(p);
   const eye: [number, number, number] = [i.x, FP_EYE + (Number.isFinite(i.bob) ? (i.bob as number) : 0), i.y];
+  // Pillars/trunks/posts are decorative (not server colliders): never let the eye sit inside one. Push out through the nearest face.
+  for (const b of i.boxes ?? []) {
+    const m = 0.28; if (!(eye[1] < b.height && eye[0] > b.x - m && eye[0] < b.x + b.w + m && eye[2] > b.y - m && eye[2] < b.y + b.h + m)) continue;
+    const dl = eye[0] - (b.x - m), dr = b.x + b.w + m - eye[0], dn = eye[2] - (b.y - m), df = b.y + b.h + m - eye[2], mn = Math.min(dl, dr, dn, df);
+    if (mn === dl) eye[0] = b.x - m; else if (mn === dr) eye[0] = b.x + b.w + m; else if (mn === dn) eye[2] = b.y - m; else eye[2] = b.y + b.h + m;
+  }
   const target: [number, number, number] = [eye[0] + Math.sin(h) * cp * 10, eye[1] + Math.sin(p) * 10, eye[2] + Math.cos(h) * cp * 10];
   return { eye, target, clearance: 1, wanted: 0 };
 }

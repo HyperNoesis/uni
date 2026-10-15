@@ -3,7 +3,7 @@
  * a unique landmark on the free central axis (never inside building footprints), lamps, planting,
  * seating and a zone colour band. Coordinates are world tiles; z == domain "y". */
 import type { P, Quality } from "./world-architecture";
-import { palmTree } from "./world-flora";
+import { palmTree, leafFringe } from "./world-flora";
 
 const K = {
   conc: "#d8d2c4", concDk: "#aaa496", stone: "#e4d4b9", clay: "#c9724a", terra: "#b8613f", blue: "#3675e7", navy: "#1f3a6e",
@@ -26,11 +26,11 @@ const treeHash = (x: number, z: number) => { const v = Math.sin(x * 12.9898 + z 
 /** Campus tree with species variety (seeded by position): round shade tree, flat-topped acacia, tall neem/mango. */
 const tree = (p: P, x: number, z: number, s = 1, c = K.green) => {
   const h = treeHash(x, z);
-  if (h < .4) { p.cyl(x, z, .35 * s, 2.2 * s, K.woodDk); p.sph(x, 3.1 * s, z, 2.6 * s, 2.0 * s, 2.6 * s, c); p.sph(x + .5 * s, 3.7 * s, z - .3 * s, 1.8 * s, 1.4 * s, 1.8 * s, K.leaf); return; }
+  if (h < .4) { p.cyl(x, z, .35 * s, 2.2 * s, K.woodDk); p.sph(x, 3.1 * s, z, 2.6 * s, 2.0 * s, 2.6 * s, c); p.sph(x + .5 * s, 3.7 * s, z - .3 * s, 1.8 * s, 1.4 * s, 1.8 * s, K.leaf); leafFringe(p, x, 3.1 * s, z, 1.3 * s, 1.0 * s, 1.3 * s, c, 60, x * 2 + z); leafFringe(p, x + .5 * s, 3.7 * s, z - .3 * s, .9 * s, .7 * s, .9 * s, K.leaf, 28, x + z * 3); return; }
   if (h < .7) { // acacia: forked trunk, wide layered umbrella crown
     const lean = (h * 9 % 1 - .5) * .5 * s;
     p.cyl(x, z, .34 * s, 1.9 * s, K.woodDk); p.cyl(x + lean, z, .22 * s, 1.5 * s, K.woodDk, 1.7 * s); p.cyl(x - lean * 1.2, z + .15, .18 * s, 1.4 * s, K.woodDk, 1.8 * s);
-    p.sph(x, 3.55 * s, z, 4.4 * s, .75 * s, 3.9 * s, "#4f7d36"); p.sph(x + .5 * s, 3.95 * s, z - .3 * s, 3.1 * s, .55 * s, 2.7 * s, "#6c9a42"); p.sph(x - .9 * s, 3.75 * s, z + .5 * s, 2.1 * s, .5 * s, 1.9 * s, "#86b24c");
+    p.sph(x, 3.55 * s, z, 4.4 * s, .75 * s, 3.9 * s, "#4f7d36"); p.sph(x + .5 * s, 3.95 * s, z - .3 * s, 3.1 * s, .55 * s, 2.7 * s, "#6c9a42"); p.sph(x - .9 * s, 3.75 * s, z + .5 * s, 2.1 * s, .5 * s, 1.9 * s, "#86b24c"); leafFringe(p, x, 3.6 * s, z, 2.2 * s, .45 * s, 1.95 * s, "#6c9a42", 66, x + z * 2, true);
     return;
   }
   p.cyl(x, z, .3 * s, 2.4 * s, "#5f432f"); // neem/mango: tall dense oval crown

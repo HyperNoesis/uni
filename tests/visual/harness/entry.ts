@@ -8,6 +8,7 @@ import { DEFAULT_AVATAR, SPAWN, AVATAR_PRESETS } from "@campus/domain";
 type Cfg = { width: number; height: number; quality: "low" | "medium" | "high"; character: boolean; frames: number; dt?: number; assets?: "manifest"; override?: Record<string, { url: string; size?: { w: number; h: number; d: number } }>; me: { x: number; y: number; heading: number }; camMode?: string; zoom?: number; lod?: boolean; walkers?: number; extras?: { x: number; y: number; vx: number; vy: number; emote?: string; preset?: number }[] };
 (window as any).__spawn = SPAWN;
 (window as any).__run = async (cfg: Cfg) => {
+  if ((cfg as any).nobevel) (globalThis as any).__campusBevelMin = 99;
   const canvas = document.getElementById("c") as HTMLCanvasElement, labels = document.getElementById("l") as HTMLCanvasElement;
   canvas.style.width = labels.style.width = cfg.width + "px"; canvas.style.height = labels.style.height = cfg.height + "px";
   labels.width = cfg.width; labels.height = cfg.height;
@@ -16,7 +17,7 @@ type Cfg = { width: number; height: number; quality: "low" | "medium" | "high"; 
   if (cfg.character) { model = await loadSkinnedCharacter("/assets/characters/campus_body.glb"); if (!model) throw new Error("character failed to load"); const lod = cfg.lod ? await loadSkinnedCharacter("/assets/characters/campus_body_lod.glb") : null; r.setSkinnedCharacter(model, lod); }
   const loaded: string[] = [], failed: string[] = [];
   if (cfg.assets === "manifest") for (let e of (manifest as any).assets) {
-    if (String(e.slot).startsWith("avatar:")) continue;
+    if (String(e.slot).startsWith("avatar:") && (cfg as any).avatarParts === false) continue; // avatar part props (hair/face/accessory) load like the live game unless explicitly disabled
     const ov = cfg.override?.[e.id], url = ov?.url ?? e.url; if (ov?.size) e = { ...e, size: ov.size };
     try { const res = await fetch(url); if (!res.ok) throw new Error("HTTP " + res.status); r.registerMesh(e.id, parseGlb(await res.arrayBuffer(), { maxTriangles: e.maxTriangles ?? 6000 }), e.slot, e); loaded.push(e.id); } catch (err) { failed.push(e.id + ": " + (err as Error).message); }
   }
@@ -33,5 +34,5 @@ type Cfg = { width: number; height: number; quality: "low" | "medium" | "high"; 
     times.push(performance.now() - t0);
   }
   times.sort((a, b) => a - b);
-  return { stats: { drawn: last.drawn, calls: last.calls, tris: last.tris, culled: last.culled }, cpuMs: { p50: times[Math.floor(times.length / 2)], p95: times[Math.floor(times.length * .95)] }, assets: { loaded: loaded.length, failed }, model: model ? { tris: model.triangles, joints: model.jointCount } : null };
+  return { stats: { drawn: last.drawn, calls: last.calls, tris: last.tris, culled: last.culled, topTris: Object.entries(last.byShape || {}).filter(([k]) => k.startsWith("t:")).sort((a, b) => b[1] - a[1]).slice(0, 60) }, cpuMs: { p50: times[Math.floor(times.length / 2)], p95: times[Math.floor(times.length * .95)] }, assets: { loaded: loaded.length, failed }, model: model ? { tris: model.triangles, joints: model.jointCount } : null };
 };

@@ -12,7 +12,7 @@ const PRECISION = `#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#e
 export const FRAG = PRECISION + `
 uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye;
 uniform float uEmissive; uniform float uAlpha; uniform float uNight;
-uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ; uniform float uDetail;
+uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ; uniform float uDetail; uniform float uPlain;
 uniform mat4 uLightVP; uniform sampler2D uShadowMap;
 uniform sampler2D uTexP; uniform sampler2D uTexG; uniform sampler2D uTexW; uniform sampler2D uTexR; uniform float uTexOn;
 varying vec3 vNormal; varying vec3 vWorld; varying vec3 vColor;
@@ -59,7 +59,7 @@ float shadowAt(vec3 wp, vec3 ng, float ndl){
 }
 
 void main(){
- vec3 ng=normalize(vNormal); vec3 n=ng; vec3 L=normalize(uLight); vec3 V=normalize(uEye-vWorld);
+ float nLen=length(vNormal); float panelFlag=step(1.5,nLen)*step(nLen,2.5); vec3 ng=normalize(vNormal); vec3 n=ng; vec3 L=normalize(uLight); vec3 V=normalize(uEye-vWorld);
  float dist=length(uEye-vWorld);
  float near=1.0-smoothstep(14.0,55.0,dist);
  float emv=step(1.5,max(vColor.r,max(vColor.g,vColor.b))); vec3 vcol=vColor-vec3(2.0*emv);
@@ -76,7 +76,7 @@ void main(){
  float wall=(1.0-step(.3,abs(n.y)))*(1.0-glass)*(1.0-foliage);
  // block coursing belongs on painted building walls only: not on brown timber/trunks (orange-brown hue) or near-black poles
  float lumB=dot(base,vec3(.299,.587,.114)); float brown=step(1.18,base.r/(base.g+.004))*step(1.08,base.g/(base.b+.004));
- float wallT=wall*(1.0-brown)*smoothstep(.09,.18,lumB);
+ float wallT=wall*(1.0-brown)*(1.0-max(uPlain,panelFlag))*smoothstep(.09,.18,lumB); // uPlain: GLB props/decor/avatar parts (sign lettering, lamps, trunks) never get masonry; only building shells do
  // ---- sampled material-detail textures (original, tileable: R albedo detail, GB normal xy, A cavity). Taps are unconditional so mip selection stays valid. ----
  vec4 tP=texture2D(uTexP,vWorld.xz*.6); vec4 tG=texture2D(uTexG,vWorld.xz*.9); vec4 tW=texture2D(uTexW,vec2(vWorld.x+vWorld.z,vWorld.y)*.85);
  vec4 tP2=texture2D(uTexP,vWorld.xz*3.1+.37); vec4 tG2=texture2D(uTexG,vWorld.xz*4.3+.11); // second, finer tap: keeps ground sharp at close range

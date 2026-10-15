@@ -2,10 +2,12 @@
 // motion state, cross-fades between clips and emits the skinned body into the renderer's dynamic batch.
 // Server-authoritative movement is untouched - this only decides how an already-validated avatar LOOKS.
 import { parseSkinnedGlb, newPose, sampleClip, blendPose, skinMatrices, skinToSoup, regionVertexColors, type SkinnedModel, type Pose } from "./skinned-glb";
+import { groupsFor, paintKey, paintVertexColors, hairIsPainted } from "./avatar-paint";
+import type { Avatar } from "@campus/domain";
 
 export const CHARACTER_URL = "/assets/characters/campus_body.glb";
 export const CHARACTER_LOD_URL = "/assets/characters/campus_body_lod.glb";
-export const CHARACTER_LIMITS = { maxTriangles: 4000, maxBytes: 400 * 1024, maxJoints: 64 };
+export const CHARACTER_LIMITS = { maxTriangles: 8000, maxBytes: 520 * 1024, maxJoints: 64 };
 /** Rendered body height in metres (the chibi box avatar this replaces is ~1.7 m tall, hair parts included). */
 export const BODY_HEIGHT = 1.68;
 export const FADE_SECONDS = 0.18;
@@ -94,12 +96,16 @@ export interface CharacterAnimator {
   /** Head width of the skinned body in metres at render scale (hair/face parts are sized for a ~0.4 m chibi head). */
   headWidth: number;
   create(): AnimState;
-  colors(skin: string, outfit: string): Float32Array;
-  /** Skin the pose in `st` and append the body to the dynamic batch arrays. Returns triangles emitted and the head's offset from its rest position (world axes). */
-  emit(st: AnimState, at: { x: number; z: number; yaw: number }, col: Float32Array, out: { p: number[]; n: number[]; c: number[] }): { tris: number; head: [number, number, number] };
+  /** Vertex colours for this avatar (painted materials x baked AO). Cached; plain un-painted bodies fall back to four flat regions. */
+  colors(avatar: Avatar): Float32Array;
+  /** Optional geometry groups this avatar wears (hood, skirt, backpack, satchel, chain) that exist in this model. */
+  groups(avatar: Avatar): string[];
+  /** Skin the pose in `st` and append the body (+ the given groups) to the dynamic batch arrays. Returns triangles emitted and the head's offset from its rest position (world axes). */
+  emit(st: AnimState, at: { x: number; z: number; yaw: number }, col: Float32Array, out: { p: number[]; n: number[]; c: number[] }, groups?: readonly string[]): { tris: number; head: [number, number, number] };
   restHeadTop: number;
 }
 
+export { hairIsPainted };
 const hex = (h: string): [number, number, number] => { const n = parseInt(String(h).replace("#", ""), 16) || 0; return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]; };
 
 export function createCharacterAnimator(m: SkinnedModel, pants = "#2a3144", shoes = "#1c1f26"): CharacterAnimator {
@@ -111,26 +117,34 @@ export function createCharacterAnimator(m: SkinnedModel, pants = "#2a3144", shoe
   const rest = newPose(m); skinMatrices(m, rest, world, skin);
   const headRest: [number, number, number] = [world[headIdx * 16 + 12], world[headIdx * 16 + 13], world[headIdx * 16 + 14]];
   let hx0 = Infinity, hx1 = -Infinity, top = -Infinity;
-  for (let v = 0; v < m.vertexCount; v++) {
+  for (let v = 0; v < m.baseVertices; v++) {
     let bestW = 0, bestJ = 0; for (let k = 0; k < 4; k++) if (m.weights[v * 4 + k] > bestW) { bestW = m.weights[v * 4 + k]; bestJ = m.joints[v * 4 + k]; }
     if (bestJ === headIdx) { hx0 = Math.min(hx0, m.positions[v * 3]); hx1 = Math.max(hx1, m.positions[v * 3]); }
     top = Math.max(top, m.positions[v * 3 + 1]);
   }
-  let lowY = Infinity; for (let v = 0; v < m.vertexCount; v++) lowY = Math.min(lowY, m.positions[v * 3 + 1]);
+  let lowY = Infinity; for (let v = 0; v < m.baseVertices; v++) lowY = Math.min(lowY, m.positions[v * 3 + 1]);
   const yOffset = -lowY * scale; // stand the bind pose's soles on y = 0
   return {
     model: m, headWidth: (hx1 - hx0) * scale, restHeadTop: top * scale + yOffset,
     create: () => createAnimState(m),
-    colors(skinHex, outfitHex) {
-      const key = skinHex + "|" + outfitHex; let c = colorCache.get(key);
-      if (!c) { if (colorCache.size > 64) colorCache.clear(); c = regionVertexColors(m, [hex(skinHex), hex(outfitHex), hex(pants), hex(shoes)]); colorCache.set(key, c); }
+    colors(avatar) {
+      const key = paintKey(avatar); let c = colorCache.get(key);
+      if (!c) {
+        if (colorCache.size > 64) colorCache.clear();
+        c = m.paint ? paintVertexColors(m.paint, m.vertexCount, avatar) : regionVertexColors(m, [hex(avatar.skin), hex(avatar.outfit), hex(pants), hex(shoes)]);
+        colorCache.set(key, c);
+      }
       return c;
     },
-    emit(st, at, col, out) {
+    groups: (avatar) => groupsFor(avatar).filter((g) => !!m.groups[g]),
+    emit(st, at, col, out, groups) {
       skinMatrices(m, st.pose, world, skin);
       const before = out.p.length;
-      skinToSoup(m, skin, { x: at.x, y: yOffset, z: at.z, yaw: at.yaw, scale }, sp, sn, out.p, out.n);
-      const I = m.indices; for (let i = 0; i < I.length; i++) { const v = I[i] * 3; out.c.push(col[v], col[v + 1], col[v + 2]); }
+      skinToSoup(m, skin, { x: at.x, y: yOffset, z: at.z, yaw: at.yaw, scale }, sp, sn, out.p, out.n, groups);
+      // colours follow the same index ranges the soup used: base first, then each enabled group
+      const I = m.indices, pushRange = (i0: number, i1: number) => { for (let i = i0; i < i1; i++) { const v = I[i]! * 3; out.c.push(col[v]!, col[v + 1]!, col[v + 2]!); } };
+      pushRange(0, m.baseIndices);
+      for (const name of groups ?? []) { const g = m.groups[name]; if (g) pushRange(g.i0, g.i0 + g.iN); }
       const dx = (world[headIdx * 16 + 12] - headRest[0]) * scale, dy = (world[headIdx * 16 + 13] - headRest[1]) * scale, dz = (world[headIdx * 16 + 14] - headRest[2]) * scale;
       const cy = Math.cos(at.yaw), sy = Math.sin(at.yaw);
       return { tris: (out.p.length - before) / 9, head: [dx * cy + dz * sy, dy, -dx * sy + dz * cy] };

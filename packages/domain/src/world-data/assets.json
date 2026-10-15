@@ -1140,6 +1140,149 @@
         "d": 1.44
       },
       "yOffset": 0
+    },
+    {
+      "id": "kn_bd_a",
+      "url": "/assets/kenney/kn_bd_a.glb",
+      "slot": "decor:kn_bd_a",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 11.928,
+        "h": 17.455,
+        "d": 12.69
+      }
+    },
+    {
+      "id": "kn_bd_b",
+      "url": "/assets/kenney/kn_bd_b.glb",
+      "slot": "decor:kn_bd_b",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 13.095,
+        "h": 17.455,
+        "d": 12.69
+      }
+    },
+    {
+      "id": "kn_bd_c",
+      "url": "/assets/kenney/kn_bd_c.glb",
+      "slot": "decor:kn_bd_c",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 11.928,
+        "h": 12.056,
+        "d": 14.715
+      }
+    },
+    {
+      "id": "kn_bd_d",
+      "url": "/assets/kenney/kn_bd_d.glb",
+      "slot": "decor:kn_bd_d",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 11.34,
+        "h": 17.455,
+        "d": 12.15
+      }
+    },
+    {
+      "id": "kn_bd_e",
+      "url": "/assets/kenney/kn_bd_e.glb",
+      "slot": "decor:kn_bd_e",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 22.14,
+        "h": 12.056,
+        "d": 13.607
+      }
+    },
+    {
+      "id": "kn_bd_f",
+      "url": "/assets/kenney/kn_bd_f.glb",
+      "slot": "decor:kn_bd_f",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 11.34,
+        "h": 22.856,
+        "d": 13.905
+      }
+    },
+    {
+      "id": "kn_bd_g",
+      "url": "/assets/kenney/kn_bd_g.glb",
+      "slot": "decor:kn_bd_g",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 13.095,
+        "h": 22.856,
+        "d": 12.447
+      }
+    },
+    {
+      "id": "kn_bd_h",
+      "url": "/assets/kenney/kn_bd_h.glb",
+      "slot": "decor:kn_bd_h",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 11.928,
+        "h": 17.455,
+        "d": 13.607
+      }
+    },
+    {
+      "id": "kn_bd_sky_a",
+      "url": "/assets/kenney/kn_bd_sky_a.glb",
+      "slot": "decor:kn_bd_sky_a",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 13.6,
+        "h": 28.8,
+        "d": 13.6
+      }
+    },
+    {
+      "id": "kn_bd_sky_c",
+      "url": "/assets/kenney/kn_bd_sky_c.glb",
+      "slot": "decor:kn_bd_sky_c",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 12.8,
+        "h": 40.8,
+        "d": 13.879
+      }
+    },
+    {
+      "id": "kn_bd_sky_d",
+      "url": "/assets/kenney/kn_bd_sky_d.glb",
+      "slot": "decor:kn_bd_sky_d",
+      "zones": "all",
+      "maxBytes": 120000,
+      "maxTriangles": 2500,
+      "size": {
+        "w": 12.8,
+        "h": 54.7,
+        "d": 13.879
+      }
     }
   ]
 }

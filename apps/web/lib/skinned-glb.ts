@@ -13,9 +13,14 @@ export interface SkinnedModel {
   positions: Float32Array; normals: Float32Array; joints: Uint8Array; weights: Float32Array; indices: Uint16Array;
   parents: Int16Array; restT: Float32Array; restR: Float32Array; restS: Float32Array; ibm: Float32Array;
   jointNames: string[]; clips: Record<string, Clip>; forward: [number, number, number]; jointRegion: number[]; height: number;
+  /** Optional `_PAINT` attribute (4 bytes per vertex: material id, baked AO, 0, 0). Present on the painted character; absent on plain bodies. */
+  paint: Uint8Array | null;
+  /** Optional geometry groups (hood, skirt, backpack...) stored after the always-on base range; only skinned/drawn when asked for. */
+  baseVertices: number; baseIndices: number; groups: Record<string, Group>;
   /** Planted-foot ground speed (m/s) of each locomotion clip as authored; used to match playback rate to real speed. */
   clipSpeed: Record<string, number>;
 }
+export interface Group { name: string; v0: number; vN: number; i0: number; iN: number }
 export type Pose = { t: Float32Array; r: Float32Array; s: Float32Array };
 
 const MAGIC = 0x46546c67, JSON_CHUNK = 0x4e4f534a, BIN_CHUNK = 0x004e4942;
@@ -98,11 +103,23 @@ export function parseSkinnedGlb(buf: ArrayBuffer, limits: { maxTriangles: number
     clips[an.name] = { name: an.name, duration, tracks };
   }
   const meta = json.extras?.campus ?? {};
+  let paint: Uint8Array | null = null;
+  if (at._PAINT !== undefined) { const pa = read(at._PAINT, "VEC4"); if (pa.count !== V) throw new SkinnedGlbError("paint count differs"); paint = Uint8Array.from(pa.data as ArrayLike<number>); }
+  const groups: Record<string, Group> = {};
+  for (const g of Array.isArray(meta.groups) ? meta.groups : []) {
+    const ok = [g?.v0, g?.vN, g?.i0, g?.iN].every((n: unknown) => Number.isInteger(n) && (n as number) >= 0);
+    if (!ok || typeof g.name !== "string" || g.v0 + g.vN > V || g.i0 + g.iN > idx.count || g.iN % 3) throw new SkinnedGlbError("bad geometry group");
+    for (let i = g.i0; i < g.i0 + g.iN; i++) if (idx.data[i] < g.v0 || idx.data[i] >= g.v0 + g.vN) throw new SkinnedGlbError("group index outside its vertex range");
+    groups[g.name] = { name: g.name, v0: g.v0, vN: g.vN, i0: g.i0, iN: g.iN };
+  }
+  const firstGroup = Object.values(groups).sort((a, b) => a.v0 - b.v0)[0];
+  const baseVertices = firstGroup ? firstGroup.v0 : V, baseIndices = firstGroup ? firstGroup.i0 : idx.count;
   const fwd: [number, number, number] = Array.isArray(meta.forward) && meta.forward.length === 3 ? meta.forward : [0, 0, 1];
   let lo = Infinity, hi = -Infinity; for (let i = 1; i < pos.data.length; i += 3) { lo = Math.min(lo, pos.data[i]); hi = Math.max(hi, pos.data[i]); }
   const model: SkinnedModel = {
     vertexCount: V, triangles: idx.count / 3, jointCount: K, positions: pos.data, normals: nrm.data, joints: jnt.data, weights: wgt.data, indices: idx.data,
     parents, restT, restR, restS, ibm: ibm.data, jointNames: skin.joints.map((nj: number) => String(json.nodes[nj].name ?? nj)), clips, forward: fwd, jointRegion: Array.isArray(meta.jointRegion) ? meta.jointRegion : new Array(K).fill(0), height: hi - lo, clipSpeed: {},
+    paint, baseVertices, baseIndices, groups,
   };
   for (const n of ["Walk_Loop", "Jog_Fwd_Loop", "Sprint_Loop"]) if (clips[n]) model.clipSpeed[n] = estimateLocomotionSpeed(model, clips[n]);
   return model;
@@ -169,27 +186,34 @@ export function skinMatrices(m: SkinnedModel, pose: Pose, world: Float32Array, s
  * entity heading), scale uniformly, translate. Outputs unindexed triangle soup into dstP/dstN (3 floats per vertex).
  * Returns the number of vertices written (triangles*3).
  */
-export function skinToSoup(m: SkinnedModel, skin: Float32Array, place: { x: number; y: number; z: number; yaw: number; scale: number }, scratchP: Float32Array, scratchN: Float32Array, dstP: number[], dstN: number[]): number {
+export function skinToSoup(m: SkinnedModel, skin: Float32Array, place: { x: number; y: number; z: number; yaw: number; scale: number }, scratchP: Float32Array, scratchN: Float32Array, dstP: number[], dstN: number[], groups?: readonly string[]): number {
   const cy = Math.cos(place.yaw), sy = Math.sin(place.yaw), sc = place.scale;
-  for (let v = 0; v < m.vertexCount; v++) {
-    let px = 0, py = 0, pz = 0, nx = 0, ny = 0, nz = 0;
-    const ox = m.positions[v * 3], oy = m.positions[v * 3 + 1], oz = m.positions[v * 3 + 2], onx = m.normals[v * 3], ony = m.normals[v * 3 + 1], onz = m.normals[v * 3 + 2];
-    for (let k = 0; k < 4; k++) {
-      const w = m.weights[v * 4 + k]; if (w <= 0) continue; const o = m.joints[v * 4 + k] * 16;
-      px += w * (skin[o] * ox + skin[o + 4] * oy + skin[o + 8] * oz + skin[o + 12]);
-      py += w * (skin[o + 1] * ox + skin[o + 5] * oy + skin[o + 9] * oz + skin[o + 13]);
-      pz += w * (skin[o + 2] * ox + skin[o + 6] * oy + skin[o + 10] * oz + skin[o + 14]);
-      nx += w * (skin[o] * onx + skin[o + 4] * ony + skin[o + 8] * onz);
-      ny += w * (skin[o + 1] * onx + skin[o + 5] * ony + skin[o + 9] * onz);
-      nz += w * (skin[o + 2] * onx + skin[o + 6] * ony + skin[o + 10] * onz);
+  const skinRange = (v0: number, v1: number) => {
+    for (let v = v0; v < v1; v++) {
+      let px = 0, py = 0, pz = 0, nx = 0, ny = 0, nz = 0;
+      const ox = m.positions[v * 3], oy = m.positions[v * 3 + 1], oz = m.positions[v * 3 + 2], onx = m.normals[v * 3], ony = m.normals[v * 3 + 1], onz = m.normals[v * 3 + 2];
+      for (let k = 0; k < 4; k++) {
+        const w = m.weights[v * 4 + k]; if (w <= 0) continue; const o = m.joints[v * 4 + k] * 16;
+        px += w * (skin[o] * ox + skin[o + 4] * oy + skin[o + 8] * oz + skin[o + 12]);
+        py += w * (skin[o + 1] * ox + skin[o + 5] * oy + skin[o + 9] * oz + skin[o + 13]);
+        pz += w * (skin[o + 2] * ox + skin[o + 6] * oy + skin[o + 10] * oz + skin[o + 14]);
+        nx += w * (skin[o] * onx + skin[o + 4] * ony + skin[o + 8] * onz);
+        ny += w * (skin[o + 1] * onx + skin[o + 5] * ony + skin[o + 9] * onz);
+        nz += w * (skin[o + 2] * onx + skin[o + 6] * ony + skin[o + 10] * onz);
+      }
+      const nl = Math.hypot(nx, ny, nz) || 1;
+      scratchP[v * 3] = place.x + (px * cy + pz * sy) * sc; scratchP[v * 3 + 1] = place.y + py * sc; scratchP[v * 3 + 2] = place.z + (-px * sy + pz * cy) * sc;
+      scratchN[v * 3] = (nx * cy + nz * sy) / nl; scratchN[v * 3 + 1] = ny / nl; scratchN[v * 3 + 2] = (-nx * sy + nz * cy) / nl;
     }
-    const nl = Math.hypot(nx, ny, nz) || 1;
-    scratchP[v * 3] = place.x + (px * cy + pz * sy) * sc; scratchP[v * 3 + 1] = place.y + py * sc; scratchP[v * 3 + 2] = place.z + (-px * sy + pz * cy) * sc;
-    scratchN[v * 3] = (nx * cy + nz * sy) / nl; scratchN[v * 3 + 1] = ny / nl; scratchN[v * 3 + 2] = (-nx * sy + nz * cy) / nl;
-  }
-  const I = m.indices;
-  for (let i = 0; i < I.length; i++) { const v = I[i]; dstP.push(scratchP[v * 3], scratchP[v * 3 + 1], scratchP[v * 3 + 2]); dstN.push(scratchN[v * 3], scratchN[v * 3 + 1], scratchN[v * 3 + 2]); }
-  return I.length;
+  };
+  const I = m.indices; let written = 0;
+  const emit = (i0: number, i1: number) => {
+    for (let i = i0; i < i1; i++) { const v = I[i]!; dstP.push(scratchP[v * 3]!, scratchP[v * 3 + 1]!, scratchP[v * 3 + 2]!); dstN.push(scratchN[v * 3]!, scratchN[v * 3 + 1]!, scratchN[v * 3 + 2]!); }
+    written += i1 - i0;
+  };
+  skinRange(0, m.baseVertices); emit(0, m.baseIndices);
+  for (const name of groups ?? []) { const g = m.groups[name]; if (!g) continue; skinRange(g.v0, g.v0 + g.vN); emit(g.i0, g.i0 + g.iN); }
+  return written;
 }
 
 /** Per-vertex colours from the player's customisation: blends region colours by skin weight (smooth transitions at seams). */

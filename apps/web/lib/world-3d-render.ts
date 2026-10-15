@@ -10,7 +10,8 @@ import { roofCrown, zoneGateway, southLawn, gateRoadExtras } from "./world-landm
 import { solveOrbitCamera, solveFirstPersonCamera, solveChaseCamera, DEFAULT_PITCH, FP_FOV } from "./world-camera";
 import { environment } from "./world-environment";
 import { palmTree } from "./world-flora";
-import { createCharacterAnimator, stepAnimation } from "./skinned-character";
+import { BACKDROP } from "./world-backdrop";
+import { createCharacterAnimator, stepAnimation, hairIsPainted } from "./skinned-character";
 import { FRAG, SHADOW_VERT, SHADOW_VERT_I, SHADOW_FRAG, SKY_VERT, SKY_FRAG, SUN_DIR } from "./world-shaders";
 // Camera blockers: thin wall segments only (not whole building footprints), so the chase camera can follow you through a
 // doorway and sit inside a room instead of collapsing against your head. Visual only.
@@ -69,8 +70,8 @@ function meshData(type) {
         tri([-.5, -.5, -.5], [-.5, -.5, .5], [-.5, .5, 0], [-1, 0, 0]); tri([.5, -.5, .5], [.5, -.5, -.5], [.5, .5, 0], [1, 0, 0]);
         tri([-.5, -.5, -.5], [.5, -.5, -.5], [.5, -.5, .5], [0, -1, 0]); tri([-.5, -.5, -.5], [.5, -.5, .5], [-.5, -.5, .5], [0, -1, 0]);
     }
-    else if (type === "sphere" || type === "lowsphere") {
-        const lat = type === "lowsphere" ? 5 : 12, lon = type === "lowsphere" ? 8 : 20;
+    else if (type === "sphere" || type === "lowsphere" || type === "midsphere") {
+        const lat = type === "lowsphere" ? 5 : type === "midsphere" ? 8 : 12, lon = type === "lowsphere" ? 8 : type === "midsphere" ? 14 : 20; // high 480 tris / mid 224 / low 80
         for (let y = 0; y < lat; y++)
             for (let x = 0; x < lon; x++) {
                 const point = (u, v) => { const ph = v * Math.PI, th = u * Math.PI * 2; return [Math.sin(ph) * Math.cos(th) * .5, Math.cos(ph) * .5, Math.sin(ph) * Math.sin(th) * .5]; };
@@ -130,7 +131,7 @@ function pushBevelBox(t, x, y, z, w, h, d, rot, col, eo) {
         tri([sx * H[0], sy * (H[1] - r), sz * (H[2] - r)], [sx * (H[0] - r), sy * H[1], sz * (H[2] - r)], [sx * (H[0] - r), sy * (H[1] - r), sz * H[2]], sx, sy, sz);
     }
 }
-const VERT = `attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; varying vec3 vColor; uniform mat4 uMvp; uniform mat4 uModel; varying vec3 vNormal; varying vec3 vWorld; void main(){ vec4 world=uModel*vec4(aPos,1.0); vWorld=world.xyz; vNormal=mat3(uModel)*aNormal; vColor=aColor; gl_Position=uMvp*vec4(aPos,1.0); }`;
+const VERT = `attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; varying vec3 vColor; uniform mat4 uMvp; uniform mat4 uModel; uniform float uTime; varying vec3 vNormal; varying vec3 vWorld; void main(){ vec4 world=uModel*vec4(aPos,1.0); float gr=aColor.g-max(aColor.r,aColor.b); float sw=step(.05,gr)*smoothstep(2.2,5.0,world.y); vec3 wo=vec3(sin(uTime*1.3+world.x*.7+world.z*.5)*.07+sin(uTime*2.9+world.z)*.025,0.0,cos(uTime*1.1+world.z*.6+world.x*.4)*.06)*sw*(world.y-1.8)*.32; vWorld=world.xyz+wo; vNormal=mat3(uModel)*aNormal; vColor=aColor; gl_Position=uMvp*vec4(aPos+wo,1.0); }`; // wind: green vertices above ~2.2 m sway (palm crowns, canopies); avatars/hedges/grass stay still
 // FRAG / SHADOW_* / SKY_* live in ./world-shaders (visual bible v2).
 function shader(gl, type, source) { const s = gl.createShader(type); if (!s)
     throw new Error("WebGL shader allocation failed"); gl.shaderSource(s, source); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
@@ -153,11 +154,11 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS))
         throw new Error(gl.getProgramInfoLog(program) || "WebGL program link failed");
     gl.useProgram(program);
-    const loc = { pos: gl.getAttribLocation(program, "aPos"), normal: gl.getAttribLocation(program, "aNormal"), vcolor: gl.getAttribLocation(program, "aColor"), mvp: gl.getUniformLocation(program, "uMvp"), model: gl.getUniformLocation(program, "uModel"), color: gl.getUniformLocation(program, "uColor"), light: gl.getUniformLocation(program, "uLight"), emissive: gl.getUniformLocation(program, "uEmissive"), eye: gl.getUniformLocation(program, "uEye"), alpha: gl.getUniformLocation(program, "uAlpha"), lightVP: gl.getUniformLocation(program, "uLightVP"), shadowOn: gl.getUniformLocation(program, "uShadowOn"), shadowTexel: gl.getUniformLocation(program, "uShadowTexel"), shadowQ: gl.getUniformLocation(program, "uShadowQ"), detail: gl.getUniformLocation(program, "uDetail"), shadowMap: gl.getUniformLocation(program, "uShadowMap") };
+    const loc = { pos: gl.getAttribLocation(program, "aPos"), normal: gl.getAttribLocation(program, "aNormal"), vcolor: gl.getAttribLocation(program, "aColor"), mvp: gl.getUniformLocation(program, "uMvp"), model: gl.getUniformLocation(program, "uModel"), color: gl.getUniformLocation(program, "uColor"), light: gl.getUniformLocation(program, "uLight"), emissive: gl.getUniformLocation(program, "uEmissive"), eye: gl.getUniformLocation(program, "uEye"), alpha: gl.getUniformLocation(program, "uAlpha"), lightVP: gl.getUniformLocation(program, "uLightVP"), shadowOn: gl.getUniformLocation(program, "uShadowOn"), shadowTexel: gl.getUniformLocation(program, "uShadowTexel"), shadowQ: gl.getUniformLocation(program, "uShadowQ"), detail: gl.getUniformLocation(program, "uDetail"), plain: gl.getUniformLocation(program, "uPlain"), shadowMap: gl.getUniformLocation(program, "uShadowMap") };
     const ext = gl.getExtension("ANGLE_instanced_arrays");
-    const nightLoc = gl.getUniformLocation(program, "uNight"); let nightLocI = null; let night = 0; let camClear = 1;
+    const nightLoc = gl.getUniformLocation(program, "uNight"); const timeLoc = gl.getUniformLocation(program, "uTime"); let timeLocI = null; let nightLocI = null; let night = 0; let camClear = 1; let windT = 0;
     let iprog = null, iloc = null, ibuf = null;
-    const VERT_I = "attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aM0; attribute vec4 aM1; attribute vec4 aM2; attribute vec4 aM3; attribute vec3 aTint; uniform mat4 uVP; varying vec3 vColor; varying vec3 vNormal; varying vec3 vWorld; void main(){ mat4 M=mat4(aM0,aM1,aM2,aM3); vec4 w=M*vec4(aPos,1.0); vWorld=w.xyz; vNormal=mat3(M)*aNormal; vColor=aColor*aTint; gl_Position=uVP*w; }";
+    const VERT_I = "attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aM0; attribute vec4 aM1; attribute vec4 aM2; attribute vec4 aM3; attribute vec3 aTint; uniform mat4 uVP; uniform float uTime; varying vec3 vColor; varying vec3 vNormal; varying vec3 vWorld; void main(){ mat4 M=mat4(aM0,aM1,aM2,aM3); vec4 w=M*vec4(aPos,1.0); float gr=aColor.g-max(aColor.r,aColor.b); float sw=step(.05,gr)*smoothstep(2.2,5.0,w.y); vec3 wo=vec3(sin(uTime*1.3+w.x*.7+w.z*.5)*.07+sin(uTime*2.9+w.z)*.025,0.0,cos(uTime*1.1+w.z*.6+w.x*.4)*.06)*sw*(w.y-1.8)*.32; w.xyz+=wo; vWorld=w.xyz; vNormal=mat3(M)*aNormal; vColor=aColor*aTint; gl_Position=uVP*w; }";
     if (ext) {
         try {
             const p2 = gl.createProgram();
@@ -166,8 +167,8 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             ["aPos", "aNormal", "aColor", "aM0", "aM1", "aM2", "aM3", "aTint"].forEach((n, i) => gl.bindAttribLocation(p2, i, n));
             gl.linkProgram(p2);
             if (!gl.getProgramParameter(p2, gl.LINK_STATUS)) throw new Error("instanced program link failed");
-            iprog = p2; ibuf = gl.createBuffer(); nightLocI = gl.getUniformLocation(p2, "uNight");
-            iloc = { vp: gl.getUniformLocation(p2, "uVP"), color: gl.getUniformLocation(p2, "uColor"), light: gl.getUniformLocation(p2, "uLight"), eye: gl.getUniformLocation(p2, "uEye"), emissive: gl.getUniformLocation(p2, "uEmissive"), alpha: gl.getUniformLocation(p2, "uAlpha"), lightVP: gl.getUniformLocation(p2, "uLightVP"), shadowOn: gl.getUniformLocation(p2, "uShadowOn"), shadowTexel: gl.getUniformLocation(p2, "uShadowTexel"), shadowQ: gl.getUniformLocation(p2, "uShadowQ"), detail: gl.getUniformLocation(p2, "uDetail"), shadowMap: gl.getUniformLocation(p2, "uShadowMap") };
+            iprog = p2; ibuf = gl.createBuffer(); nightLocI = gl.getUniformLocation(p2, "uNight"); timeLocI = gl.getUniformLocation(p2, "uTime");
+            iloc = { vp: gl.getUniformLocation(p2, "uVP"), color: gl.getUniformLocation(p2, "uColor"), light: gl.getUniformLocation(p2, "uLight"), eye: gl.getUniformLocation(p2, "uEye"), emissive: gl.getUniformLocation(p2, "uEmissive"), alpha: gl.getUniformLocation(p2, "uAlpha"), lightVP: gl.getUniformLocation(p2, "uLightVP"), shadowOn: gl.getUniformLocation(p2, "uShadowOn"), shadowTexel: gl.getUniformLocation(p2, "uShadowTexel"), shadowQ: gl.getUniformLocation(p2, "uShadowQ"), detail: gl.getUniformLocation(p2, "uDetail"), plain: gl.getUniformLocation(p2, "uPlain"), shadowMap: gl.getUniformLocation(p2, "uShadowMap") };
             gl.useProgram(program);
         } catch (e) { iprog = null; }
     }
@@ -226,12 +227,14 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             shadowSize = size; if (!ok) shadowOn = false;
         } catch (e) { shadowOn = false; }
     };
-    const meshes = { dyn: null, box: createMesh(gl, "box"), sphere: createMesh(gl, "sphere"), lowsphere: createMesh(gl, "lowsphere"), cone: createMesh(gl, "cone"), cylinder: createMesh(gl, "cylinder"), wedge: createMesh(gl, "wedge") };
+    const meshes = { dyn: null, box: createMesh(gl, "box"), sphere: createMesh(gl, "sphere"), lowsphere: createMesh(gl, "lowsphere"), midsphere: createMesh(gl, "midsphere"), cone: createMesh(gl, "cone"), cylinder: createMesh(gl, "cylinder"), wedge: createMesh(gl, "wedge") };
     meshes.dyn = createMesh(gl, "custom", { positions: new Float32Array(9), normals: new Float32Array(9), colors: new Float32Array(9) });
     // Streamed GLB models: slot ("prop:tree") -> loaded mesh. Missing/failed slots fall back to the code-drawn shapes.
     const slotToName = {};
-    const registerMesh = (name, data, slot, entry) => { unregisterMesh(name); meshes[name] = createMesh(gl, "custom", data); slotToName[slot] = { name, entry }; };
-    const unregisterMesh = (name) => { const m = meshes[name]; if (!m) return; gl.deleteBuffer(m.p); gl.deleteBuffer(m.n); gl.deleteBuffer(m.c); delete meshes[name]; for (const k of Object.keys(slotToName)) if (slotToName[k].name === name) delete slotToName[k]; };
+    const PRIM_SHAPES = new Set(["box", "sphere", "lowsphere", "midsphere", "cone", "cylinder", "wedge", "dyn"]);
+    const plainMesh = new Set(); // GLB meshes that are NOT building shells: the shader skips masonry coursing on them (uPlain)
+    const registerMesh = (name, data, slot, entry) => { unregisterMesh(name); meshes[name] = createMesh(gl, "custom", data); slotToName[slot] = { name, entry }; if (String(slot).startsWith("building:")) plainMesh.delete(name); else plainMesh.add(name); };
+    const unregisterMesh = (name) => { const m = meshes[name]; if (!m) return; gl.deleteBuffer(m.p); gl.deleteBuffer(m.n); gl.deleteBuffer(m.c); delete meshes[name]; plainMesh.delete(name); for (const k of Object.keys(slotToName)) if (slotToName[k].name === name) delete slotToName[k]; };
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.CULL_FACE);
     gl.enable(gl.BLEND);
@@ -244,16 +247,40 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     resize();
     let curAlpha = 1, calls = 0, recorder = null;
     const callBy = {};
-    const cpu = { box: meshData("box"), sphere: meshData("sphere"), lowsphere: meshData("lowsphere"), cone: meshData("cone"), cylinder: meshData("cylinder"), wedge: meshData("wedge") };
+    const cpu = { box: meshData("box"), sphere: meshData("sphere"), lowsphere: meshData("lowsphere"), midsphere: meshData("midsphere"), cone: meshData("cone"), cylinder: meshData("cylinder"), wedge: meshData("wedge") };
     const bakedCache = new Map();
-    const drawBaked = (key, fn, vp) => {
+    // Single world-space triangle (leaf blades) recorded into the static batch; normal forced upward so both sides light like a thin leaf.
+    const pushTri = (ax, ay, az, bx, by, bz, cx, cy, cz, color) => {
+        if (!recorder) return; const col = parseColor(color);
+        let nx = (by - ay) * (cz - az) - (bz - az) * (cy - ay), ny = (bz - az) * (cx - ax) - (bx - ax) * (cz - az), nz = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+        if (ny < 0) { nx = -nx; ny = -ny; nz = -nz; } const nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+        recorder.p.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (let i = 0; i < 3; i++) { recorder.n.push(nx, ny, nz); recorder.c.push(col[0], col[1], col[2]); }
+    };
+    // Leaf fringe: small outward-pointing leaf triangles scattered over an ellipsoidal canopy so the silhouette is leafy, not a smooth ball.
+    const leafFringe = (cx, cy, cz, rx, ry, rz, color, count, seed, flat = false) => {
+        if (!recorder || count <= 0) return;
+        for (let i = 0; i < count; i++) {
+            const r1 = hash2(seed + i * 1.7, i * 3.1), r2 = hash2(i * 2.3, seed - i), r3 = hash2(seed * 1.3 + i, i * .7);
+            const th = r1 * 6.2832, ph = (flat ? .9 + r2 * .5 : .3 + r2 * 1.5);
+            const sx = Math.sin(ph) * Math.cos(th), sy = Math.cos(ph), sz = Math.sin(ph) * Math.sin(th);
+            const px = cx + sx * rx, py = cy + sy * ry, pz = cz + sz * rz;
+            let nx = sx / rx, ny = sy / ry, nz = sz / rz; const nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+            let tx = nz, tz = -nx; const tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
+            let dx = -ny * nx, dy = -1 + ny * ny, dz = -ny * nz; const dl = Math.hypot(dx, dy, dz) || 1; dx /= dl; dy /= dl; dz /= dl;
+            const L = .62 + r3 * .4, w = .3 + r3 * .16, col = shadeHex(color, (r3 - .55) * .26 + (sy > .4 ? .05 : -.06));
+            pushTri(px + tx * w, py, pz + tz * w, px - tx * w, py, pz - tz * w, px + dx * L + nx * .18, py + dy * L + ny * .18, pz + dz * L + nz * .18, col);
+        }
+    };
+    let collectCam = false; const camPropKeys = new Set(); const CAM_PROPS = [];
+    const drawBaked = (key, fn, vp, cell = 0) => {
         if (!bakedCache.has(key)) {
             recorder = { p: [], n: [], c: [] };
             try { fn(); } finally {
                 const rec = recorder; recorder = null;
-                commitRec(key, rec);
+                if (cell) commitChunks(key, rec, cell); else commitRec(key, rec);
             }
         }
+        if (cell) { if (bakedCache.get(key)) { drawChunks(key, vp, lastEye, 0); return 1; } return 0; }
         if (bakedCache.get(key)) { if (meshes[key]) draw(key, 0, 0, 0, 1, 1, 1, "#ffffff", vp); if (meshes[key + "|g"]) draw(key + "|g", 0, 0, 0, 1, 1, 1, "#ffffff", vp, .15); return 1; }
         return 0;
     };
@@ -262,6 +289,75 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         if (rec.p.length) meshes[key] = mk(rec);
         if (rec.g && rec.g.p.length) meshes[key + "|g"] = mk(rec.g);
         bakedCache.set(key, rec.p.length > 0 || !!(rec.g && rec.g.p.length));
+    };
+    // Spatial chunking for the big static bakes (environment ring, whole-zone architecture, avenue lamps): the recorded triangles are
+    // binned into square cells of `cell` metres, each cell becomes its own mesh with a bounding box, and each frame only the chunks that
+    // intersect the view frustum (and sit within range) are drawn. Previously a zone was drawn in full even if one corner was visible.
+    const chunkMeshes = new Map(), IDENT = identity();
+    const splitChunks = (key, r, cell, suffix, tag) => {
+        const out = new Map(), P = r.p, N = r.n, C = r.c;
+        for (let t = 0; t + 8 < P.length; t += 9) {
+            const id = Math.floor((P[t] + P[t + 3] + P[t + 6]) / 3 / cell) + "," + Math.floor((P[t + 2] + P[t + 5] + P[t + 8]) / 3 / cell);
+            let o = out.get(id); if (!o) out.set(id, o = { p: [], n: [], c: [], x0: 1e9, x1: -1e9, y0: 1e9, y1: -1e9, z0: 1e9, z1: -1e9 });
+            for (let v = 0; v < 9; v += 3) {
+                const x = P[t + v], y = P[t + v + 1], z = P[t + v + 2];
+                if (x < o.x0) o.x0 = x; if (x > o.x1) o.x1 = x; if (y < o.y0) o.y0 = y; if (y > o.y1) o.y1 = y; if (z < o.z0) o.z0 = z; if (z > o.z1) o.z1 = z;
+            }
+            for (let v = 0; v < 9; v++) { o.p.push(P[t + v]); o.n.push(N[t + v]); o.c.push(C[t + v]); }
+        }
+        const res = new Map();
+        for (const [id, o] of out) {
+            const name = key + "#" + id + tag + suffix;
+            meshes[name] = createMesh(gl, "custom", { positions: new Float32Array(o.p), normals: new Float32Array(o.n), colors: new Float32Array(o.c) });
+            res.set(id, { name, x0: o.x0 - 1, x1: o.x1 + 1, y0: o.y0 - 1, y1: o.y1 + 1, z0: o.z0 - 1, z1: o.z1 + 1 });
+        }
+        return res;
+    };
+    // Distance LOD: `farRec` is the same content baked at "low" quality; cells farther than the LOD distance draw that lighter variant.
+    const commitChunks = (key, rec, cell, farRec) => {
+        const has = (r) => r && r.p.length, hasG = (r) => r && r.g && r.g.p.length;
+        const nm = has(rec) ? splitChunks(key, rec, cell, "", "n") : new Map(), ng = hasG(rec) ? splitChunks(key, rec.g, cell, "|g", "n") : new Map();
+        const fm = has(farRec) ? splitChunks(key, farRec, cell, "", "f") : new Map(), fg = hasG(farRec) ? splitChunks(key, farRec.g, cell, "|g", "f") : new Map();
+        const ids = new Set([...nm.keys(), ...ng.keys(), ...fm.keys(), ...fg.keys()]), cells = [];
+        for (const id of ids) cells.push({ n: nm.get(id), g: ng.get(id), fn: fm.get(id), fg: fg.get(id), hasFar: !!farRec });
+        chunkMeshes.set(key, cells);
+        bakedCache.set(key, cells.length > 0);
+    };
+    let frustum = new Float32Array(24), shCenter = [0, 0, 0], shReach = 70;
+    const setFrustum = (m) => {
+        const row = (i) => [m[i], m[4 + i], m[8 + i], m[12 + i]], r0 = row(0), r1 = row(1), r2 = row(2), r3 = row(3);
+        const pl = [[1, r0], [-1, r0], [1, r1], [-1, r1], [1, r2], [-1, r2]];
+        pl.forEach(([s, r], i) => { for (let k = 0; k < 4; k++) frustum[i * 4 + k] = r3[k] + s * r[k]; });
+    };
+    const chunkVisible = (c, eyeP, maxD) => {
+        if (maxD) { const dx = Math.max(c.x0 - eyeP[0], 0, eyeP[0] - c.x1), dz = Math.max(c.z0 - eyeP[2], 0, eyeP[2] - c.z1); if (dx * dx + dz * dz > maxD * maxD) return false; }
+        for (let i = 0; i < 24; i += 4) {
+            const a = frustum[i], b = frustum[i + 1], cc = frustum[i + 2];
+            if (a * (a > 0 ? c.x1 : c.x0) + b * (b > 0 ? c.y1 : c.y0) + cc * (cc > 0 ? c.z1 : c.z0) + frustum[i + 3] < 0) return false;
+        }
+        return true;
+    };
+    // Draws the visible chunks of a chunked bake (far cells use the low-quality variant when one exists); off-screen chunks near the shadow focus still cast into the shadow map.
+    // Triangle governor: scales the near-detail and draw distances of the big baked chunks so a frame stays inside its quality budget
+    // (phone-safe), easing in/out slowly. State is per renderer; `lastFrameTris` is the previous frame's total.
+    const TRI_BUDGET = { low: 52000, medium: 105000, high: 175000 };
+    let govScale = 1, lastFrameTris = 0;
+    let cloudBake = false; // clouds are soft blobs seen from far away: 80-tri spheres at every quality
+    const CULL_D = { low: 80, medium: 105, high: 140 }; // per-quality chunk draw distance (m); fog is ~90% opaque at 165 m
+    const drawChunks = (key, vp, eyeP, farD, cullD) => {
+        const cells = chunkMeshes.get(key); if (!cells) return 0; let n = 0;
+        const one = (c, glow) => {
+            if (!c) return;
+            if (chunkVisible(c, eyeP, 0)) { draw(c.name, 0, 0, 0, 1, 1, 1, "#ffffff", vp, glow ? .15 : 0); n++; return; }
+            if (!glow && shadowOn) { const dx = Math.max(c.x0 - shCenter[0], 0, shCenter[0] - c.x1), dz = Math.max(c.z0 - shCenter[2], 0, shCenter[2] - c.z1); if (dx * dx + dz * dz < shReach * shReach) shadowList.push(meshes[c.name], IDENT); }
+        };
+        for (const c of cells) {
+            if (cullD) { const r = c.n || c.g || c.fn || c.fg, dx = Math.max(r.x0 - eyeP[0], 0, eyeP[0] - r.x1), dz = Math.max(r.z0 - eyeP[2], 0, eyeP[2] - r.z1); if (dx * dx + dz * dz > cullD * cullD) continue; } // triangle budget: beyond this the fog already hides it
+            let far = false;
+            if (c.hasFar && farD) { const r = c.n || c.g || c.fn || c.fg, dx = Math.max(r.x0 - eyeP[0], 0, eyeP[0] - r.x1), dz = Math.max(r.z0 - eyeP[2], 0, eyeP[2] - r.z1); far = dx * dx + dz * dz > farD * farD; }
+            if (far) { one(c.fn, false); one(c.fg, true); } else { one(c.n, false); one(c.g, true); }
+        }
+        return n;
     };
     // Per-frame dynamic batch (avatars, birds): primitives recorded then drawn in ONE call.
     const beginDyn = () => { recorder = { p: [], n: [], c: [] }; };
@@ -274,16 +370,19 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     };
     const renderer_chunks = { solids: null, keys: new Map() };
     const draw = (shape, x, y, z, w, h, d, color, viewProjection, emissive = 0, rot = 0) => {
+        if (shape === "sphere" && cloudBake) shape = "lowsphere"; else if (shape === "sphere" && detailQ < 1) shape = Math.max(w, h, d) < .45 ? "lowsphere" : "midsphere"; // tessellation budget: only High keeps the 480-tri sphere
         if (recorder && cpu[shape]) {
             // Static-batch recording: bake the transformed primitive (with colour) into one merged mesh.
-            const mm = model(x, y, z, w, h, d, rot), col = parseColor(color), src = cpu[shape], tgt = recorder, eo = emissive > 0 ? 2 : 0; // emissive geometry shares the mesh: flagged by +2 on colour (see FRAG)
+            const mm = model(x, y, z, w, h, d, rot), col = parseColor(color), src = cpu[shape], tgt = recorder, eo = emissive > 0 ? 2 : 0;
+            if (collectCam && emissive === 0 && (shape === "box" || shape === "cylinder") && h >= 2.2 && w <= 2.4 && d <= 2.4 && y - h / 2 < .6) { const ww = rot ? Math.max(w, d) : w, dd = rot ? Math.max(w, d) : d, k = Math.round(x * 10) + "," + Math.round(z * 10); if (!camPropKeys.has(k)) { camPropKeys.add(k); CAM_PROPS.push({ x: x - ww / 2, y: z - dd / 2, w: ww, h: dd, height: y + h / 2 }); } } // pillars, trunks, lamp posts: camera-only collision (visual, never server authority) // emissive geometry shares the mesh: flagged by +2 on colour (see FRAG)
             if (shape === "box" && (globalThis.__campusBevelMin ?? .3) < 9 && Math.min(w, h, d) >= (globalThis.__campusBevelMin ?? .3)) { pushBevelBox(tgt, x, y, z, w, h, d, rot, col, eo); return; }
+            const dm = [w, h, d].sort((p, q) => p - q), panelK = shape === "box" && dm[0] < .26 && dm[1] * dm[2] >= 1 ? 2 : 1;
             for (let i = 0; i < src.count; i++) {
                 const px = src.p[i * 3], py = src.p[i * 3 + 1], pz = src.p[i * 3 + 2], nx = src.n[i * 3] / (w || 1), ny = src.n[i * 3 + 1] / (h || 1), nz = src.n[i * 3 + 2] / (d || 1);
                 tgt.p.push(mm[0] * px + mm[4] * py + mm[8] * pz + mm[12], mm[1] * px + mm[5] * py + mm[9] * pz + mm[13], mm[2] * px + mm[6] * py + mm[10] * pz + mm[14]);
                 let tx = mm[0] * nx + mm[4] * ny + mm[8] * nz, ty = mm[1] * nx + mm[5] * ny + mm[9] * nz, tz = mm[2] * nx + mm[6] * ny + mm[10] * nz;
                 const nl = Math.hypot(tx, ty, tz) || 1;
-                tgt.n.push(tx / nl, ty / nl, tz / nl);
+                tgt.n.push(tx / nl * panelK, ty / nl * panelK, tz / nl * panelK); // |n|=2 flags a thin signboard/banner panel: the shader skips masonry on it
                 tgt.c.push(col[0] + eo, col[1] + eo, col[2] + eo);
             }
             return;
@@ -302,6 +401,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         gl.uniformMatrix4fv(loc.mvp, false, mvp);
         gl.uniform3fv(loc.color, parseColor(color));
         gl.uniform1f(loc.emissive, emissive);
+        gl.uniform1f(loc.plain, plainMesh.has(shape) || PRIM_SHAPES.has(shape) ? 1 : 0); // primitives + dyn batch = avatars/NPCs/markers: never masonry
         gl.uniform1f(loc.alpha, curAlpha);
         gl.drawArrays(gl.TRIANGLES, 0, mesh.count);
         calls++; trisFrame += mesh.count / 3;
@@ -312,7 +412,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     };
     const box = (x, z, w, d, h, color, vp, y = 0) => draw("box", x + w / 2, y + h / 2, z + d / 2, w, h, d, color, vp);
     const floor = (x, z, w, d, color, vp, y = 0.025) => box(x, z, w, d, .05, color, vp, y);
-    const mkP = (vp) => ({ box: (x, z, w, d, h, c, y0 = 0) => draw("box", x + w / 2, y0 + h / 2, z + d / 2, w, h, d, c, vp), cyl: (cx, cz, w, h, c, y0 = 0) => draw("cylinder", cx, y0 + h / 2, cz, w, h, w, c, vp), sph: (cx, cy, cz, w, h, d, c) => draw("sphere", cx, cy, cz, w, h, d, c, vp), rbox: (cx, cy, cz, w, h, d, c, rot) => draw("box", cx, cy, cz, w, h, d, c, vp, 0, rot), rsph: (cx, cy, cz, w, h, d, c, rot) => draw("sphere", cx, cy, cz, w, h, d, c, vp, 0, rot), lbox: (x, z, w, d, h, c, y0 = 0) => draw("box", x + w / 2, y0 + h / 2, z + d / 2, w, h, d, c, vp, .15), lsph: (cx, cy, cz, w, h, d, c) => draw("sphere", cx, cy, cz, w, h, d, c, vp, .15) });
+    const mkP = (vp) => ({ box: (x, z, w, d, h, c, y0 = 0) => draw("box", x + w / 2, y0 + h / 2, z + d / 2, w, h, d, c, vp), cyl: (cx, cz, w, h, c, y0 = 0) => draw("cylinder", cx, y0 + h / 2, cz, w, h, w, c, vp), sph: (cx, cy, cz, w, h, d, c) => draw("sphere", cx, cy, cz, w, h, d, c, vp), rbox: (cx, cy, cz, w, h, d, c, rot) => draw("box", cx, cy, cz, w, h, d, c, vp, 0, rot), rsph: (cx, cy, cz, w, h, d, c, rot) => draw("sphere", cx, cy, cz, w, h, d, c, vp, 0, rot), lbox: (x, z, w, d, h, c, y0 = 0) => draw("box", x + w / 2, y0 + h / 2, z + d / 2, w, h, d, c, vp, .15), lsph: (cx, cy, cz, w, h, d, c) => draw("sphere", cx, cy, cz, w, h, d, c, vp, .15), tri: recorder ? pushTri : undefined });
     // Cheap grounded shadows: translucent, depth-write-free decals (no shadow-map cost).
     // Decal shadows are collected per alpha and drawn in ONE call per alpha bucket (flushShadows), instead of one call per shadow.
     const shadowBuckets = new Map();
@@ -347,7 +447,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             for (let i = 0; i < n; i++) { const m = model(l[i * 7], l[i * 7 + 1], l[i * 7 + 2], l[i * 7 + 3], l[i * 7 + 4], l[i * 7 + 5], l[i * 7 + 6]); data.set(m, i * 19); data[i * 19 + 16] = 1; data[i * 19 + 17] = 1; data[i * 19 + 18] = 1; }
             if (shadowOn) shadowInst.push(mesh, data, n);
             gl.useProgram(iprog);
-            gl.uniformMatrix4fv(iloc.vp, false, vp); gl.uniform3f(iloc.color, 1, 1, 1); gl.uniform3f(iloc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1i(iloc.shadowMap, 0); gl.uniformMatrix4fv(iloc.lightVP, false, lightVP); gl.uniform1f(iloc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(iloc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(iloc.shadowQ, shadowQ); gl.uniform1f(iloc.detail, detailQ); gl.uniform3f(iloc.eye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(nightLocI, night); gl.uniform1f(iloc.emissive, 0); gl.uniform1f(iloc.alpha, 1);
+            gl.uniformMatrix4fv(iloc.vp, false, vp); gl.uniform3f(iloc.color, 1, 1, 1); gl.uniform3f(iloc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1i(iloc.shadowMap, 0); gl.uniformMatrix4fv(iloc.lightVP, false, lightVP); gl.uniform1f(iloc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(iloc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(iloc.shadowQ, shadowQ); gl.uniform1f(iloc.detail, detailQ); if (timeLocI) gl.uniform1f(timeLocI, windT); gl.uniform1f(iloc.plain, plainMesh.has(name) ? 1 : 0); gl.uniform3f(iloc.eye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(nightLocI, night); gl.uniform1f(iloc.emissive, 0); gl.uniform1f(iloc.alpha, 1);
             [[mesh.p, 0], [mesh.n, 1], [mesh.c, 2]].forEach(([buf, loc]) => { gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0); ext.vertexAttribDivisorANGLE(loc, 0); });
             gl.bindBuffer(gl.ARRAY_BUFFER, ibuf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
             for (let k = 0; k < 4; k++) { gl.enableVertexAttribArray(3 + k); gl.vertexAttribPointer(3 + k, 4, gl.FLOAT, false, 76, k * 16); ext.vertexAttribDivisorANGLE(3 + k, 1); }
@@ -518,6 +618,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     const render = (input, overlay) => {
         const q = input.quality ?? "medium";
         detailQ = (input.quality ?? "medium") === "high" ? 1 : (input.quality ?? "medium") === "low" ? 0 : .6;
+        { const bud = TRI_BUDGET[input.quality ?? "medium"] ?? 105000; govScale = lastFrameTris > bud ? Math.max(.12, govScale * (lastFrameTris > bud * 1.25 ? .7 : .88)) : lastFrameTris < bud * .8 ? Math.min(1, govScale * 1.02) : govScale; }
         calls = 0; trisFrame = 0; for (const k in callBy) delete callBy[k]; buckets.clear(); shadowBuckets.clear();
         pixelRatioCap = q === "low" ? 0.85 : q === "high" ? 1.5 : 1.2;
         const dpr = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
@@ -534,8 +635,9 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         let eye, target, fov = Math.PI / 3;
         if (walkCam) {
             const wi = { x: input.camX, y: input.camY, heading: input.camHeading ?? 0, look: input.camLook ?? 0, bob: input.camBob ?? 0 };
-            if (fpCam) { const c = solveFirstPersonCamera(wi); eye = c.eye; target = c.target; fov = FP_FOV; }
-            else { const c = solveChaseCamera({ ...wi, boxes: CAM_WALLS }); camClear += (c.clearance - camClear) * (c.clearance < camClear ? .6 : .1); eye = solveChaseCamera({ ...wi, boxes: [], dist: 4.3 * camClear }).eye; target = c.target; fov = 1.1; }
+            const camBoxes = CAM_PROPS.length ? CAM_WALLS.concat(CAM_PROPS) : CAM_WALLS;
+            if (fpCam) { const c = solveFirstPersonCamera({ ...wi, boxes: CAM_PROPS }); eye = c.eye; target = c.target; fov = FP_FOV; }
+            else { const c = solveChaseCamera({ ...wi, boxes: camBoxes }); camClear += (c.clearance - camClear) * (c.clearance < camClear ? .6 : .1); eye = solveChaseCamera({ ...wi, boxes: [], dist: 4.3 * camClear }).eye; target = c.target; fov = 1.1; }
         } else {
             const base = { camX: input.camX, camY: input.camY, yaw: input.camYaw ?? 0, pitch: input.camPitch ?? DEFAULT_PITCH, zoom: input.zoom ?? 1, worldW: domain_1.WORLD.width, worldH: domain_1.WORLD.height };
             const cam = solveOrbitCamera({ ...base, boxes: domain_1.BUILDINGS });
@@ -547,6 +649,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         // Heading frustum for culling in walk views: anything clearly behind or beside the view cone is skipped (static meshes only; labels/entities have their own rules).
         const hdg = walkCam ? (input.camHeading ?? 0) : 0, fwdX = Math.sin(hdg), fwdZ = Math.cos(hdg), halfH = Math.atan(Math.tan(fov / 2) * aspect) + .42;
         const inCone = (x, z, pad) => { if (!walkCam) return true; const dx = x - eye[0], dz = z - eye[2], d = Math.hypot(dx, dz); if (d <= pad + 6) return true; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * fwdX + dz * fwdZ) / d))); return ang <= halfH + Math.asin(Math.min(1, pad / d)); };
+        const bdHit = slotToName["decor:kn_bd_a"], bdOn = !!(bdHit && meshes[bdHit.name]); // model backdrop streamed in?
         if (skyProg) {
             const fw = [target[0] - eye[0], target[1] - eye[1], target[2] - eye[2]], fl = Math.hypot(...fw) || 1, F = [fw[0] / fl, fw[1] / fl, fw[2] / fl];
             let R = [-F[2], 0, F[0]]; const rl = Math.hypot(...R) || 1; R = [R[0] / rl, 0, R[2] / rl];
@@ -559,16 +662,18 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
         }
-        shadowPass(walkCam ? [eye[0] + fwdX * 14, 0, eye[2] + fwdZ * 14] : target, q);
+        setFrustum(vp); shCenter = walkCam ? [eye[0] + fwdX * 14, 0, eye[2] + fwdZ * 14] : target; shReach = (q === "high" ? 48 : q === "medium" ? 40 : 34) + 30;
+        shadowPass(shCenter, q);
         shadowList = []; shadowInst = [];
         gl.useProgram(program);
-        gl.uniform3f(loc.eye, eye[0], eye[1], eye[2]); lastEye = eye; gl.uniform1f(nightLoc, night);
+        gl.uniform3f(loc.eye, eye[0], eye[1], eye[2]); lastEye = eye; gl.uniform1f(nightLoc, night); windT = (typeof globalThis.__windT === "number" ? globalThis.__windT : (typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000); gl.uniform1f(timeLoc, windT);
         gl.uniform1i(loc.shadowMap, 0); gl.uniformMatrix4fv(loc.lightVP, false, lightVP); gl.uniform1f(loc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(loc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(loc.shadowQ, shadowQ); gl.uniform1f(loc.detail, detailQ);
         floor(-140, -120, domain_1.WORLD.width + 280, domain_1.WORLD.height + 250, "#5f8f48", vp, -.2); // outer ground so the horizon is land, not clear-colour
         {
             // Surrounding environment (treeline, distant wings, skyline, hills): ONE baked mesh per quality.
-            const ekey = "env|" + q;
+            const ekey = "env|" + q + "|" + (bdOn ? 1 : 0);
             if (!bakedCache.has(ekey)) {
+              const bakeEnv = (qq) => {
                 recorder = { p: [], n: [], c: [] };
                 try {
                     environment({
@@ -578,10 +683,14 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
                         rbox: (cx, cy2, cz, w, h, d, color, rot) => draw("box", cx, cy2, cz, w, h, d, color, vp, 0, rot),
                         lbox: (x0, z0, w, d, h, color, y0 = 0) => draw("box", x0 + w / 2, y0 + h / 2, z0 + d / 2, w, h, d, color, vp, .15),
                         lsph: (cx, cy2, cz, w, h, d, color) => draw("sphere", cx, cy2, cz, w, h, d, color, vp, .15),
-                    }, q);
-                } finally { const rec = recorder; recorder = null; commitRec(ekey, rec); }
+                        tri: pushTri,
+                    }, qq, { models: bdOn });
+                } finally { var rec = recorder; recorder = null; }
+                return rec;
+              };
+              commitChunks(ekey, bakeEnv(q), 40, q === "low" ? null : bakeEnv("low"));
             }
-            if (bakedCache.get(ekey)) { if (meshes[ekey]) draw(ekey, 0, 0, 0, 1, 1, 1, "#ffffff", vp); if (meshes[ekey + "|g"]) draw(ekey + "|g", 0, 0, 0, 1, 1, 1, "#ffffff", vp, .15); }
+            if (bakedCache.get(ekey)) drawChunks(ekey, vp, eye, (q === "high" ? 34 : 16) * govScale, (CULL_D[q] ?? 115) * Math.max(.55, govScale));
         }
         floor(0, 0, domain_1.WORLD.width, domain_1.WORLD.height, "#5c9142", vp, -.12);
         // Zone floors create a readable, colourful campus plan without flattening the perspective.
@@ -632,7 +741,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
                 draw("box", side, .25, zz + 1.6, .9, .5, .9, "#b8613f", vp);
                 draw("sphere", side, .72, zz + 1.6, .95, .6, .95, hash2(side, zz) > .5 ? "#3f8844" : "#e0527a", vp);
             }
-            }, vp);
+            }, vp, 24);
             // Zone banners: coloured pennants teach the map without reading the minimap.
             domain_1.ZONES.forEach((zn, zi) => {
                 const fx = zn.x + 1.4, fz = zn.y + 1.4;
@@ -734,6 +843,39 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     continue;
                 draw("box", wx + .375, Math.max(.55, b.height * .52) + .275, b.y + b.h - .09, .75, .55, .12, "#a8e3f6", vp, .15);
             }
+            // All-round fenestration: the side and back walls get the same windows as the front (the door is always on the front wall).
+            {
+                const wy2 = Math.max(.55, b.height * .52), acc2 = shadeHex(c, -.35), cream2 = "#efe3c8", pitched2 = !!PITCHED[b.kind];
+                const walls = [{ ax: "x", edge: b.x + b.w, a0: b.y, len: b.h, out: 1 }, { ax: "x", edge: b.x, a0: b.y, len: b.h, out: -1 }, { ax: "z", edge: b.y, a0: b.x, len: b.w, out: -1 }];
+                const wb = (wl, a0, aw, din, dout, h, col, y0, glass) => {
+                    const s = wl.out > 0 ? wl.edge - din : wl.edge - dout, dz = din + dout;
+                    if (wl.ax === "x") { if (glass) draw("box", s + dz / 2, y0 + h / 2, a0 + aw / 2, dz, h, aw, col, vp, .15); else box(s, a0, dz, aw, h, col, vp, y0); }
+                    else { if (glass) draw("box", a0 + aw / 2, y0 + h / 2, s + dz / 2, aw, h, dz, col, vp, .15); else box(a0, s, aw, dz, h, col, vp, y0); }
+                };
+                for (const wl of walls) {
+                    const n = Math.max(1, Math.floor((wl.len - 1.6) / 3));
+                    for (let i = 0; i < n; i++) {
+                        const p0 = wl.a0 + (n === 1 ? (wl.len - .75) / 2 : 1.2 + i * (wl.len - 2.4 - .75) / (n - 1));
+                        wb(wl, p0, .75, .15, -.03, .55, "#a8e3f6", wy2, true);
+                        drawn++;
+                        if (detailOn) {
+                            wb(wl, p0 - .1, .95, .2, .1, .09, cream2, wy2 - .1, false); // sill
+                            wb(wl, p0 - .1, .95, .2, .1, .09, cream2, wy2 + .55, false); // lintel
+                            wb(wl, p0 - .25, 1.25, 0, .75, .07, acc2, wy2 + .78, false); // window awning
+                            if (pitched2) { wb(wl, p0 - .34, .2, .02, .1, .7, acc2, wy2 - .05, false); wb(wl, p0 + .86, .2, .02, .1, .7, acc2, wy2 - .05, false); } // shutters
+                            drawn += 3;
+                        }
+                    }
+                }
+                if (detailOn) {
+                    const qn = shadeHex(c, .2), H = Math.max(1.6, b.height - .1);
+                    for (const [qx, qz] of [[b.x - .06, b.y - .06], [b.x + b.w - .3, b.y - .06], [b.x - .06, b.y + b.h - .3], [b.x + b.w - .3, b.y + b.h - .3]]) box(qx, qz, .36, .36, H, qn, vp, .1); // corner pilasters
+                    const pl = shadeHex(c, -.32), dgx = b.door ? b.door.x - .1 : b.x + b.w * 2, dgw = b.door ? b.door.w + .2 : 0; // plinth base band, broken at the door
+                    box(b.x - .1, b.y - .1, b.w + .2, .2, .42, pl, vp, 0); box(b.x - .1, b.y - .1, .2, b.h + .2, .42, pl, vp, 0); box(b.x + b.w - .1, b.y - .1, .2, b.h + .2, .42, pl, vp, 0);
+                    box(b.x - .1, b.y + b.h - .1, Math.max(0, dgx - (b.x - .1)), .2, .42, pl, vp, 0); box(dgx + dgw, b.y + b.h - .1, Math.max(0, b.x + b.w + .1 - (dgx + dgw)), .2, .42, pl, vp, 0);
+                    drawn += 9;
+                }
+            }
             // Facade grammar (detail LOD: only near the camera).
             if (detailOn) {
                 const ps = b.y + b.h, wy = Math.max(.55, b.height * .52), accent = shadeHex(c, -.35), cream = "#efe3c8";
@@ -820,6 +962,8 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     commitRec(bkey, rec);
                 }
             }
+            const bBox = { x0: b.x - 2, x1: b.x + b.w + 2, y0: -1, y1: Math.max(b.height, facOk ? fac.entry.size.h + (fac.entry.yOffset ?? 0) : 0) + 6, z0: b.y - 2, z1: b.y + b.h + 2 }, bSeen = chunkVisible(bBox, eye, 0); // frustum cull; unseen buildings near the shadow focus still cast
+            if (!bSeen) { if (shadowOn && meshes[bkey]) { const dx = Math.max(bBox.x0 - shCenter[0], 0, shCenter[0] - bBox.x1), dz = Math.max(bBox.z0 - shCenter[2], 0, shCenter[2] - bBox.z1); if (dx * dx + dz * dz < shReach * shReach) shadowList.push(meshes[bkey], IDENT); } culled++; if (facOk) { const sz = fac.entry.size; if (shadowOn && meshes[fac.name]) shadowList.push(meshes[fac.name], model(b.x + b.w / 2, (fac.entry.yOffset ?? 0) + sz.h / 2, b.y + b.h / 2, sz.w, sz.h, sz.d, 0)); } continue; }
             if (bakedCache.get(bkey)) { if (meshes[bkey]) draw(bkey, 0, 0, 0, 1, 1, 1, "#ffffff", vp); drawn++; if (meshes[bkey + "|g"] && (night > .35 || Math.hypot(b.x + b.w / 2 - input.camX, b.y + b.h / 2 - input.camY) < 30)) draw(bkey + "|g", 0, 0, 0, 1, 1, 1, "#ffffff", vp, .15); } // glow (window light) only matters near the player or at night
             if (facOk) { const sz = fac.entry.size; draw(fac.name, b.x + b.w / 2, (fac.entry.yOffset ?? 0) + sz.h / 2, b.y + b.h / 2, sz.w, sz.h, sz.d, "#ffffff", vp); drawn++; }
         }
@@ -828,10 +972,11 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             if (!nearCamera(z.x + z.w / 2, z.y + z.h / 2, Math.max(z.w, z.h) * .6)) continue;
             const akey = "arch:" + z.id + "|" + q;
             if (!bakedCache.has(akey)) {
-                recorder = { p: [], n: [], c: [] };
+              const bakeArch = (qq, cam) => {
+                recorder = { p: [], n: [], c: [] }; collectCam = cam;
                 try {
                     const zdef = domain_1.ZONE_DEFS.find((d) => d.id === z.id);
-                    const arch = hasZoneArchitecture(z.id) ? (pp) => buildZoneArchitecture(z.id, q, pp) : (pp) => { if (zdef) { const dz = { id: z.id, rect: zdef.rect, buildings: zdef.buildings }; buildDistrict(dz, q, pp); zoneGateway(dz, q, pp); if (zdef.buildings.length) southLawn(z.id, zdef.rect, Math.max(...zdef.buildings.map((bb) => bb.y + bb.h)), q, pp); else if (z.id === "gate_road") gateRoadExtras(zdef.rect, q, pp); } };
+                    const arch = hasZoneArchitecture(z.id) ? (pp) => buildZoneArchitecture(z.id, qq, pp) : (pp) => { if (zdef) { const dz = { id: z.id, rect: zdef.rect, buildings: zdef.buildings }; buildDistrict(dz, qq, pp); zoneGateway(dz, qq, pp); if (zdef.buildings.length) southLawn(z.id, zdef.rect, Math.max(...zdef.buildings.map((bb) => bb.y + bb.h)), qq, pp); else if (z.id === "gate_road") gateRoadExtras(zdef.rect, qq, pp); } };
                     arch({
                         box: (x0, z0, w, d, h, color, y0 = 0) => draw("box", x0 + w / 2, y0 + h / 2, z0 + d / 2, w, h, d, color, vp),
                         cyl: (cx, cz, w, h, color, y0 = 0) => draw("cylinder", cx, y0 + h / 2, cz, w, h, w, color, vp),
@@ -839,13 +984,16 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                         rbox: (cx, cy2, cz, w, h, d, color, rot) => draw("box", cx, cy2, cz, w, h, d, color, vp, 0, rot),
                         lbox: (x0, z0, w, d, h, color, y0 = 0) => draw("box", x0 + w / 2, y0 + h / 2, z0 + d / 2, w, h, d, color, vp, .15),
                         lsph: (cx, cy2, cz, w, h, d, color) => draw("sphere", cx, cy2, cz, w, h, d, color, vp, .15),
+                        tri: pushTri,
                     });
                 } finally {
-                    const rec = recorder; recorder = null;
-                    commitRec(akey, rec);
+                    collectCam = false; var rec = recorder; recorder = null;
                 }
+                return rec;
+              };
+              commitChunks(akey, bakeArch(q, true), 24, q === "low" ? null : bakeArch("low", false));
             }
-            if (bakedCache.get(akey)) { if (meshes[akey]) draw(akey, 0, 0, 0, 1, 1, 1, "#ffffff", vp); drawn++; if (meshes[akey + "|g"]) draw(akey + "|g", 0, 0, 0, 1, 1, 1, "#ffffff", vp, .15); }
+            if (bakedCache.get(akey)) { drawChunks(akey, vp, eye, (q === "high" ? 34 : 16) * govScale, (CULL_D[q] ?? 115) * Math.max(.55, govScale)); drawn++; }
         }
         // Decor: non-solid scenery from zone data; drawn only when its GLB has streamed in.
         for (const zd of domain_1.ZONE_DEFS) {
@@ -855,6 +1003,20 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     continue;
                 const k = dc.scale ?? 1, sz = hit.entry.size ?? { w: 1, h: 1, d: 1 };
                 queue(hit.name, dc.x, (hit.entry.yOffset ?? 0) + sz.h * k / 2, dc.y, sz.w * k, sz.h * k, sz.d * k, dc.rot ?? 0);
+                drawn++;
+            }
+        }
+        // Backdrop: model buildings beyond the campus edge (replace the box wings/skyline once their GLBs have streamed in).
+        if (bdOn) {
+            let bi = 0;
+            for (const bd of BACKDROP) {
+                if (q === "low" && (bi++ & 1)) continue;
+                const hit = slotToName["decor:" + bd.model];
+                if (!hit || !meshes[hit.name]) continue;
+                const dx = bd.x - input.camX, dz = bd.y - input.camY;
+                if (dx * dx + dz * dz > 300 * 300 || !inCone(bd.x, bd.y, 22)) continue;
+                const sz = hit.entry.size ?? { w: 1, h: 1, d: 1 }, k = bd.scale;
+                queue(hit.name, bd.x, sz.h * k / 2, bd.y, sz.w * k, sz.h * k, sz.d * k, bd.rot);
                 drawn++;
             }
         }
@@ -896,11 +1058,11 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                                 draw("cylinder", x - lean * .6, 2.1 * kk, z + .15, .18 * kk, 1.4 * kk, .18 * kk, "#6a4a36", vp, 0, -lean * 1.3);
                                 draw("sphere", x, 3.05 * kk, z, 4.6 * kk, .75 * kk, 4.0 * kk, "#4f7d36", vp);
                                 draw("sphere", x + .5 * kk, 3.45 * kk, z - .3 * kk, 3.3 * kk, .55 * kk, 2.9 * kk, "#6c9a42", vp);
-                                if (q !== "low") draw("sphere", x - .9 * kk, 3.25 * kk, z + .5 * kk, 2.2 * kk, .5 * kk, 2.0 * kk, "#86b24c", vp);
+                                if (q !== "low") { draw("sphere", x - .9 * kk, 3.25 * kk, z + .5 * kk, 2.2 * kk, .5 * kk, 2.0 * kk, "#86b24c", vp); leafFringe(x, 3.1 * kk, z, 2.3 * kk, .45 * kk, 2.0 * kk, "#6c9a42", q === "high" ? 72 : 48, x + z * 2, true); }
                             } else { // tall, dense oval crown
                                 draw("cylinder", x, 2.0 * kk, z, .26 * kk, 1.6 * kk, .26 * kk, "#5f432f", vp);
                                 draw("sphere", x, 3.5 * kk, z, 2.5 * kk, 3.2 * kk, 2.4 * kk, "#2b6a3a", vp);
-                                if (q !== "low") { draw("sphere", x + .5 * kk, 4.0 * kk, z - .3 * kk, 1.6 * kk, 1.9 * kk, 1.5 * kk, "#3f8a48", vp); draw("sphere", x - .5 * kk, 3.2 * kk, z + .4 * kk, 1.3 * kk, 1.5 * kk, 1.3 * kk, "#58a255", vp); }
+                                if (q !== "low") { draw("sphere", x + .5 * kk, 4.0 * kk, z - .3 * kk, 1.6 * kk, 1.9 * kk, 1.5 * kk, "#3f8a48", vp); draw("sphere", x - .5 * kk, 3.2 * kk, z + .4 * kk, 1.3 * kk, 1.5 * kk, 1.3 * kk, "#58a255", vp); leafFringe(x, 3.6 * kk, z, 1.3 * kk, 1.7 * kk, 1.25 * kk, "#3f8a48", q === "high" ? 76 : 52, x * 2 + z * 3); }
                             }
                             drawn += 5;
                             break;
@@ -916,6 +1078,8 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                                 draw("sphere", x + Math.cos(la) * lr * k, (2.2 + (li % 3) * .42 + lh * .3) * k, z + Math.sin(la) * lr * k, (1.35 + lh * .5) * k, (1.05 + lh * .35) * k, (1.3 + lh * .5) * k, pal[1 + (li % 2)], vp);
                             }
                             draw("sphere", x + .15, 3.5 * k, z, 1.15 * k, .95 * k, 1.15 * k, pal[2], vp);
+                            leafFringe(x, 2.45 * k, z, 1.45 * k, 1.1 * k, 1.4 * k, pal[1], q === "high" ? 84 : 58, x * 3 + z);
+                            leafFringe(x, 3.3 * k, z, .95 * k, .8 * k, .95 * k, pal[2], q === "high" ? 34 : 22, x + z * 5);
                             drawn += 5;
                         }
                     }
@@ -1038,10 +1202,10 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         };
         // Skinned bodies cost ~2.4k triangles each, so only the nearest few avatars (always you) get one; everyone else keeps the box body.
         const skinSet = new Map(); // id -> true (full body) | false (~900-tri LOD body, same skeleton so animation state is shared)
-        if (character && q !== "low") {
-            const budget = q === "high" ? 12 : 6, range = q === "high" ? 40 : 26;
+        if (character && (q !== "low" || characterLod)) { // Low: only the 3 nearest people (incl. you) get the light 900-tri skinned body
+            const budget = q === "high" ? 12 : q === "low" ? 3 : 6, range = q === "high" ? 40 : q === "low" ? 18 : 26;
             const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
-            const hi = characterLod ? (q === "high" ? 6 : 3) : budget, total = characterLod ? (q === "high" ? 16 : 8) : budget;
+            const hi = q === "low" ? 0 : characterLod ? (q === "high" ? 6 : 3) : budget, total = q === "low" ? 3 : characterLod ? (q === "high" ? 16 : 8) : budget;
             for (let i = 0; i < Math.min(total, near.length); i++) skinSet.set(near[i].id, i < hi);
         }
         for (const e of input.entities) {
@@ -1080,7 +1244,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                 if (!mo.sk) mo.sk = character.create();
                 stepAnimation(character.model, mo.sk, spd, em, dtm);
                 const anim = skinSet.get(e.id) || !characterLod ? character : characterLod;
-                const res = anim.emit(mo.sk, { x: e.x, z: e.y, yaw }, anim.colors(skin, outfit), recorder);
+                const res = anim.emit(mo.sk, { x: e.x, z: e.y, yaw }, anim.colors(e.avatar), recorder, anim.groups(e.avatar));
                 trisFrame += res.tris; head = res.head; bob = res.head[1]; // emote bubble etc. follow the animated head
             }
             if (!useSkin) {
@@ -1164,15 +1328,17 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     const [px, pz] = hxz(an.x, an.z);
                     draw(h.name, px, hy(an.y + sz.h / 2), pz, sz.w * hs, sz.h * hs, sz.d * hs, t, vp, 0, yaw); drawn++; return true;
                 };
+                if (!character.model.paint) {
                 const faceOk = q !== "low" && skinPart(slots.face);
                 if (!faceOk) for (const s of [-1, 1]) { const [px, pz] = hxz(s * .08, .17); draw("sphere", px, hy(1.62), pz, .05 * hs, .05 * hs, .04 * hs, "#14161c", vp); }
-                if (e.avatar.hair !== "bald" && !skinPart(slots.hair)) {
+                if (e.avatar.hair !== "bald" && !(character.model.paint && hairIsPainted(e.avatar.hair)) && !skinPart(slots.hair)) {
                     const [hx, hz] = hxz(0, 0);
                     draw("sphere", hx, hy(1.76), hz, .43 * hs, .2 * hs, .43 * hs, hair, vp);
                     if (e.avatar.hair === "afro") draw("sphere", hx, hy(1.82), hz, .62 * hs, .38 * hs, .6 * hs, hair, vp);
                     if (e.avatar.hair === "cap") { const [cx, cz] = hxz(0, .26); draw("cylinder", hx, hy(1.84), hz, .46 * hs, .12 * hs, .46 * hs, "#e8644a", vp); draw("box", cx, hy(1.8), cz, .38 * hs, .03, .2 * hs, "#e8644a", vp, 0, yaw); }
                 }
-                if (q !== "low") skinPart(slots.accessory);
+                if (q !== "low" && !(character.model.paint && e.avatar.accessory === "chain")) skinPart(slots.accessory); // chain is real skinned geometry on the painted body
+                }
                 drawn += 6;
             } else {
             drawn += hiQ ? 34 : 22;
@@ -1206,14 +1372,14 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             // Cloud bank: ONE baked mesh (all puffs), drifted by translation => a single draw call.
             const ckey = "clouds|" + q;
             if (!bakedCache.has(ckey)) {
-                recorder = { p: [], n: [], c: [] };
+                recorder = { p: [], n: [], c: [] }; cloudBake = true;
                 try {
                     const nc = q === "medium" ? 6 : 10;
                     for (let i = 0; i < nc; i++) {
                         const cx0 = -80 + ((i * 61) % (domain_1.WORLD.width + 140)), cz0 = -50 + ((i * 43) % (domain_1.WORLD.height + 100)), cy0 = 46 + (i % 3) * 6;
                         draw("sphere", cx0, cy0, cz0, 16, 4.5, 9, "#ffffff", vp); draw("sphere", cx0 + 5, cy0 + 1.6, cz0 + 1, 11, 4.5, 8, "#f7fbff", vp); draw("sphere", cx0 - 5.5, cy0 + .5, cz0 - 1, 9, 3.4, 7, "#eef5ff", vp);
                     }
-                } finally { const rec = recorder; recorder = null; commitRec(ckey, rec); }
+                } finally { cloudBake = false; const rec = recorder; recorder = null; commitRec(ckey, rec); }
             }
             gl.depthMask(false); curAlpha = .88 * (1 - night * .7);
             if (bakedCache.get(ckey) && meshes[ckey]) draw(ckey, Math.sin(input.time * .02) * 45, 0, 0, 1, 1, 1, "#ffffff", vp, .55);
@@ -1247,7 +1413,8 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             if (q === "high") for (let zz = 10; zz < 76; zz += 9) for (const side of [55.6, 64.4]) draw("sphere", side, 3.3, zz, 1.5, 1.2, 1.5, warm, vp, .35); // soft halo around each lamp head
         }, vp);
         const labels = overlayLabels(overlay, input, vp);
-        return { drawn, culled, labels, calls, tris: Math.round(trisFrame), shadows: shadowOn, byShape: callBy };
+        lastFrameTris = trisFrame;
+        return { drawn, culled, labels, calls, tris: Math.round(trisFrame), gov: Math.round(govScale * 100) / 100, shadows: shadowOn, byShape: callBy };
     };
     return { render, resize, registerMesh, unregisterMesh, setSkinnedCharacter, destroy: () => { for (const m of Object.values(meshes)) {
             gl.deleteBuffer(m.p);

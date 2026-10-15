@@ -24,6 +24,13 @@ class Mesh {
     for (const q of [a, b, c]) { this.p.push(...q); this.n.push(...n); this.c.push(...col); }
   }
   quad(a, b, c, d, col) { this.tri(a, b, c, col); this.tri(a, c, d, col); }
+  /** Leaf blade triangle: flat normal forced upward so both faces shade like a thin leaf (no culling). */
+  leaf(a, b, c, col) {
+    if (typeof col === "string") col = hex(col);
+    const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]; if (n[1] < 0) n = n.map((x) => -x); const l = Math.hypot(...n) || 1; n = n.map((x) => x / l);
+    for (const q of [a, b, c]) { this.p.push(...q); this.n.push(...n); this.c.push(...col); }
+  }
   get tris() { return this.p.length / 9; }
 }
 const rotY = (a) => (p) => [p[0] * Math.cos(a) + p[2] * Math.sin(a), p[1], -p[0] * Math.sin(a) + p[2] * Math.cos(a)];
@@ -78,19 +85,20 @@ models.palm_tree = { slot: "prop:tree", build() {
     frustum(m, x, y, z, r0, r1, h, 6, i % 2 ? "#8a5a3b" : "#a06a45", id, "#80543a");
     x += lean[i]; z += lean[i] * 0.4; y += h * 0.97;
   }
-  // Crown: 9 drooping fronds (two-tone blades) + coconuts.
-  const greens = ["#2a8653", "#3a9a5f", "#2f8f58", "#46a96a"];
+  // Crown: 9 pinnate fronds. Each is an arched rachis (rises, then droops) carrying tapered leaflet triangles on both sides.
+  const greens = [["#2a8653", "#3a9a5f"], ["#2f8f58", "#46a96a"], ["#23774a", "#37965a"]];
+  const NS = 7;
   for (let i = 0; i < 9; i++) {
-    const yaw = (i / 9) * Math.PI * 2 + 0.2, len = 2.0 + (i % 3) * 0.25, pitch = 0.55 + (i % 2) * 0.25;
-    const xf = chain(rotZ(-pitch), rotY(-yaw), move(x, y, z));
-    const col = greens[i % 4], dark = "#1f6f45";
-    const seg = 3;
-    for (let s = 0; s < seg; s++) {
-      const a = s / seg, b = (s + 1) / seg, droop = (t) => -t * t * 0.9;
-      const w = (t) => 0.5 * (1 - t) + 0.08;
-      const P = (t, side, up = 0) => xf([t * len, droop(t) + up, side * w(t)]);
-      m.quad(P(a, -1), P(b, -1), P(b, 1), P(a, 1), s % 2 ? col : dark);
-      m.quad(P(a, 1, -0.05), P(b, 1, -0.05), P(b, -1, -0.05), P(a, -1, -0.05), dark);
+    const yaw = (i / 9) * Math.PI * 2 + 0.2, len = 1.2 + (i % 3) * 0.12, old = i % 3, rise = [0.62, 0.46, 0.34][old], drop = [0.95, 1.1, 1.3][old];
+    const xf = chain(rotY(-yaw), move(x, y, z)), [dk, lt] = greens[i % 3];
+    const R = (t) => xf([t * len, 0.12 + len * (rise * t - drop * t * t), 0]);
+    for (let s = 0; s < NS; s++) {
+      const t0 = s / NS, t1 = (s + 1) / NS, tm = (t0 + t1) / 2, A = R(t0), B = R(t1);
+      const lw = (0.3 + 0.2 * Math.sin(Math.PI * Math.min(1, (s + 0.6) / (NS + 0.3)))) * (1 - 0.5 * t1 * t1), dn = 0.14 + 0.45 * t1;
+      for (const sd of [-1, 1]) {
+        const T = xf([tm * len + 0.12, 0.12 + len * (rise * tm - drop * tm * tm) - dn * lw, sd * lw]);
+        m.leaf(A, B, T, s < NS / 2 ? dk : lt);
+      }
     }
   }
   for (let i = 0; i < 3; i++) ball(m, x + Math.cos(i * 2.1) * 0.22, y - 0.18, z + Math.sin(i * 2.1) * 0.22, 0.15, "#6b4a2b", 2, 5);

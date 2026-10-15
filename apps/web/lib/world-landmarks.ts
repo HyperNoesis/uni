@@ -219,7 +219,8 @@ export function gateRoadExtras(rect: { x: number; y: number; w: number; h: numbe
   for (const zy of [y + 14, y + 46]) { for (let i = 0; i < 8; i++) p.box(cx - 4 + i, zy, .55, 2.4, .03, K.white, .08); }
   for (const [sx, sy, side] of [[x + 3.2, y + 30, 1], [x + w - 6.4, y + 56, -1]] as const) { // covered shuttle waiting shelters
     p.box(sx, sy, 3.4, 1.7, .14, K.teal, 2.5); for (const dx of [0, 3.2]) p.box(sx + dx, sy + (side > 0 ? 0 : 1.5), .14, .14, 2.5, K.steelDk);
-    p.box(sx, sy + (side > 0 ? 0 : 1.6), 3.4, .08, 1.5, K.glass, .8); p.box(sx + .3, sy + .6, 2.8, .45, .1, K.wood, .45); if (!lowQ) { lit(p, sx + 1.2, sy + .85, 1, .06, .35, K.lamp, 2.0); p.box(sx + 3.5, sy + .4, .5, .5, .55, K.green, 0); }
+    { const gz = sy + (side > 0 ? 0 : 1.6); for (let gi = 0; gi < 4; gi++) p.box(sx + .08 + gi * .84, gz, .62, .08, 1.5, K.glass, .8); p.box(sx, gz, 3.4, .1, .07, K.steelDk, .8); p.box(sx, gz, 3.4, .1, .07, K.steelDk, 2.23); } // glazed back panel as four panes in a frame (was one opaque slab that read as a billboard)
+    p.box(sx + .3, sy + .6, 2.8, .45, .1, K.wood, .45); if (!lowQ) { lit(p, sx + 1.2, sy + .85, 1, .06, .35, K.lamp, 2.0); p.box(sx + 3.5, sy + .4, .5, .5, .55, K.green, 0); }
   }
   const tx = x + w - 5.2, ty = y + 22; // wayfinding totem: one arrow plate per destination
   p.cyl(tx, ty, .22, 3.6, K.steelDk); litSph(p, tx, 3.75, ty, .4, .3, .4, K.lamp);

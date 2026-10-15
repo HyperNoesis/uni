@@ -6,12 +6,12 @@ import { parseSkinnedGlb, SkinnedGlbError, newPose, sampleClip, blendPose, skinM
 const file = new URL("../../apps/web/public/assets/characters/campus_body.glb", import.meta.url);
 const bytes = fs.readFileSync(file);
 const ab = () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-const LIM = { maxTriangles: 4000, maxJoints: 64 };
+const LIM = { maxTriangles: 8000, maxJoints: 64 };
 const m = parseSkinnedGlb(ab(), LIM);
 
 // --- shape & budget
-assert.equal(m.jointCount, 23); assert.ok(m.triangles >= 1500 && m.triangles <= 3000, `triangles ${m.triangles}`);
-assert.ok(bytes.byteLength < 300 * 1024, `size ${bytes.byteLength}`);
+assert.equal(m.jointCount, 23); assert.ok(m.triangles >= 1500 && m.triangles <= 6500, `triangles ${m.triangles}`);
+assert.ok(bytes.byteLength < 450 * 1024, `size ${bytes.byteLength}`);
 for (const c of ["Stand_Loop", "Idle_Loop", "Walk_Loop", "Jog_Fwd_Loop", "Sprint_Loop", "Sitting_Idle_Loop", "Dance_Loop"]) assert.ok(m.clips[c] && m.clips[c].duration > 0, `clip ${c}`);
 assert.ok(m.height > 1.6 && m.height < 2.0, `bind height ${m.height}`);
 assert.deepEqual(m.forward.map((v) => Math.round(v)), [0, 0, 1], "model faces +z like the game's heading 0");
@@ -23,12 +23,13 @@ const pose = newPose(m), world = new Float32Array(m.jointCount * 16), skin = new
 const sp = new Float32Array(m.vertexCount * 3), sn = new Float32Array(m.vertexCount * 3);
 const place0 = { x: 0, y: 0, z: 0, yaw: 0, scale: 1 };
 skinMatrices(m, pose, world, skin);
-skinToSoup(m, skin, place0, sp, sn, [], []);
+const ALL = Object.keys(m.groups);
+skinToSoup(m, skin, place0, sp, sn, [], [], ALL);
 let maxErr = 0; for (let i = 0; i < sp.length; i++) maxErr = Math.max(maxErr, Math.abs(sp[i] - m.positions[i]));
 assert.ok(maxErr < 2e-3, `rest-pose skinning error ${maxErr}`);
 
 // --- every clip: finite, bounded, grounded, loops cleanly
-const bounds = (clip, t) => { sampleClip(m, m.clips[clip], t, true, pose); skinMatrices(m, pose, world, skin); skinToSoup(m, skin, place0, sp, sn, [], []); let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9]; for (let v = 0; v < m.vertexCount; v++) for (let k = 0; k < 3; k++) { const x = sp[v * 3 + k]; assert.ok(Number.isFinite(x), `NaN in ${clip}@${t}`); lo[k] = Math.min(lo[k], x); hi[k] = Math.max(hi[k], x); } return { lo, hi }; };
+const bounds = (clip, t) => { sampleClip(m, m.clips[clip], t, true, pose); skinMatrices(m, pose, world, skin); skinToSoup(m, skin, place0, sp, sn, [], [], ALL); let lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9]; for (let v = 0; v < m.vertexCount; v++) for (let k = 0; k < 3; k++) { const x = sp[v * 3 + k]; assert.ok(Number.isFinite(x), `NaN in ${clip}@${t}`); lo[k] = Math.min(lo[k], x); hi[k] = Math.max(hi[k], x); } return { lo, hi }; };
 for (const [name, clip] of Object.entries(m.clips)) {
   for (let s = 0; s <= 8; s++) {
     const b = bounds(name, (s / 8) * clip.duration);
