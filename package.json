@@ -22,7 +22,8 @@
     "check:assets": "node scripts/models/audit-glb.mjs",
     "gen:inventory": "node scripts/models/audit-glb.mjs --write",
     "check:sports": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/sports-game.mjs",
-    "check:minigames": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/minigames.mjs"
+    "check:minigames": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/minigames.mjs",
+    "e2e:persistence": "node tests/e2e/persistence-loop.mjs"
   },
   "devDependencies": {
     "turbo": "^2.3.0",
