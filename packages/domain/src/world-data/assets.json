@@ -5,8 +5,8 @@
     "maxTriangles": 6000
   },
   "residentBudget": {
-    "maxBytes": 6000000,
-    "maxTriangles": 140000
+    "maxBytes": 8000000,
+    "maxTriangles": 170000
   },
   "assets": [
     {
@@ -1587,6 +1587,210 @@
         "w": 6.54,
         "h": 2.93,
         "d": 2.88
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_tower",
+      "url": "/assets/gate/gate_tower.glb",
+      "slot": "decor:gate_tower",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 461000,
+      "maxTriangles": 6000,
+      "size": {
+        "w": 12.285,
+        "h": 28.35,
+        "d": 11.205
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_span",
+      "url": "/assets/gate/gate_span.glb",
+      "slot": "decor:gate_span",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 140000,
+      "maxTriangles": 2200,
+      "size": {
+        "w": 22.545,
+        "h": 13.095,
+        "d": 9.18
+      },
+      "yOffset": 13.635
+    },
+    {
+      "id": "gate_letters_grand",
+      "url": "/assets/gate/gate_letters_grand.glb",
+      "slot": "decor:gate_letters_grand",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 68000,
+      "maxTriangles": 900,
+      "size": {
+        "w": 16.805,
+        "h": 2.754,
+        "d": 0.405
+      },
+      "yOffset": 16.18
+    },
+    {
+      "id": "gate_wing",
+      "url": "/assets/gate/gate_wing.glb",
+      "slot": "decor:gate_wing",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 176000,
+      "maxTriangles": 2300,
+      "size": {
+        "w": 17.4,
+        "h": 6.22,
+        "d": 1.9
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_pavilion",
+      "url": "/assets/gate/gate_pavilion.glb",
+      "slot": "decor:gate_pavilion",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 50000,
+      "maxTriangles": 700,
+      "size": {
+        "w": 8.165,
+        "h": 4.772,
+        "d": 6.785
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_mast",
+      "url": "/assets/gate/gate_mast.glb",
+      "slot": "decor:gate_mast",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 28000,
+      "maxTriangles": 500,
+      "size": {
+        "w": 6.793,
+        "h": 20.475,
+        "d": 1.267
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_lamp_tall",
+      "url": "/assets/gate/gate_lamp_tall.glb",
+      "slot": "decor:gate_lamp_tall",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 3.703,
+        "h": 9.487,
+        "d": 0.805
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_kiosk",
+      "url": "/assets/gate/gate_kiosk.glb",
+      "slot": "decor:gate_kiosk",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 3.3,
+        "h": 3.28,
+        "d": 1.4
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_monument",
+      "url": "/assets/gate/gate_monument.glb",
+      "slot": "decor:gate_monument",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 62000,
+      "maxTriangles": 1200,
+      "size": {
+        "w": 7.6,
+        "h": 2.98,
+        "d": 2
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_garden_bed",
+      "url": "/assets/gate/gate_garden_bed.glb",
+      "slot": "decor:gate_garden_bed",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 101000,
+      "maxTriangles": 1300,
+      "size": {
+        "w": 8,
+        "h": 1.745,
+        "d": 3.188
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_pool",
+      "url": "/assets/gate/gate_pool.glb",
+      "slot": "decor:gate_pool",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 38000,
+      "maxTriangles": 700,
+      "size": {
+        "w": 9.1,
+        "h": 4.46,
+        "d": 8.1
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_plaza",
+      "url": "/assets/gate/gate_plaza.glb",
+      "slot": "decor:gate_plaza",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 298000,
+      "maxTriangles": 4400,
+      "size": {
+        "w": 80,
+        "h": 0.45,
+        "d": 28
       },
       "yOffset": 0
     }

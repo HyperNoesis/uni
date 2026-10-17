@@ -54,203 +54,6 @@
   ],
   "decor": [
     {
-      "model": "gate_pier",
-      "x": 51.9,
-      "y": 132
-    },
-    {
-      "model": "gate_pier",
-      "x": 68.1,
-      "y": 132,
-      "rot": 3.142
-    },
-    {
-      "model": "gate_canopy",
-      "x": 60,
-      "y": 132
-    },
-    {
-      "model": "gate_letters",
-      "x": 60,
-      "y": 134.9
-    },
-    {
-      "model": "gate_wall_end",
-      "x": 48.6,
-      "y": 132
-    },
-    {
-      "model": "hedge_trim",
-      "x": 48.6,
-      "y": 134.2,
-      "rot": 1.571
-    },
-    {
-      "model": "gate_wall_end",
-      "x": 71.4,
-      "y": 132
-    },
-    {
-      "model": "hedge_trim",
-      "x": 71.4,
-      "y": 134.2,
-      "rot": 1.571
-    },
-    {
-      "model": "gate_booth",
-      "x": 72.5,
-      "y": 137.5
-    },
-    {
-      "model": "gate_boom",
-      "x": 66.2,
-      "y": 137.2,
-      "rot": 3.142
-    },
-    {
-      "model": "gate_boom",
-      "x": 53.8,
-      "y": 137.2
-    },
-    {
-      "model": "gate_forecourt",
-      "x": 60,
-      "y": 142.5
-    },
-    {
-      "model": "gate_flagpole",
-      "x": 41,
-      "y": 138.5
-    },
-    {
-      "model": "gate_flagpole",
-      "x": 38,
-      "y": 138.5
-    },
-    {
-      "model": "gate_flagpole",
-      "x": 35,
-      "y": 138.5
-    },
-    {
-      "model": "gate_totem",
-      "x": 48.5,
-      "y": 141
-    },
-    {
-      "model": "lamp_street",
-      "x": 47.5,
-      "y": 137.5
-    },
-    {
-      "model": "lamp_street",
-      "x": 47.5,
-      "y": 147.2
-    },
-    {
-      "model": "tree_neem",
-      "x": 44,
-      "y": 146.3
-    },
-    {
-      "model": "palm_royal_tall",
-      "x": 44.5,
-      "y": 138.2
-    },
-    {
-      "model": "bollard_light",
-      "x": 52.8,
-      "y": 135.6
-    },
-    {
-      "model": "bollard_light",
-      "x": 51.2,
-      "y": 135.6
-    },
-    {
-      "model": "bollard_light",
-      "x": 49.6,
-      "y": 135.6
-    },
-    {
-      "model": "bollard_light",
-      "x": 48,
-      "y": 135.6
-    },
-    {
-      "model": "gate_flagpole",
-      "x": 79,
-      "y": 138.5
-    },
-    {
-      "model": "gate_flagpole",
-      "x": 82,
-      "y": 138.5
-    },
-    {
-      "model": "gate_flagpole",
-      "x": 85,
-      "y": 138.5
-    },
-    {
-      "model": "gate_totem",
-      "x": 71.5,
-      "y": 141
-    },
-    {
-      "model": "lamp_street",
-      "x": 72.5,
-      "y": 137.5,
-      "rot": 3.142
-    },
-    {
-      "model": "lamp_street",
-      "x": 72.5,
-      "y": 147.2,
-      "rot": 3.142
-    },
-    {
-      "model": "tree_neem",
-      "x": 76,
-      "y": 146.3
-    },
-    {
-      "model": "palm_royal_tall",
-      "x": 75.5,
-      "y": 138.2
-    },
-    {
-      "model": "bollard_light",
-      "x": 67.2,
-      "y": 135.6
-    },
-    {
-      "model": "bollard_light",
-      "x": 68.8,
-      "y": 135.6
-    },
-    {
-      "model": "bollard_light",
-      "x": 70.4,
-      "y": 135.6
-    },
-    {
-      "model": "bollard_light",
-      "x": 72,
-      "y": 135.6
-    },
-    {
-      "model": "bus_shelter",
-      "x": 42.5,
-      "y": 145.2
-    },
-    {
-      "model": "bench_slat",
-      "x": 48.5,
-      "y": 144.4,
-      "rot": 1.571
-    },
-    {
       "model": "lamp_street",
       "x": 54.2,
       "y": 124
@@ -471,6 +274,262 @@
       "x": 51,
       "y": 118.5,
       "rot": 1.571
+    },
+    {
+      "model": "gate_plaza",
+      "x": 60,
+      "y": 138
+    },
+    {
+      "model": "gate_tower",
+      "x": 45,
+      "y": 132
+    },
+    {
+      "model": "gate_tower",
+      "x": 75,
+      "y": 132
+    },
+    {
+      "model": "gate_span",
+      "x": 60,
+      "y": 132
+    },
+    {
+      "model": "gate_letters_grand",
+      "x": 60,
+      "y": 136.28
+    },
+    {
+      "model": "gate_letters_grand",
+      "x": 60,
+      "y": 127.72,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_wing",
+      "x": 39.6,
+      "y": 132,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_wing",
+      "x": 80.4,
+      "y": 132
+    },
+    {
+      "model": "gate_pool",
+      "x": 44.4,
+      "y": 146.5
+    },
+    {
+      "model": "gate_pool",
+      "x": 75.6,
+      "y": 146.5
+    },
+    {
+      "model": "gate_pavilion",
+      "x": 35,
+      "y": 142.8
+    },
+    {
+      "model": "gate_pavilion",
+      "x": 85,
+      "y": 142.8
+    },
+    {
+      "model": "gate_boom",
+      "x": 49.8,
+      "y": 141
+    },
+    {
+      "model": "gate_boom",
+      "x": 70.2,
+      "y": 141,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_mast",
+      "x": 28,
+      "y": 141.5,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_mast",
+      "x": 92,
+      "y": 141.5
+    },
+    {
+      "model": "gate_mast",
+      "x": 24.5,
+      "y": 141.5,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_mast",
+      "x": 95.5,
+      "y": 141.5
+    },
+    {
+      "model": "gate_mast",
+      "x": 21,
+      "y": 141.5,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_mast",
+      "x": 99,
+      "y": 141.5
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 48.4,
+      "y": 139.5
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 71.6,
+      "y": 139.5
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 48.4,
+      "y": 150
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 71.6,
+      "y": 150
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 48.4,
+      "y": 124.5
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 71.6,
+      "y": 124.5
+    },
+    {
+      "model": "gate_kiosk",
+      "x": 30,
+      "y": 147.8
+    },
+    {
+      "model": "gate_kiosk",
+      "x": 90,
+      "y": 147.8
+    },
+    {
+      "model": "gate_monument",
+      "x": 25,
+      "y": 148.8
+    },
+    {
+      "model": "gate_monument",
+      "x": 95,
+      "y": 148.8
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 33,
+      "y": 134.6
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 87,
+      "y": 134.6
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 25,
+      "y": 134.6
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 95,
+      "y": 134.6
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 36,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 84,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 31,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 89,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 26,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 94,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 21,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 99,
+      "y": 128
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 42.5,
+      "y": 123
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 77.5,
+      "y": 123
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 16,
+      "y": 137
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 104,
+      "y": 137
+    },
+    {
+      "model": "tree_neem",
+      "x": 14,
+      "y": 142
+    },
+    {
+      "model": "tree_neem",
+      "x": 106,
+      "y": 142
+    },
+    {
+      "model": "tree_neem",
+      "x": 17,
+      "y": 149
+    },
+    {
+      "model": "tree_neem",
+      "x": 103,
+      "y": 149
     }
   ]
 }
