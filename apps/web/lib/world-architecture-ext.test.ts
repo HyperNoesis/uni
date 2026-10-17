@@ -25,3 +25,15 @@ describe("zone architecture (extension set)", () => {
   });
   it("high quality never emits fewer primitives than low", () => { for (const z of NEW_ZONES) { const l = recorder(), h = recorder(); buildZoneArchitecture(z, "low", l.p); buildZoneArchitecture(z, "high", h.p); expect(h.rec.n).toBeGreaterThanOrEqual(l.rec.n); } });
 });
+
+import { grandGate } from "./world-hero-gate";
+describe("Grand Gate hero landmark", () => {
+  it("is finite, deterministic and scales with quality, keeping the walking lane open", () => {
+    const run = (q: Quality) => { const boxes: number[][] = []; let bad = 0, n = 0; const f = (...v: unknown[]) => { n++; if (v.some((t) => typeof t === "number" && !Number.isFinite(t))) bad++; };
+      const p: P = { box: (x, z, w, d, h, _c, y0 = 0) => { f(x, z, w, d, h, y0); boxes.push([x, z, w, d, y0, y0 + h]); }, cyl: f, sph: f, rbox: f, lbox: f, lsph: f }; grandGate(60, 129.5, q, p); return { n, bad, boxes }; };
+    const l = run("low"), m = run("medium"), h = run("high"), m2 = run("medium");
+    expect(l.bad + m.bad + h.bad).toBe(0); expect(m.n).toBe(m2.n); expect(l.n).toBeGreaterThan(60); expect(h.n).toBeGreaterThanOrEqual(m.n); expect(m.n).toBeGreaterThan(l.n);
+    // nothing solid (below 4.5 m) intrudes into the central lane |x-60|<5.95
+    for (const [x, , w, , y0] of m.boxes) if (y0 < 4.5 && x < 60 + 5.95 && x + w > 60 - 5.95 && y0 > .1) throw new Error("gate blocks the lane " + JSON.stringify([x, w, y0]));
+  });
+});

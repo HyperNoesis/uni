@@ -47,6 +47,27 @@ Free-plan limits: services sleep after ~15 minutes idle (first load can take abo
 
 Not verified: real phones/GPUs and the live Render deployment.
 
+## Art direction and asset vision (AI agents: read this before touching visuals)
+
+**Goal:** a bright, tropical, Nigerian-campus world that reads like a well-funded studio game, in a browser, on phones. Free Fire-class stylised-realistic, not photoreal. Real 3D geometry only, no unexplained cubes.
+
+**Renderer fact:** the game uses its own raw WebGL renderer (`apps/web/lib/world-3d-render.ts`), NOT Three.js. Buildings are built from the `P` primitives (`box`, `cyl`, `sph`, `rbox`, `lbox`), baked into batched meshes. Do not add Three.js. Details: `docs/GRAPHICS_VISION.md`.
+
+**How the look is made (decision, 15 Oct 2026):**
+1. **Hero landmarks are custom and code-built** (Grand Gate, library, student centre, arena, Commons): breezeblock screens, deep sunshades and brise-soleil fins, terrazzo, terracotta accents, navy and electric-blue HUD colours. First one shipped: `apps/web/lib/world-hero-gate.ts` (`grandGate`, wired into Gate Road in `world-architecture-ext.ts`). Build the next ones the same way, one file per landmark, with a test.
+2. **Secondary buildings and skyline use CC0 kits** (Kenney City Kit Commercial is already the backdrop ring, `public/assets/kenney/`). Background only. Keep glass towers off campus grounds.
+3. **Lighting does most of the work:** clear-sky daylight only (no overcast), soft shadows, warm window glow. Next: HDRI-derived sky, AO, light bloom.
+4. **Street life makes it Nigerian:** palms, mango and neem trees, bougainvillea, kiosks, food canopies, danfo bus, keke, okada, generators, painted walls.
+5. **Materials:** CC0 terrazzo, concrete and plaster detail textures; the loader (`apps/web/lib/glb.ts`) ignores textures today, so adding texture support plus a Low/Medium/High toggle is open work.
+
+**Licence rules:** CC0 or original only. The repo is public and browsers download every model, so anything forbidding redistribution is out. Rejected and why: Quaternius Downtown (Boston/NYC brick, textures only), KayKit City Builder (too cartoonish), Kenney Modular Buildings (European houses, loose pieces only), Low Poly Beach Resort and CrazyDrPants (no redistribution), Low Poly Tropical City ($19.99, bars sharing), Sketchfab (mostly CC-BY, one non-commercial), Meshy community (messy topology), Unity Asset Store (EULA). Poly Haven is CC0 (hand-download, no scraping). Log every asset in `docs/ASSET_SOURCES.md`.
+
+**Before you push to `main` (Render auto-deploys it):** read `docs/LESSONS_FROM_PAST_PASSES.md` (deploy gotchas, repeated mistakes, order of work).
+
+**Do not:** replace working multiplayer, zones, collisions or the server-authoritative design; claim performance or tests you did not run; promise CoD-level realism.
+
+**Honest status:** `grandGate` passes a unit test (finite, deterministic, quality-scaled, walking lane open; run with a standalone shim, full `pnpm test` not run). It was rendered (`docs/evidence/08-grand-gate-medium-2026-10-15.jpg`) and reads as a tropical-modernist gate; piers no longer look like brick. Tip: a `P` box thinner than .26 m with face area >= 1 m^2 renders as a flat panel without brick coursing. Not typechecked in the full build; phone FPS unmeasured; back view and booth unchecked. First job for the next AI: view the back side, then repeat this recipe for the next hero landmark (library, student centre, arena, Commons); render with `tests/visual/harness/run.mjs` (camera `me {x:60,y:112,heading:0}` and `{x:60,y:150,heading:3.14159}`), look at it, fix proportions, then run `pnpm check:3d`, `pnpm check:budget` and the web build.
+
 ## Layout
 
 | Path | Purpose |

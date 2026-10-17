@@ -1,28 +1,18 @@
 "use client";
-import { useEffect, useRef } from "react";
 import { AVATAR_OPTIONS, AVATAR_PRESETS, avatarEquals, avatarPart, randomAvatar, type Avatar, type AvatarPart } from "@campus/domain";
-import { drawAvatar } from "../lib/avatar";
+import { AvatarStage } from "./AvatarStage";
 
 const PARTS: { part: AvatarPart; label: string; color?: boolean }[] = [
-  { part: "skin", label: "Skin", color: true }, { part: "hair", label: "Hair" }, { part: "hairColor", label: "Hair colour", color: true },
-  { part: "face", label: "Face" }, { part: "top", label: "Top" }, { part: "outfit", label: "Outfit colour", color: true }, { part: "accessory", label: "Accessory" },
+  { part: "body", label: "Body" }, { part: "skin", label: "Skin", color: true }, { part: "hair", label: "Hair" }, { part: "hairColor", label: "Hair colour", color: true },
+  { part: "face", label: "Face" }, { part: "top", label: "Top" }, { part: "outfit", label: "Outfit colour", color: true }, { part: "headwear", label: "Hat" }, { part: "accessory", label: "Accessory" }, { part: "bottom", label: "Trousers" },
   { part: "shoes", label: "Shoes" }, { part: "backpack", label: "Backpack" },
 ];
 
 /** Shared by onboarding and the profile editor: presets, "surprise me" and every avatar part. */
 export function AvatarBuilder({ value, onChange }: { value: Avatar; onChange: (a: Avatar) => void }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const c = canvas.current, ctx = c?.getContext("2d");
-    if (!c || !ctx) return;
-    const dpr = window.devicePixelRatio || 1;
-    c.width = 160 * dpr; c.height = 180 * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, 160, 180);
-    drawAvatar(ctx, value, 80, 160, 3.2);
-  }, [value]);
   return (
     <>
-      <div className="card preview"><canvas ref={canvas} aria-label="Avatar preview" /></div>
+      <AvatarStage value={value} />
       <div className="field">
         <label>Start from a look</label>
         <div className="chips">

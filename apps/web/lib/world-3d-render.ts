@@ -2,7 +2,7 @@
 /* Lightweight low-poly WebGL renderer. Created as an opt-in real 3D layer with 2D fallback. */
 import * as domain_1 from "@campus/domain";
 import { buildZoneArchitecture, hasZoneArchitecture, buildInterior, registerArchitecture } from "./world-architecture";
-import { EXT_ARCH } from "./world-architecture-ext";
+import { EXT_ARCH, setGlbVista } from "./world-architecture-ext";
 registerArchitecture(EXT_ARCH);
 import { buildDistrict } from "./world-districts";
 import { buildKindDetail } from "./world-district-kinds";
@@ -11,7 +11,8 @@ import { solveOrbitCamera, solveFirstPersonCamera, solveChaseCamera, DEFAULT_PIT
 import { environment } from "./world-environment";
 import { palmTree } from "./world-flora";
 import { BACKDROP } from "./world-backdrop";
-import { createCharacterAnimator, stepAnimation, hairIsPainted } from "./skinned-character";
+import { createCharacterAnimator, stepAnimation, hairIsPainted, bodyKind } from "./skinned-character";
+import { createAvatarProgram, loadAtlasTextures, bindBody, setLook, uploadBatch } from "./avatar-gl";
 import { FRAG, SHADOW_VERT, SHADOW_VERT_I, SHADOW_FRAG, SKY_VERT, SKY_FRAG, SUN_DIR } from "./world-shaders";
 // Camera blockers: thin wall segments only (not whole building footprints), so the chase camera can follow you through a
 // doorway and sit inside a room instead of collapsing against your head. Visual only.
@@ -156,7 +157,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     gl.useProgram(program);
     const loc = { pos: gl.getAttribLocation(program, "aPos"), normal: gl.getAttribLocation(program, "aNormal"), vcolor: gl.getAttribLocation(program, "aColor"), mvp: gl.getUniformLocation(program, "uMvp"), model: gl.getUniformLocation(program, "uModel"), color: gl.getUniformLocation(program, "uColor"), light: gl.getUniformLocation(program, "uLight"), emissive: gl.getUniformLocation(program, "uEmissive"), eye: gl.getUniformLocation(program, "uEye"), alpha: gl.getUniformLocation(program, "uAlpha"), lightVP: gl.getUniformLocation(program, "uLightVP"), shadowOn: gl.getUniformLocation(program, "uShadowOn"), shadowTexel: gl.getUniformLocation(program, "uShadowTexel"), shadowQ: gl.getUniformLocation(program, "uShadowQ"), detail: gl.getUniformLocation(program, "uDetail"), plain: gl.getUniformLocation(program, "uPlain"), shadowMap: gl.getUniformLocation(program, "uShadowMap") };
     const ext = gl.getExtension("ANGLE_instanced_arrays");
-    const nightLoc = gl.getUniformLocation(program, "uNight"); const timeLoc = gl.getUniformLocation(program, "uTime"); let timeLocI = null; let nightLocI = null; let night = 0; let camClear = 1; let windT = 0;
+    const nightLoc = gl.getUniformLocation(program, "uNight"); const timeLoc = gl.getUniformLocation(program, "uTime"); let timeLocI = null; let nightLocI = null; let night = 0; let warm = 0; const warmLoc = gl.getUniformLocation(program, "uWarm"); let warmLocI = null; let camClear = 1; let windT = 0;
     let iprog = null, iloc = null, ibuf = null;
     const VERT_I = "attribute vec3 aPos; attribute vec3 aNormal; attribute vec3 aColor; attribute vec4 aM0; attribute vec4 aM1; attribute vec4 aM2; attribute vec4 aM3; attribute vec3 aTint; uniform mat4 uVP; uniform float uTime; varying vec3 vColor; varying vec3 vNormal; varying vec3 vWorld; void main(){ mat4 M=mat4(aM0,aM1,aM2,aM3); vec4 w=M*vec4(aPos,1.0); float gr=aColor.g-max(aColor.r,aColor.b); float sw=step(.05,gr)*smoothstep(2.2,5.0,w.y); vec3 wo=vec3(sin(uTime*1.3+w.x*.7+w.z*.5)*.07+sin(uTime*2.9+w.z)*.025,0.0,cos(uTime*1.1+w.z*.6+w.x*.4)*.06)*sw*(w.y-1.8)*.32; w.xyz+=wo; vWorld=w.xyz; vNormal=mat3(M)*aNormal; vColor=aColor*aTint; gl_Position=uVP*w; }";
     if (ext) {
@@ -167,7 +168,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             ["aPos", "aNormal", "aColor", "aM0", "aM1", "aM2", "aM3", "aTint"].forEach((n, i) => gl.bindAttribLocation(p2, i, n));
             gl.linkProgram(p2);
             if (!gl.getProgramParameter(p2, gl.LINK_STATUS)) throw new Error("instanced program link failed");
-            iprog = p2; ibuf = gl.createBuffer(); nightLocI = gl.getUniformLocation(p2, "uNight"); timeLocI = gl.getUniformLocation(p2, "uTime");
+            iprog = p2; ibuf = gl.createBuffer(); nightLocI = gl.getUniformLocation(p2, "uNight"); warmLocI = gl.getUniformLocation(p2, "uWarm"); timeLocI = gl.getUniformLocation(p2, "uTime");
             iloc = { vp: gl.getUniformLocation(p2, "uVP"), color: gl.getUniformLocation(p2, "uColor"), light: gl.getUniformLocation(p2, "uLight"), eye: gl.getUniformLocation(p2, "uEye"), emissive: gl.getUniformLocation(p2, "uEmissive"), alpha: gl.getUniformLocation(p2, "uAlpha"), lightVP: gl.getUniformLocation(p2, "uLightVP"), shadowOn: gl.getUniformLocation(p2, "uShadowOn"), shadowTexel: gl.getUniformLocation(p2, "uShadowTexel"), shadowQ: gl.getUniformLocation(p2, "uShadowQ"), detail: gl.getUniformLocation(p2, "uDetail"), plain: gl.getUniformLocation(p2, "uPlain"), shadowMap: gl.getUniformLocation(p2, "uShadowMap") };
             gl.useProgram(program);
         } catch (e) { iprog = null; }
@@ -210,7 +211,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     } catch (e) { shadowOn = false; }
     try {
         skyProg = makeProgram(SKY_VERT, SKY_FRAG, [["aP", 0]]);
-        skyLoc = { f: gl.getUniformLocation(skyProg, "uF"), r: gl.getUniformLocation(skyProg, "uR"), u: gl.getUniformLocation(skyProg, "uU"), tan: gl.getUniformLocation(skyProg, "uTan"), aspect: gl.getUniformLocation(skyProg, "uAspect"), sun: gl.getUniformLocation(skyProg, "uSun"), night: gl.getUniformLocation(skyProg, "uNight"), time: gl.getUniformLocation(skyProg, "uTime") };
+        skyLoc = { f: gl.getUniformLocation(skyProg, "uF"), r: gl.getUniformLocation(skyProg, "uR"), u: gl.getUniformLocation(skyProg, "uU"), tan: gl.getUniformLocation(skyProg, "uTan"), aspect: gl.getUniformLocation(skyProg, "uAspect"), sun: gl.getUniformLocation(skyProg, "uSun"), night: gl.getUniformLocation(skyProg, "uNight"), warm: gl.getUniformLocation(skyProg, "uWarm"), time: gl.getUniformLocation(skyProg, "uTime") };
         skyBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, skyBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     } catch (e) { skyProg = null; }
     const ensureShadow = (size) => {
@@ -362,11 +363,14 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     // Per-frame dynamic batch (avatars, birds): primitives recorded then drawn in ONE call.
     const beginDyn = () => { recorder = { p: [], n: [], c: [] }; };
     const flushDyn = (vp) => {
-        const r = recorder; recorder = null; if (!r || !r.p.length) return;
-        const m = meshes.dyn, up = (buf, a) => { gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW); };
-        up(m.p, r.p); up(m.n, r.n); up(m.c, r.c); m.count = r.p.length / 3;
-        if (shadowOn) dynShadowP = dynShadowP.concat(r.p);
-        draw("dyn", 0, 0, 0, 1, 1, 1, "#ffffff", vp);
+        const r = recorder; recorder = null; if (!r || (!r.p.length && !r.tex)) return;
+        if (r.p.length) {
+            const m = meshes.dyn, up = (buf, a) => { gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(a), gl.DYNAMIC_DRAW); };
+            up(m.p, r.p); up(m.n, r.n); up(m.c, r.c); m.count = r.p.length / 3;
+            if (shadowOn) dynShadowP = dynShadowP.concat(r.p);
+            draw("dyn", 0, 0, 0, 1, 1, 1, "#ffffff", vp);
+        }
+        if (r.tex) { if (shadowOn) for (const k of Object.values(r.tex)) dynShadowP = dynShadowP.concat(k.p); drawTexAvatars(r, vp); }
     };
     const renderer_chunks = { solids: null, keys: new Map() };
     const draw = (shape, x, y, z, w, h, d, color, viewProjection, emissive = 0, rot = 0) => {
@@ -447,7 +451,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             for (let i = 0; i < n; i++) { const m = model(l[i * 7], l[i * 7 + 1], l[i * 7 + 2], l[i * 7 + 3], l[i * 7 + 4], l[i * 7 + 5], l[i * 7 + 6]); data.set(m, i * 19); data[i * 19 + 16] = 1; data[i * 19 + 17] = 1; data[i * 19 + 18] = 1; }
             if (shadowOn) shadowInst.push(mesh, data, n);
             gl.useProgram(iprog);
-            gl.uniformMatrix4fv(iloc.vp, false, vp); gl.uniform3f(iloc.color, 1, 1, 1); gl.uniform3f(iloc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1i(iloc.shadowMap, 0); gl.uniformMatrix4fv(iloc.lightVP, false, lightVP); gl.uniform1f(iloc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(iloc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(iloc.shadowQ, shadowQ); gl.uniform1f(iloc.detail, detailQ); if (timeLocI) gl.uniform1f(timeLocI, windT); gl.uniform1f(iloc.plain, plainMesh.has(name) ? 1 : 0); gl.uniform3f(iloc.eye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(nightLocI, night); gl.uniform1f(iloc.emissive, 0); gl.uniform1f(iloc.alpha, 1);
+            gl.uniformMatrix4fv(iloc.vp, false, vp); gl.uniform3f(iloc.color, 1, 1, 1); gl.uniform3f(iloc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1i(iloc.shadowMap, 0); gl.uniformMatrix4fv(iloc.lightVP, false, lightVP); gl.uniform1f(iloc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(iloc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(iloc.shadowQ, shadowQ); gl.uniform1f(iloc.detail, detailQ); if (timeLocI) gl.uniform1f(timeLocI, windT); gl.uniform1f(iloc.plain, plainMesh.has(name) ? 1 : 0); gl.uniform3f(iloc.eye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(nightLocI, night); if (warmLocI) gl.uniform1f(warmLocI, warm); gl.uniform1f(iloc.emissive, 0); gl.uniform1f(iloc.alpha, 1);
             [[mesh.p, 0], [mesh.n, 1], [mesh.c, 2]].forEach(([buf, loc]) => { gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0); ext.vertexAttribDivisorANGLE(loc, 0); });
             gl.bindBuffer(gl.ARRAY_BUFFER, ibuf); gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
             for (let k = 0; k < 4; k++) { gl.enableVertexAttribArray(3 + k); gl.vertexAttribPointer(3 + k, 4, gl.FLOAT, false, 76, k * 16); ext.vertexAttribDivisorANGLE(3 + k, 1); }
@@ -564,7 +568,41 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     const motion = new Map();
     // Skinned character (optional). Until a model is registered, or when it is unavailable / quality is low, the code-drawn box avatar is used.
     let character = null, characterLod = null;
-    const setSkinnedCharacter = (model, lodModel) => { character = model ? createCharacterAnimator(model) : null; characterLod = model && lodModel && lodModel.jointCount === model.jointCount ? createCharacterAnimator(lodModel) : null; };
+    const bodies = {}; // kind ("m"|"f") -> { character, characterLod, tex, ready }: realistic textured bodies share the 22-joint rig, so one pose state drives either
+    let AV = null, aprogFailed = false;
+    const ensureAvatarProgram = () => {
+        if (AV) return true; if (aprogFailed) return false;
+        try { AV = createAvatarProgram(gl); gl.useProgram(program); return true; }
+        catch (err) { aprogFailed = true; AV = null; console.warn("[avatar] textured avatar shader unavailable:", err && err.message ? err.message : err); gl.useProgram(program); return false; }
+    };
+    const setSkinnedCharacters = async (sets) => {
+        const next = {};
+        for (const kind of Object.keys(sets || {})) {
+            const { model, lod } = sets[kind]; if (!model) continue;
+            const body = { character: createCharacterAnimator(model), characterLod: lod && lod.jointCount === model.jointCount ? createCharacterAnimator(lod) : null, tex: null, ready: true };
+            if (model.uvs && model.atlas) {
+                if (!ensureAvatarProgram()) continue;
+                body.ready = false; body.tex = await loadAtlasTextures(gl, model); if (!body.tex) continue; body.ready = true;
+            }
+            next[kind] = body;
+        }
+        for (const k of Object.keys(bodies)) delete bodies[k]; Object.assign(bodies, next);
+        const first = bodies.m ?? Object.values(bodies)[0] ?? null; character = first ? first.character : null; characterLod = first ? first.characterLod : null;
+        return Object.keys(next);
+    };
+    const setSkinnedCharacter = (model, lodModel) => setSkinnedCharacters(model ? { m: { model, lod: lodModel } } : {});
+    const drawTexAvatars = (r, vp) => {
+        if (!r.tex || !AV) return;
+        const L = AV.loc; gl.useProgram(AV.prog);
+        gl.uniformMatrix4fv(L.uMvp, false, vp); gl.uniform3f(L.uLight, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform3f(L.uEye, lastEye[0], lastEye[1], lastEye[2]); gl.uniform1f(L.uNight, night); gl.uniform1f(L.uAlpha, 1);
+        gl.uniform1i(L.uShadowMap, 0); gl.uniformMatrix4fv(L.uLightVP, false, lightVP); gl.uniform1f(L.uShadowOn, shadowOn ? 1 : 0); gl.uniform1f(L.uShadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(L.uShadowQ, shadowQ);
+        for (const kind of Object.keys(r.tex)) {
+            const b = bodies[kind], k = r.tex[kind]; if (!b || !b.tex || !k.segs.length) continue;
+            const at = b.character.model.atlas; uploadBatch(gl, AV, k); bindBody(gl, AV, b.tex, at);
+            for (const sg of k.segs) { setLook(gl, AV, at, sg.avatar); gl.drawArrays(gl.TRIANGLES, sg.first, sg.count); calls++; }
+        }
+        gl.useProgram(program);
+    };
     // Depth-only pass from the sun using LAST frame's casters (one-frame lag, texel-snapped so it never shimmers).
     const shadowPass = (center, q) => {
         if (!shadowOn) return;
@@ -625,15 +663,21 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         if (canvas.width !== Math.round(input.width * dpr) || canvas.height !== Math.round(input.height * dpr))
             resize();
         gl.viewport(0, 0, canvas.width, canvas.height);
-        const nTarget = input.lighting === "night" ? 1 : input.lighting === "festival" ? .85 : 0, fest = input.lighting === "festival";
-        night += (nTarget - night) * .06; if (Math.abs(nTarget - night) < .005) night = nTarget;
-        gl.clearColor(.70 - .65 * night, .85 - .78 * night, .97 - .81 * night, 1);
+        const nTarget = typeof input.nightBlend === "number" ? Math.max(0, Math.min(1, input.nightBlend)) : input.lighting === "night" ? 1 : input.lighting === "festival" ? .85 : 0, fest = input.lighting === "festival";
+        const wTarget = typeof input.warmth === "number" ? Math.max(0, Math.min(1, input.warmth)) : 0;
+        night += (nTarget - night) * .06; if (input.snapLight || Math.abs(nTarget - night) < .005) night = nTarget;
+        warm += (wTarget - warm) * .06; if (input.snapLight || Math.abs(wTarget - warm) < .005) warm = wTarget;
+        // Real-sun lighting (Lagos clock): the sun's elevation steers the shadow direction, so golden hour casts long shadows. Clamped so the shadow map keeps covering them; the moon keeps a fixed mid elevation.
+        if (typeof input.sunElevation === "number") { const el = (night > .5 ? 38 : Math.max(17, Math.min(52, input.sunElevation))) * Math.PI / 180, hx = -Math.SQRT1_2, hz = Math.SQRT1_2; SUN_DIR[0] = hx * Math.cos(el); SUN_DIR[1] = Math.sin(el); SUN_DIR[2] = hz * Math.cos(el); }
+        gl.clearColor((.70 + .22 * warm * (1 - night)) - .65 * night, (.85 - .12 * warm * (1 - night)) - .78 * night, (.97 - .38 * warm * (1 - night)) - .81 * night, 1);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Collision-aware orbit: eases in fast when a wall intrudes, out slowly so the view never pops.
         // Walk cameras (first-person / chase) look where the avatar looks; "orbit" is the legacy overview.
-        const camMode = input.camMode === "fp" || input.camMode === "chase" ? input.camMode : "orbit", walkCam = camMode !== "orbit", fpCam = camMode === "fp";
+        const freeCam = input.camMode === "free" && Array.isArray(input.camEye) && Array.isArray(input.camTarget);
+        const camMode = freeCam ? "free" : input.camMode === "fp" || input.camMode === "chase" ? input.camMode : "orbit", walkCam = camMode !== "orbit", fpCam = camMode === "fp";
         let eye, target, fov = Math.PI / 3;
-        if (walkCam) {
+        if (freeCam) { eye = input.camEye; target = input.camTarget; fov = input.camFov ?? 1.0; } // cinematic / showcase camera: caller owns eye, target and field of view (visual only)
+        else if (walkCam) {
             const wi = { x: input.camX, y: input.camY, heading: input.camHeading ?? 0, look: input.camLook ?? 0, bob: input.camBob ?? 0 };
             const camBoxes = CAM_PROPS.length ? CAM_WALLS.concat(CAM_PROPS) : CAM_WALLS;
             if (fpCam) { const c = solveFirstPersonCamera({ ...wi, boxes: CAM_PROPS }); eye = c.eye; target = c.target; fov = FP_FOV; }
@@ -647,7 +691,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         const aspect = Math.max(.2, input.width / input.height);
         const view = lookAt(eye, target, [0, 1, 0]), proj = perspective(fov, aspect, walkCam ? .12 : .1, walkCam ? 150 : 170), vp = multiply(proj, view);
         // Heading frustum for culling in walk views: anything clearly behind or beside the view cone is skipped (static meshes only; labels/entities have their own rules).
-        const hdg = walkCam ? (input.camHeading ?? 0) : 0, fwdX = Math.sin(hdg), fwdZ = Math.cos(hdg), halfH = Math.atan(Math.tan(fov / 2) * aspect) + .42;
+        const hdg = freeCam ? Math.atan2(target[0] - eye[0], target[2] - eye[2]) : walkCam ? (input.camHeading ?? 0) : 0, fwdX = Math.sin(hdg), fwdZ = Math.cos(hdg), halfH = Math.atan(Math.tan(fov / 2) * aspect) + .42;
         const inCone = (x, z, pad) => { if (!walkCam) return true; const dx = x - eye[0], dz = z - eye[2], d = Math.hypot(dx, dz); if (d <= pad + 6) return true; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * fwdX + dz * fwdZ) / d))); return ang <= halfH + Math.asin(Math.min(1, pad / d)); };
         const bdHit = slotToName["decor:kn_bd_a"], bdOn = !!(bdHit && meshes[bdHit.name]); // model backdrop streamed in?
         if (skyProg) {
@@ -657,7 +701,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.useProgram(skyProg);
             gl.uniform3f(skyLoc.f, F[0], F[1], F[2]); gl.uniform3f(skyLoc.r, R[0], R[1], R[2]); gl.uniform3f(skyLoc.u, U[0], U[1], U[2]);
             gl.uniform1f(skyLoc.tan, Math.tan(fov / 2)); gl.uniform1f(skyLoc.aspect, aspect);
-            gl.uniform3f(skyLoc.sun, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1f(skyLoc.night, night); gl.uniform1f(skyLoc.time, input.time || 0);
+            gl.uniform3f(skyLoc.sun, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); gl.uniform1f(skyLoc.night, night); if (skyLoc.warm) gl.uniform1f(skyLoc.warm, warm); gl.uniform1f(skyLoc.time, input.time || 0);
             gl.bindBuffer(gl.ARRAY_BUFFER, skyBuf); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
             gl.enable(gl.DEPTH_TEST); gl.depthMask(true);
@@ -666,7 +710,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         shadowPass(shCenter, q);
         shadowList = []; shadowInst = [];
         gl.useProgram(program);
-        gl.uniform3f(loc.eye, eye[0], eye[1], eye[2]); lastEye = eye; gl.uniform1f(nightLoc, night); windT = (typeof globalThis.__windT === "number" ? globalThis.__windT : (typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000); gl.uniform1f(timeLoc, windT);
+        gl.uniform3f(loc.eye, eye[0], eye[1], eye[2]); lastEye = eye; gl.uniform1f(nightLoc, night); if (warmLoc) gl.uniform1f(warmLoc, warm); gl.uniform3f(loc.light, SUN_DIR[0], SUN_DIR[1], SUN_DIR[2]); windT = (typeof globalThis.__windT === "number" ? globalThis.__windT : (typeof performance !== "undefined" ? performance.now() : Date.now()) / 1000); gl.uniform1f(timeLoc, windT);
         gl.uniform1i(loc.shadowMap, 0); gl.uniformMatrix4fv(loc.lightVP, false, lightVP); gl.uniform1f(loc.shadowOn, shadowOn ? 1 : 0); gl.uniform1f(loc.shadowTexel, 1 / Math.max(1, shadowSize)); gl.uniform1f(loc.shadowQ, shadowQ); gl.uniform1f(loc.detail, detailQ);
         floor(-140, -120, domain_1.WORLD.width + 280, domain_1.WORLD.height + 250, "#5f8f48", vp, -.2); // outer ground so the horizon is land, not clear-colour
         {
@@ -970,12 +1014,14 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         // Zone architecture: static dressing for each zone baked into ONE mesh per zone/quality (1 draw call).
         for (const z of domain_1.ZONES) {
             if (!nearCamera(z.x + z.w / 2, z.y + z.h / 2, Math.max(z.w, z.h) * .6)) continue;
-            const akey = "arch:" + z.id + "|" + q;
+            const vistaHit = z.id === "gate_road" ? slotToName["decor:gate_pier"] : null, vistaOn = !!(vistaHit && meshes[vistaHit.name]);
+            const akey = "arch:" + z.id + "|" + q + (vistaOn ? "|glb" : "");
             if (!bakedCache.has(akey)) {
               const bakeArch = (qq, cam) => {
                 recorder = { p: [], n: [], c: [] }; collectCam = cam;
                 try {
                     const zdef = domain_1.ZONE_DEFS.find((d) => d.id === z.id);
+                    setGlbVista(vistaOn);
                     const arch = hasZoneArchitecture(z.id) ? (pp) => buildZoneArchitecture(z.id, qq, pp) : (pp) => { if (zdef) { const dz = { id: z.id, rect: zdef.rect, buildings: zdef.buildings }; buildDistrict(dz, qq, pp); zoneGateway(dz, qq, pp); if (zdef.buildings.length) southLawn(z.id, zdef.rect, Math.max(...zdef.buildings.map((bb) => bb.y + bb.h)), qq, pp); else if (z.id === "gate_road") gateRoadExtras(zdef.rect, qq, pp); } };
                     arch({
                         box: (x0, z0, w, d, h, color, y0 = 0) => draw("box", x0 + w / 2, y0 + h / 2, z0 + d / 2, w, h, d, color, vp),
@@ -1238,13 +1284,18 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             if (q !== "low") { const rr = recorder; recorder = null; softShadow(e.x + .1, e.y - .1, .5, vp, .3); recorder = rr; }
             // Pass N: articulated "operator" body. Same anchor heights as the old chibi (head 1.58, torso ~.98) so streamed GLB parts still line up.
             const PANTS = "#2a3144", BOOT = "#1c1f26", GLOVE = "#1c1f26", VEST = "#2d3340", hiQ = q !== "low", kaf = e.avatar.top === "kaftan", sleeve = shadeHex(outfit, -.14);
-            const useSkin = !!character && !!recorder && skinSet.has(e.id);
+            const kind = bodyKind(e.avatar), bd = bodies[kind] ?? bodies.m ?? Object.values(bodies)[0] ?? null, character = bd ? bd.character : null, characterLod = bd ? bd.characterLod : null; // per-avatar body (shadows the outer fallback)
+            const useSkin = !!character && !!bd.ready && !!recorder && skinSet.has(e.id);
             let head = null;
             if (useSkin) {
-                if (!mo.sk) mo.sk = character.create();
+                if (!mo.sk || mo.skKind !== character) { mo.sk = character.create(); mo.skKind = character; }
                 stepAnimation(character.model, mo.sk, spd, em, dtm);
                 const anim = skinSet.get(e.id) || !characterLod ? character : characterLod;
-                const res = anim.emit(mo.sk, { x: e.x, z: e.y, yaw }, anim.colors(e.avatar), recorder, anim.groups(e.avatar));
+                let res;
+                if (anim.textured) {
+                    const tb = recorder.tex || (recorder.tex = {}), kb = tb[bd === bodies[kind] ? kind : "m"] || (tb[bd === bodies[kind] ? kind : "m"] = { p: [], n: [], u: [], segs: [] }), first = kb.p.length / 3;
+                    res = anim.emitTextured(mo.sk, { x: e.x, z: e.y, yaw }, kb, anim.groups(e.avatar)); kb.segs.push({ first, count: kb.p.length / 3 - first, avatar: e.avatar });
+                } else res = anim.emit(mo.sk, { x: e.x, z: e.y, yaw }, anim.colors(e.avatar), recorder, anim.groups(e.avatar));
                 trisFrame += res.tris; head = res.head; bob = res.head[1]; // emote bubble etc. follow the animated head
             }
             if (!useSkin) {
@@ -1328,7 +1379,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     const [px, pz] = hxz(an.x, an.z);
                     draw(h.name, px, hy(an.y + sz.h / 2), pz, sz.w * hs, sz.h * hs, sz.d * hs, t, vp, 0, yaw); drawn++; return true;
                 };
-                if (!character.model.paint) {
+                if (!character.model.paint && !character.textured) {
                 const faceOk = q !== "low" && skinPart(slots.face);
                 if (!faceOk) for (const s of [-1, 1]) { const [px, pz] = hxz(s * .08, .17); draw("sphere", px, hy(1.62), pz, .05 * hs, .05 * hs, .04 * hs, "#14161c", vp); }
                 if (e.avatar.hair !== "bald" && !(character.model.paint && hairIsPainted(e.avatar.hair)) && !skinPart(slots.hair)) {
@@ -1416,7 +1467,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         lastFrameTris = trisFrame;
         return { drawn, culled, labels, calls, tris: Math.round(trisFrame), gov: Math.round(govScale * 100) / 100, shadows: shadowOn, byShape: callBy };
     };
-    return { render, resize, registerMesh, unregisterMesh, setSkinnedCharacter, destroy: () => { for (const m of Object.values(meshes)) {
+    return { render, resize, registerMesh, unregisterMesh, setSkinnedCharacter, setSkinnedCharacters, destroy: () => { for (const m of Object.values(meshes)) {
             gl.deleteBuffer(m.p);
             gl.deleteBuffer(m.n);
             gl.deleteBuffer(m.c);

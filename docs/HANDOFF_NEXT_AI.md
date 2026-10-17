@@ -1,3 +1,5 @@
+> **MERGE 2026-10-17:** this tree = entry-gate pass (base: Grand Gate, landing, /start, Lagos-time lighting, gate vista GLBs) + wardrobe/library v18 (realistic textured m/f avatars, wardrobe, avatar stage in the builder, walkable 3D Library). Avatar/library docs: `docs/HANDOFF_REPLICA_AI.md`, `docs/CREDITS.md`. Painted Quaternius body now lives only in `tests/visual/fixtures/painted/`. `/start` now uses the new AvatarStage builder; the entry-gate screen (GateScene) renders the realistic bodies. Verified: realistic-character, skinned-glb, avatar-paint, lagos-time, runtime smoke, renderer contract, zone-architecture, camera-solver, world-expansion, landmarks, district-kinds. NOT run: typecheck/build, vitest suites (world-architecture-ext grandGate test, domain/API tests), check:assets, check:budget, real phone.
+
 # CAMPUS handoff to the next AI (13 Oct 2026)
 
 Read first: `README.md`, `RUN.md`, `DECISIONS.md` (D-045..D-051), `docs/history/CAMPUS_STATUS_2026-10-12.md`, `docs/WALK_UPDATE_NOTES.md`, `docs/ASSET_SOURCES.md`.
@@ -82,3 +84,6 @@ Read first: this file, `docs/ROAD_TO_FINISHED.md` (ordered gate list), `docs/RES
 
 ## Update 2026-10-13 (graphics pass, no npm)
 See `docs/GRAPHICS_VISION.md` for the full pass log, unverified items, and next steps. Short version: soft shadows, minimap/label fixes, structured PBR-style textures (wall block coursing, roof pantiles), foliage translucency; last edit (wallT mask) not re-rendered. Deployed from main to Render.
+
+## Update 2026-10-17 (entry + gate vista pass)
+See `docs/GATE_VISTA.md`. Run `pnpm install --frozen-lockfile && pnpm typecheck && pnpm build && pnpm test` first (not run in that session). Regenerate kit+placements with `pnpm gen:gate-kit` (never the old generate-props.mjs).

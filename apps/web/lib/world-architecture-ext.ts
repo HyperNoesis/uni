@@ -4,6 +4,7 @@
  * seating and a zone colour band. Coordinates are world tiles; z == domain "y". */
 import type { P, Quality } from "./world-architecture";
 import { palmTree, leafFringe } from "./world-flora";
+import { grandGate } from "./world-hero-gate";
 
 const K = {
   conc: "#d8d2c4", concDk: "#aaa496", stone: "#e4d4b9", clay: "#c9724a", terra: "#b8613f", blue: "#3675e7", navy: "#1f3a6e",
@@ -153,15 +154,20 @@ function market(p: P, q: Quality) {
 }
 function umbrella(p: P, x: number, z: number, c: string) { p.cyl(x, z, .08, 2.3, K.steelDk); p.sph(x, 2.3, z, 2.1, .45, 2.1, c); }
 function tableSet(p: P, x: number, z: number, c: string) { p.cyl(x, z + 1.2, 1.1, .75, c); p.box(x - 1, z + .8, .5, .4, .4, K.woodDk); p.box(x + .5, z + .8, .5, .4, .4, K.woodDk); }
+/** When the authored GLB gate kit (assets/gate/*.glb) is streamed in, Gate Road bakes ONLY its ground surfaces; every prop comes from the zone's decor placements. */
+let GLB_VISTA = false;
+export const setGlbVista = (on: boolean) => { GLB_VISTA = on; };
 function gateRoad(p: P, q: Quality) {
   const r = { x: 48, y: 80, w: 24, h: 70 }; const cx = 60;
   p.box(cx - 5, 80, 10, 70, .04, K.paving, .02); p.box(cx - .25, 80, .5, 70, .06, K.yellow, .04);
   for (let z = 82; z < 148; z += 8) { for (const dx of [-5.4, 4.8]) p.box(cx + dx, z, .6, 2.5, .05, K.white, .03); p.box(cx - 1.4, z + 3, 2.8, .22, .05, K.white, .05); }
-  for (let z = 84; z < 148; z += 12) { for (const dx of [-5.8, 5.8]) { lamp(p, cx + dx, z, 4); palm(p, cx + dx * 1.2, z + 6, 4.4 + (z % 3) * .3); } }
+  if (GLB_VISTA) return;
+  for (let z = 84; z < 148; z += 12) { if (z === 132) continue; /* Grand Gate stands here */ for (const dx of [-5.8, 5.8]) { lamp(p, cx + dx, z, 4); palm(p, cx + dx * 1.2, z + 6, 4.4 + (z % 3) * .3); } }
   for (let i = 0; i < 6; i++) { p.cyl(cx - 5.6, 100 + i * 1.6, .3, .8, K.yellow); p.cyl(cx + 5.6, 100 + i * 1.6, .3, .8, K.yellow); }
   const bx = 52, bz = 118; p.box(bx, bz, 6, 2, .1, K.steelDk, 2.6); for (const px of [bx, bx + 5.8]) p.box(px, bz, .2, 2, 2.6, K.steelDk); p.box(bx, bz + 1.8, 6, .2, 2.6, K.glass, .1); bench(p, bx + 2, bz + .6); lit(p, bx + .4, bz + .4, 5.2, .15, .3, K.blue, 2.7);
   for (let i = 0; i < 3; i++) flag(p, 55 + i * 5, 148, [K.blue, K.white, K.green][i]!, 5);
-  if (q !== "low") for (let z = 90; z < 145; z += 10) { planter(p, cx - 7, z, 1.4, 1.4, K.leaf); planter(p, cx + 5.6, z, 1.4, 1.4, K.leaf); }
+  grandGate(cx, 129.5, q, p); // hero landmark: breezeblock + terrazzo + sunshade gate (world-hero-gate.ts)
+  if (q !== "low") for (let z = 90; z < 145; z += 10) { if (z === 130) continue; planter(p, cx - 7, z, 1.4, 1.4, K.leaf); planter(p, cx + 5.6, z, 1.4, 1.4, K.leaf); }
 }
 
 export const EXT_ARCH: Record<string, (p: P, q: Quality) => void> = {

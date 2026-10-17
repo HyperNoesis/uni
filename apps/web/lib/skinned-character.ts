@@ -3,11 +3,20 @@
 // Server-authoritative movement is untouched - this only decides how an already-validated avatar LOOKS.
 import { parseSkinnedGlb, newPose, sampleClip, blendPose, skinMatrices, skinToSoup, regionVertexColors, type SkinnedModel, type Pose } from "./skinned-glb";
 import { groupsFor, paintKey, paintVertexColors, hairIsPainted } from "./avatar-paint";
+import { wardrobeGroups } from "./avatar-wardrobe";
 import type { Avatar } from "@campus/domain";
 
-export const CHARACTER_URL = "/assets/characters/campus_body.glb";
-export const CHARACTER_LOD_URL = "/assets/characters/campus_body_lod.glb";
-export const CHARACTER_LIMITS = { maxTriangles: 8000, maxBytes: 520 * 1024, maxJoints: 64 };
+export const CHARACTER_URL = "/assets/characters/campus_m.glb";
+export const CHARACTER_LOD_URL = "/assets/characters/campus_m_lod.glb";
+/** Realistic textured bodies (scripts/models/build-realistic.py): m = AvatarSDK male, f = MPFB female. Same 22-joint rig, same clips. */
+export const CHARACTER_SETS = {
+  m: { url: CHARACTER_URL, lod: CHARACTER_LOD_URL },
+  f: { url: "/assets/characters/campus_f.glb", lod: "/assets/characters/campus_f_lod.glb" },
+} as const;
+export type BodyKind = keyof typeof CHARACTER_SETS;
+/** Which body an avatar wears: the catalog `body` part (m default for legacy avatars). */
+export const bodyKind = (a: Pick<Avatar, "body">): BodyKind => (a.body === "f" ? "f" : "m");
+export const CHARACTER_LIMITS = { maxTriangles: 24000, maxBytes: 1400 * 1024, maxJoints: 64 };
 /** Rendered body height in metres (the chibi box avatar this replaces is ~1.7 m tall, hair parts included). */
 export const BODY_HEIGHT = 1.68;
 export const FADE_SECONDS = 0.18;
@@ -26,7 +35,7 @@ export async function loadSkinnedCharacter(url = CHARACTER_URL, fetchFn: typeof 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const buf = await res.arrayBuffer();
     if (buf.byteLength > CHARACTER_LIMITS.maxBytes) throw new Error(`over byte budget (${buf.byteLength})`);
-    return parseSkinnedGlb(buf, CHARACTER_LIMITS);
+    const model = parseSkinnedGlb(buf, CHARACTER_LIMITS); model.baseUrl = url.slice(0, url.lastIndexOf("/") + 1); return model;
   } catch (e) {
     console.warn("[character] skinned body unavailable, using built-in avatar:", e instanceof Error ? e.message : e);
     return null;
@@ -100,6 +109,10 @@ export interface CharacterAnimator {
   colors(avatar: Avatar): Float32Array;
   /** Optional geometry groups this avatar wears (hood, skirt, backpack, satchel, chain) that exist in this model. */
   groups(avatar: Avatar): string[];
+  /** True for realistic textured bodies: drawn through the renderer's textured avatar pass with emitTextured(), not emit(). */
+  textured: boolean;
+  /** Textured bodies: skin the pose and append position/normal/uv triangles (unindexed) to `out`. */
+  emitTextured(st: AnimState, at: { x: number; z: number; yaw: number }, out: { p: number[]; n: number[]; u: number[] }, groups?: readonly string[]): { tris: number; head: [number, number, number] };
   /** Skin the pose in `st` and append the body (+ the given groups) to the dynamic batch arrays. Returns triangles emitted and the head's offset from its rest position (world axes). */
   emit(st: AnimState, at: { x: number; z: number; yaw: number }, col: Float32Array, out: { p: number[]; n: number[]; c: number[] }, groups?: readonly string[]): { tris: number; head: [number, number, number] };
   restHeadTop: number;
@@ -111,7 +124,7 @@ const hex = (h: string): [number, number, number] => { const n = parseInt(String
 export function createCharacterAnimator(m: SkinnedModel, pants = "#2a3144", shoes = "#1c1f26"): CharacterAnimator {
   const K = m.jointCount, world = new Float32Array(K * 16), skin = new Float32Array(K * 16);
   const sp = new Float32Array(m.vertexCount * 3), sn = new Float32Array(m.vertexCount * 3);
-  const scale = BODY_HEIGHT / m.height, headIdx = Math.max(0, m.jointNames.indexOf("head"));
+  const scale = (m.bodyHeight || BODY_HEIGHT) / m.height, headIdx = Math.max(0, m.jointNames.indexOf("head"));
   const colorCache = new Map<string, Float32Array>();
   // rest-pose head joint position + head width/top (model units)
   const rest = newPose(m); skinMatrices(m, rest, world, skin);
@@ -125,7 +138,7 @@ export function createCharacterAnimator(m: SkinnedModel, pants = "#2a3144", shoe
   let lowY = Infinity; for (let v = 0; v < m.baseVertices; v++) lowY = Math.min(lowY, m.positions[v * 3 + 1]);
   const yOffset = -lowY * scale; // stand the bind pose's soles on y = 0
   return {
-    model: m, headWidth: (hx1 - hx0) * scale, restHeadTop: top * scale + yOffset,
+    model: m, textured: !!m.uvs, headWidth: (hx1 - hx0) * scale, restHeadTop: top * scale + yOffset,
     create: () => createAnimState(m),
     colors(avatar) {
       const key = paintKey(avatar); let c = colorCache.get(key);
@@ -136,7 +149,15 @@ export function createCharacterAnimator(m: SkinnedModel, pants = "#2a3144", shoe
       }
       return c;
     },
-    groups: (avatar) => groupsFor(avatar).filter((g) => !!m.groups[g]),
+    groups: (avatar) => (m.uvs ? wardrobeGroups(avatar) : groupsFor(avatar)).filter((g) => !!m.groups[g]),
+    emitTextured(st, at, out, groups) {
+      skinMatrices(m, st.pose, world, skin);
+      const before = out.p.length;
+      skinToSoup(m, skin, { x: at.x, y: yOffset, z: at.z, yaw: at.yaw, scale }, sp, sn, out.p, out.n, groups ?? [], out.u);
+      const dx = (world[headIdx * 16 + 12] - headRest[0]) * scale, dy = (world[headIdx * 16 + 13] - headRest[1]) * scale, dz = (world[headIdx * 16 + 14] - headRest[2]) * scale;
+      const cy = Math.cos(at.yaw), sy = Math.sin(at.yaw);
+      return { tris: (out.p.length - before) / 9, head: [dx * cy + dz * sy, dy, -dx * sy + dz * cy] };
+    },
     emit(st, at, col, out, groups) {
       skinMatrices(m, st.pose, world, skin);
       const before = out.p.length;

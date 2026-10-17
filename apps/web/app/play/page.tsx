@@ -1,5 +1,6 @@
 "use client";
 
+import { lagosSky } from "../../lib/lagos-time";
 import { DEFAULT_PITCH, clampPitch, clampZoom, clampLook, wrapHeading, headingForward, headingRight } from "../../lib/world-camera";
 import { JobsSheet } from "../../components/JobsSheet";
 import { ShiftSheet } from "../../components/ShiftSheet";
@@ -13,6 +14,8 @@ import type { Sport } from "../../lib/sports-game";
 import MiniGame from "../../components/MiniGame";
 import type { Mini } from "../../lib/minigames";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+const LibraryWorld = dynamic(() => import("../../components/LibraryWorld").then((m) => m.LibraryWorld), { ssr: false });
 import { FrameSampler, QualityGovernor } from "../../lib/perf-sampler";
 import {
   AMBIENT_NPCS,
@@ -46,7 +49,7 @@ import { api, clearToken, getToken, warmServers, WS_URL } from "../../lib/api";
 import { drawWorld, type Entity } from "../../lib/world-render";
 import { createWorld3DRenderer } from "../../lib/world-3d-render";
 import { createAssetStreamer, type AssetStreamer } from "../../lib/asset-loader";
-import { loadSkinnedCharacter, CHARACTER_LOD_URL } from "../../lib/skinned-character";
+import { loadSkinnedCharacter, CHARACTER_SETS } from "../../lib/skinned-character";
 
 const EMOTES = { wave: "👋", dance: "💃", laugh: "😂", cheer: "🎉" } as const; // "sit" is a contextual action, not in this strip
 type EmoteKey = keyof typeof EMOTES;
@@ -142,9 +145,10 @@ export default function Play() {
   const introChecked = useRef(false);
   const [compassYaw, setCompassYaw] = useState(0);
   const qualityRef = useRef<QualityLevel>("medium");
-  const lightingRef = useRef<"day" | "night" | "festival">("day");
-  const [lighting, setLighting] = useState<"day" | "night" | "festival">("day");
-  const cycleLighting = () => { const o = ["day", "night", "festival"] as const; const n = o[(o.indexOf(lightingRef.current) + 1) % 3]!; lightingRef.current = n; setLighting(n); };
+  const [libOpen, setLibOpen] = useState(false);
+  const lightingRef = useRef<"auto" | "day" | "night" | "festival">("auto");
+  const [lighting, setLighting] = useState<"auto" | "day" | "night" | "festival">("auto");
+  const cycleLighting = () => { const o = ["auto", "day", "night", "festival"] as const; const n = o[(o.indexOf(lightingRef.current) + 1) % 4]!; lightingRef.current = n; setLighting(n); };
   const autoQuality = useRef(true);
   const diagOn = useRef(false);
   const rttRef = useRef(0);
@@ -417,7 +421,7 @@ export default function Play() {
         const r3d = createWorld3DRenderer(canvas3d);
         renderer3dRef.current = r3d;
         // Optional skinned character body (nearest avatars). Never throws: on any failure the built-in box avatar stays (lib/skinned-character.ts).
-        void Promise.all([loadSkinnedCharacter(), loadSkinnedCharacter(CHARACTER_LOD_URL)]).then(([model, lod]) => { if (model && renderer3dRef.current === r3d) r3d.setSkinnedCharacter(model, lod); });
+        void Promise.all(Object.entries(CHARACTER_SETS).map(async ([kind, set]) => { const [model, lod] = await Promise.all([loadSkinnedCharacter(set.url), loadSkinnedCharacter(set.lod)]); return [kind, { model, lod }] as const; })).then((entries) => { const sets = Object.fromEntries(entries.filter(([, v]) => v.model)); if (Object.keys(sets).length && renderer3dRef.current === r3d) void r3d.setSkinnedCharacters(sets); }); // realistic textured bodies (male + female); any failure keeps the box avatar
         // Optional GLB models, streamed per zone; any failure keeps the built-in shapes (see lib/asset-loader.ts).
         assetStreamerRef.current?.destroy();
         assetStreamerRef.current = ASSET_MANIFEST.assets.length ? createAssetStreamer({
@@ -683,7 +687,7 @@ export default function Play() {
         }
         const stats = renderer3dRef.current.render({
           width: w, height: h, time, camX: cam.x, camY: cam.y, camMode: walkView ? viewRef.current : "orbit", camHeading: lookRef.current.heading, camLook: lookRef.current.pitch, camBob, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
-          meId: me.current.id || "me", entities, quality: qualityRef.current, lighting: lightingRef.current,
+          meId: me.current.id || "me", entities, quality: qualityRef.current, ...(lightingRef.current === "auto" ? (() => { const k = lagosSky(); return { lighting: "day" as const, nightBlend: k.night, warmth: k.warmth, sunElevation: k.elevation }; })() : { lighting: lightingRef.current }),
           activeHuntPointId: huntTargetRef.current, gateOpen: gateRef.current.open,
         }, labelsCtx);
         return { drawn: stats.drawn, culled: stats.culled };
@@ -705,6 +709,7 @@ export default function Play() {
   function enterDoor(id: string) {
     const b = BUILDINGS.find((x) => x.id === id);
     if (!b || !b.door) return;
+    if (id === "library_hall") { keys.current.clear(); setLibOpen(true); return; } // the library is a full walkable 3D building
     const cx = b.door.x + b.door.w / 2, by = b.y + b.h;
     keys.current.clear();
     autoWalkRef.current = { stage: 0, out: [cx, by + 1.0], inn: [cx, by - WALL - 1.5], until: performance.now() + 9000, stuck: 0 };
@@ -934,7 +939,7 @@ export default function Play() {
           <button className="pill" onClick={cycleRenderer} aria-label="Switch between 3D and lightweight 2D campus graphics"><HudIcon n="cube" /> {renderMode}</button>
           <button className="pill" onClick={cycleQuality} aria-label="Graphics quality"><HudIcon n="gauge" /> {quality === "auto" ? "Auto" : quality}</button>
           {viewMode === "orbit" && <button className="pill" onClick={() => { orbit.current = { yaw: 0, zoom: 1, pitch: DEFAULT_PITCH }; setCompassYaw(0); }} aria-label="Reset camera (compass)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: `rotate(${compassYaw}rad)`, transition: "transform .1s" }}><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg> Reset</button>}
-          <button className="pill" onClick={cycleLighting} aria-label="Time of day"><HudIcon n={lighting === "day" ? "sun" : lighting === "night" ? "moon" : "festival"} /> {lighting === "day" ? "Day" : lighting === "night" ? "Night" : "Festival"}</button>
+          <button className="pill" onClick={cycleLighting} aria-label="Time of day"><HudIcon n={lighting === "night" ? "moon" : lighting === "festival" ? "festival" : "sun"} /> {lighting === "auto" ? "Lagos time" : lighting === "day" ? "Day" : lighting === "night" ? "Night" : "Festival"}</button>
           <button className="pill" onClick={openBoard}><HudIcon n="trophy" /> Campus Wars</button>
           <div className="pill"><small>online</small> {population}</div>
         </div>
@@ -972,6 +977,8 @@ export default function Play() {
 
       {profile && phase === "live" && !gateDone && <GateCheck profile={profile} player={me} gate={gateRef} onDone={finishGate} />}
       {profile && gateDone && <PocketPhone profile={profile} onOpenChange={setPhoneOpen} />}
+
+      {libOpen && profile && <LibraryWorld avatar={profile.avatar} onClose={() => setLibOpen(false)} />}
 
       <PlayNav />
 

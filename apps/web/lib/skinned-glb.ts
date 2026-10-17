@@ -19,7 +19,12 @@ export interface SkinnedModel {
   baseVertices: number; baseIndices: number; groups: Record<string, Group>;
   /** Planted-foot ground speed (m/s) of each locomotion clip as authored; used to match playback rate to real speed. */
   clipSpeed: Record<string, number>;
+  /** Textured realistic characters: TEXCOORD_0 into one atlas (+ tint mask), see scripts/models/build-realistic.py. Null on painted/plain bodies. */
+  uvs: Float32Array | null; atlas: AtlasInfo | null; baseUrl: string;
+  /** Rendered height in metres requested by the asset (extras.campus.bodyHeight); 0 = use the game default. */
+  bodyHeight: number;
 }
+export interface AtlasInfo { albedo: string; mask: string; skinRef: [number, number, number]; hairLuma: number; topLuma: number; topRect: number[]; botRect: number[]; shoeRect: number[]; botCut: number }
 export interface Group { name: string; v0: number; vN: number; i0: number; iN: number }
 export type Pose = { t: Float32Array; r: Float32Array; s: Float32Array };
 
@@ -114,12 +119,24 @@ export function parseSkinnedGlb(buf: ArrayBuffer, limits: { maxTriangles: number
   }
   const firstGroup = Object.values(groups).sort((a, b) => a.v0 - b.v0)[0];
   const baseVertices = firstGroup ? firstGroup.v0 : V, baseIndices = firstGroup ? firstGroup.i0 : idx.count;
+  const rect = (r: unknown): number[] => (Array.isArray(r) && r.length === 4 && r.every((v) => Number.isFinite(v)) ? r.map(Number) : [2, 2, 3, 3]); // [2,2,3,3] = matches nothing
+  let uvs: Float32Array | null = null, atlas: AtlasInfo | null = null;
+  if (at.TEXCOORD_0 !== undefined) {
+    const uv = read(at.TEXCOORD_0, "VEC2"); if (uv.count !== V) throw new SkinnedGlbError("uv count differs");
+    for (let i = 0; i < uv.data.length; i++) if (!Number.isFinite(uv.data[i])) throw new SkinnedGlbError("bad uv");
+    const a = meta.atlas;
+    if (a && typeof a.albedo === "string" && typeof a.mask === "string" && /^[\w.-]+$/.test(a.albedo) && /^[\w.-]+$/.test(a.mask) && Array.isArray(a.skinRef) && a.skinRef.length === 3) {
+      uvs = Float32Array.from(uv.data as ArrayLike<number>);
+      atlas = { albedo: a.albedo, mask: a.mask, skinRef: [Number(a.skinRef[0]), Number(a.skinRef[1]), Number(a.skinRef[2])], hairLuma: Number(a.hairLuma) || .3, topLuma: Number(a.topLuma) || .4,
+        topRect: rect(a.topRect), botRect: rect(a.botRect), shoeRect: rect(a.shoeRect), botCut: Number.isFinite(a.botCut) ? a.botCut : .5 };
+    }
+  }
   const fwd: [number, number, number] = Array.isArray(meta.forward) && meta.forward.length === 3 ? meta.forward : [0, 0, 1];
   let lo = Infinity, hi = -Infinity; for (let i = 1; i < pos.data.length; i += 3) { lo = Math.min(lo, pos.data[i]); hi = Math.max(hi, pos.data[i]); }
   const model: SkinnedModel = {
     vertexCount: V, triangles: idx.count / 3, jointCount: K, positions: pos.data, normals: nrm.data, joints: jnt.data, weights: wgt.data, indices: idx.data,
     parents, restT, restR, restS, ibm: ibm.data, jointNames: skin.joints.map((nj: number) => String(json.nodes[nj].name ?? nj)), clips, forward: fwd, jointRegion: Array.isArray(meta.jointRegion) ? meta.jointRegion : new Array(K).fill(0), height: hi - lo, clipSpeed: {},
-    paint, baseVertices, baseIndices, groups,
+    paint, baseVertices, baseIndices, groups, uvs, atlas, baseUrl: "", bodyHeight: Number.isFinite(meta.bodyHeight) && meta.bodyHeight > 1.2 && meta.bodyHeight < 2.2 ? meta.bodyHeight : 0,
   };
   for (const n of ["Walk_Loop", "Jog_Fwd_Loop", "Sprint_Loop"]) if (clips[n]) model.clipSpeed[n] = estimateLocomotionSpeed(model, clips[n]);
   return model;
@@ -186,7 +203,7 @@ export function skinMatrices(m: SkinnedModel, pose: Pose, world: Float32Array, s
  * entity heading), scale uniformly, translate. Outputs unindexed triangle soup into dstP/dstN (3 floats per vertex).
  * Returns the number of vertices written (triangles*3).
  */
-export function skinToSoup(m: SkinnedModel, skin: Float32Array, place: { x: number; y: number; z: number; yaw: number; scale: number }, scratchP: Float32Array, scratchN: Float32Array, dstP: number[], dstN: number[], groups?: readonly string[]): number {
+export function skinToSoup(m: SkinnedModel, skin: Float32Array, place: { x: number; y: number; z: number; yaw: number; scale: number }, scratchP: Float32Array, scratchN: Float32Array, dstP: number[], dstN: number[], groups?: readonly string[], dstUv?: number[]): number {
   const cy = Math.cos(place.yaw), sy = Math.sin(place.yaw), sc = place.scale;
   const skinRange = (v0: number, v1: number) => {
     for (let v = v0; v < v1; v++) {
@@ -208,7 +225,7 @@ export function skinToSoup(m: SkinnedModel, skin: Float32Array, place: { x: numb
   };
   const I = m.indices; let written = 0;
   const emit = (i0: number, i1: number) => {
-    for (let i = i0; i < i1; i++) { const v = I[i]!; dstP.push(scratchP[v * 3]!, scratchP[v * 3 + 1]!, scratchP[v * 3 + 2]!); dstN.push(scratchN[v * 3]!, scratchN[v * 3 + 1]!, scratchN[v * 3 + 2]!); }
+    for (let i = i0; i < i1; i++) { const v = I[i]!; dstP.push(scratchP[v * 3]!, scratchP[v * 3 + 1]!, scratchP[v * 3 + 2]!); dstN.push(scratchN[v * 3]!, scratchN[v * 3 + 1]!, scratchN[v * 3 + 2]!); if (dstUv && m.uvs) dstUv.push(m.uvs[v * 2]!, m.uvs[v * 2 + 1]!); }
     written += i1 - i0;
   };
   skinRange(0, m.baseVertices); emit(0, m.baseIndices);
