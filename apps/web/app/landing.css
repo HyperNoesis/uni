@@ -1,0 +1,28 @@
+.gate-landing { position: relative; min-height: 100dvh; overflow: hidden; color: #f4f7ff; display: grid; grid-template-rows: auto 1fr auto; background: linear-gradient(180deg, #5b8bd0 0%, #e9c9a0 100%); }
+.gate-landing.phase-dusk, .gate-landing.phase-dawn { background: linear-gradient(180deg, #2b2f6a 0%, #d98a5e 100%); }
+.gate-landing.phase-night { background: linear-gradient(180deg, #050a1c 0%, #121c3d 100%); }
+.gate-scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.gl-veil { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(6,12,30,.82) 0%, rgba(6,12,30,.5) 38%, rgba(6,12,30,0) 70%), linear-gradient(0deg, rgba(6,12,30,.85) 0%, rgba(6,12,30,0) 34%); opacity: .0; transition: opacity 1.4s ease; }
+.gl-veil.on { opacity: 1; }
+.gl-top, .gl-hero, .gl-foot { position: relative; z-index: 2; width: 100%; max-width: 1240px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+.gl-top { display: flex; justify-content: space-between; align-items: center; padding-top: calc(18px + var(--safe-t)); color: #fff; }
+.gl-top nav { display: flex; gap: 22px; align-items: center; font-size: 14px; letter-spacing: .3px; }
+.gl-top nav a { text-decoration: none; opacity: .85; } .gl-top nav a:hover { opacity: 1; }
+.gl-clock { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(8,14,34,.55); font-size: 12px; letter-spacing: .8px; text-transform: uppercase; backdrop-filter: blur(8px); }
+.gl-clock .dot { width: 8px; height: 8px; border-radius: 50%; } .gl-clock .sun { background: #ffd166; box-shadow: 0 0 10px #ffd166; } .gl-clock .moon { background: #cfe0ff; box-shadow: 0 0 10px #8fb0ff; }
+.gl-hero { align-self: end; padding-bottom: 36px; }
+.gl-eyebrow { margin: 0 0 14px; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #ffd98a; }
+.gl-hero h1 { margin: 0 0 14px; max-width: 15ch; font-family: var(--display); font-weight: 800; letter-spacing: -1.5px; line-height: 1.02; font-size: clamp(34px, 5.2vw, 66px); text-shadow: 0 2px 30px rgba(0,0,0,.45); }
+.gl-sub { margin: 0 0 28px; max-width: 460px; font-size: 18px; line-height: 1.5; color: #dbe5ff; }
+.gl-cta { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
+.gl-link { color: #fff; opacity: .85; text-underline-offset: 4px; font-size: 15px; }
+.gl-foot { padding-bottom: calc(20px + var(--safe-b)); display: flex; justify-content: space-between; align-items: end; gap: 20px; flex-wrap: wrap; font-size: 12px; color: #c4d0ee; }
+.gl-foot ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 22px; flex-wrap: wrap; text-transform: uppercase; letter-spacing: 1.6px; } .gl-foot p { margin: 0; }
+@media (max-width: 700px) { .gl-top nav a { display: none; } .gl-top nav .gl-clock { display: inline-flex; } .gl-veil { background: linear-gradient(0deg, rgba(6,12,30,.9) 0%, rgba(6,12,30,.35) 55%, rgba(6,12,30,.1) 100%); } .gl-foot ul { gap: 12px; letter-spacing: 1px; } }
+@media (prefers-reduced-motion: reduce) { .gl-veil { transition: none; } }
+/* onboarding over the gate */
+.gate-scene.dim { filter: saturate(.8) brightness(.7) blur(2px); }
+.onb-glass { position: relative; z-index: 2; margin: auto; width: min(560px, 92vw); padding: 28px; border-radius: 22px; background: rgba(9,16,38,.82); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(14px); box-shadow: 0 30px 80px rgba(0,0,0,.5); display: flex; flex-direction: column; gap: 18px; }
+.onb-glass h2 { margin: 0; font-family: var(--display); font-size: 28px; letter-spacing: -.5px; } .onb-top { display: flex; justify-content: space-between; align-items: center; } .onb-count { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #9fb0d6; }
+.idcard { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(135deg, #16295a, #0c1736); }
+.idcard b { display: block; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; } .idcard span { font-size: 12px; color: #9fb0d6; letter-spacing: 1.4px; text-transform: uppercase; }

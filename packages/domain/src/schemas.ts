@@ -14,6 +14,9 @@ export const AvatarSchema = z.object({
   face: z.enum(AVATAR_OPTIONS.face).default(AVATAR_LEGACY_DEFAULTS.face),
   shoes: z.enum(AVATAR_OPTIONS.shoes).default(AVATAR_LEGACY_DEFAULTS.shoes),
   backpack: z.enum(AVATAR_OPTIONS.backpack).default(AVATAR_LEGACY_DEFAULTS.backpack),
+  headwear: z.enum(AVATAR_OPTIONS.headwear).default(AVATAR_LEGACY_DEFAULTS.headwear),
+  bottom: z.enum(AVATAR_OPTIONS.bottom).default(AVATAR_LEGACY_DEFAULTS.bottom),
+  body: z.enum(AVATAR_OPTIONS.body).default(AVATAR_LEGACY_DEFAULTS.body),
 });
 
 export const DisplayName = z

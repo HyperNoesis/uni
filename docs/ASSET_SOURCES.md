@@ -28,3 +28,6 @@ Real-render verdict (docs/evidence/kenney/): they render correctly but look flat
 ## Kenney city-commercial backdrop (14 Oct 2026)
 Source: the Kenney mirror already vetted above (github.com/shorepine/kenney @ `3694c6879e487c108f55677be7dd2ca75b07cc3b`, CC0; staged in `assets-library/kenney/city-commercial`). Re-download from kenney.nl and diff before shipping, as noted above.
 Used: `building-a` ... `building-h` and `building-skyscraper-a/c/d`, baked by `scripts/models/import-backdrop.sh` (wraps `import-kenney.py`: palette colour baked to COLOR_0, scale 13.5 for buildings / 10 for skyscrapers, <=2.5k tris each) into `apps/web/public/assets/kenney/kn_bd_*.glb`, registered as always-resident `decor:kn_bd_*` in `assets.json` (zones "all"). They are placed by `apps/web/lib/world-backdrop.ts` OUTSIDE the walkable world (no collision) and replace the box "faculty wings" and box skyline in `world-environment.ts` once loaded. Resident total after adding: 73 GLBs, 3.3 MB.
+
+## Grand Gate (2026-10-15)
+Original code-built geometry (`world-hero-gate.ts`), no third-party assets.

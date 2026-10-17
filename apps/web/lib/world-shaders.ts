@@ -11,7 +11,7 @@ const PRECISION = `#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#e
 // ---------------------------------------------------------------------------------------------------------------
 export const FRAG = PRECISION + `
 uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye;
-uniform float uEmissive; uniform float uAlpha; uniform float uNight;
+uniform float uEmissive; uniform float uAlpha; uniform float uNight; uniform float uWarm;
 uniform float uShadowOn; uniform float uShadowTexel; uniform float uShadowQ; uniform float uDetail; uniform float uPlain;
 uniform mat4 uLightVP; uniform sampler2D uShadowMap;
 uniform sampler2D uTexP; uniform sampler2D uTexG; uniform sampler2D uTexW; uniform sampler2D uTexR; uniform float uTexOn;
@@ -179,8 +179,8 @@ void main(){
  float ao=mix(.55,1.0,smoothstep(0.0,2.6,vWorld.y));
  ao*=mix(1.0,.8,wall*(1.0-smoothstep(.0,.5,vWorld.y)));
  ao*=dAo;
- vec3 sunCol=mix(vec3(2.35,1.98,1.5),vec3(.42,.55,1.05),uNight);
- vec3 skyAmb=mix(vec3(.46,.62,.98),vec3(.10,.14,.34),uNight)*mix(.50,.62,hemi);
+ vec3 sunCol=mix(vec3(2.35,1.98,1.5),vec3(.42,.55,1.05),uNight); sunCol=mix(sunCol,vec3(2.6,1.5,.72),uWarm*(1.0-uNight)); // golden hour
+ vec3 skyAmb=mix(vec3(.46,.62,.98),vec3(.10,.14,.34),uNight)*mix(.50,.62,hemi); skyAmb=mix(skyAmb,skyAmb*vec3(1.12,.88,.92),uWarm*(1.0-uNight)*.7);
  vec3 gndAmb=mix(vec3(.46,.36,.24),vec3(.07,.07,.12),uNight)*.55;
  vec3 amb=mix(gndAmb,skyAmb,hemi)*ao;
  // warm bounce into shaded sides facing the sun, soft wrap on terminators
@@ -206,7 +206,7 @@ void main(){
  col=aces(col*.56);
  col=pow(col,vec3(1.0/2.2));
  float lum=dot(col,vec3(.299,.587,.114)); col=clamp(mix(vec3(lum),col,1.04),0.0,1.0);
- vec3 fogC=mix(vec3(.78,.88,.97),vec3(.04,.06,.15),uNight);
+ vec3 fogC=mix(vec3(.78,.88,.97),vec3(.04,.06,.15),uNight); fogC=mix(fogC,vec3(.96,.70,.52),uWarm*.7*(1.0-uNight*.6));
  float fogA=smoothstep(60.0,165.0,dist)*.9+smoothstep(0.0,40.0,vWorld.y)*0.0;
  col=mix(col,fogC,fogA);
  gl_FragColor=vec4(col,uAlpha);
@@ -224,7 +224,7 @@ export const SHADOW_FRAG = PRECISION + `void main(){ gl_FragColor=vec4(1.0); }`;
 // ---------------------------------------------------------------------------------------------------------------
 export const SKY_VERT = `attribute vec2 aP; varying vec2 vUv; void main(){ vUv=aP; gl_Position=vec4(aP,.9999,1.0); }`;
 export const SKY_FRAG = PRECISION + `
-uniform vec3 uF; uniform vec3 uR; uniform vec3 uU; uniform float uTan; uniform float uAspect; uniform vec3 uSun; uniform float uNight; uniform float uTime;
+uniform vec3 uF; uniform vec3 uR; uniform vec3 uU; uniform float uTan; uniform float uAspect; uniform vec3 uSun; uniform float uNight; uniform float uWarm; uniform float uTime;
 varying vec2 vUv;
 float h21(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
 void main(){
@@ -232,6 +232,7 @@ void main(){
  float t=clamp(dir.y,0.0,1.0);
  vec3 hor=vec3(.78,.88,.97), mid=vec3(.42,.65,.92), top=vec3(.13,.34,.78);
  vec3 col=mix(hor,mid,smoothstep(.0,.22,t)); col=mix(col,top,smoothstep(.18,.85,t));
+ vec3 wh=vec3(1.0,.62,.34), wm=vec3(.80,.52,.66), wt=vec3(.22,.32,.66); vec3 wcol=mix(wh,wm,smoothstep(.0,.24,t)); wcol=mix(wcol,wt,smoothstep(.18,.75,t)); col=mix(col,wcol,uWarm*.92);
  float sd=max(dot(dir,normalize(uSun)),0.0);
  col+=vec3(1.0,.82,.55)*(pow(sd,6.0)*.20+pow(sd,48.0)*.30)+vec3(1.0,.96,.85)*smoothstep(.9992,.9998,sd)*1.4;
  vec3 nh=vec3(.04,.06,.15), nt=vec3(.01,.02,.07);

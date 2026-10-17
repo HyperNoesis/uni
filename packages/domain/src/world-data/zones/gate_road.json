@@ -52,5 +52,425 @@
       ]
     }
   ],
-  "decor": []
+  "decor": [
+    {
+      "model": "gate_pier",
+      "x": 51.9,
+      "y": 132
+    },
+    {
+      "model": "gate_pier",
+      "x": 68.1,
+      "y": 132,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_canopy",
+      "x": 60,
+      "y": 132
+    },
+    {
+      "model": "gate_letters",
+      "x": 60,
+      "y": 134.9
+    },
+    {
+      "model": "gate_wall_end",
+      "x": 48.6,
+      "y": 132
+    },
+    {
+      "model": "hedge_trim",
+      "x": 48.6,
+      "y": 134.2,
+      "rot": 1.571
+    },
+    {
+      "model": "gate_wall_end",
+      "x": 71.4,
+      "y": 132
+    },
+    {
+      "model": "hedge_trim",
+      "x": 71.4,
+      "y": 134.2,
+      "rot": 1.571
+    },
+    {
+      "model": "gate_booth",
+      "x": 72.5,
+      "y": 137.5
+    },
+    {
+      "model": "gate_boom",
+      "x": 66.2,
+      "y": 137.2,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_boom",
+      "x": 53.8,
+      "y": 137.2
+    },
+    {
+      "model": "gate_forecourt",
+      "x": 60,
+      "y": 142.5
+    },
+    {
+      "model": "gate_flagpole",
+      "x": 41,
+      "y": 138.5
+    },
+    {
+      "model": "gate_flagpole",
+      "x": 38,
+      "y": 138.5
+    },
+    {
+      "model": "gate_flagpole",
+      "x": 35,
+      "y": 138.5
+    },
+    {
+      "model": "gate_totem",
+      "x": 48.5,
+      "y": 141
+    },
+    {
+      "model": "lamp_street",
+      "x": 47.5,
+      "y": 137.5
+    },
+    {
+      "model": "lamp_street",
+      "x": 47.5,
+      "y": 147.2
+    },
+    {
+      "model": "tree_neem",
+      "x": 44,
+      "y": 146.3
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 44.5,
+      "y": 138.2
+    },
+    {
+      "model": "bollard_light",
+      "x": 52.8,
+      "y": 135.6
+    },
+    {
+      "model": "bollard_light",
+      "x": 51.2,
+      "y": 135.6
+    },
+    {
+      "model": "bollard_light",
+      "x": 49.6,
+      "y": 135.6
+    },
+    {
+      "model": "bollard_light",
+      "x": 48,
+      "y": 135.6
+    },
+    {
+      "model": "gate_flagpole",
+      "x": 79,
+      "y": 138.5
+    },
+    {
+      "model": "gate_flagpole",
+      "x": 82,
+      "y": 138.5
+    },
+    {
+      "model": "gate_flagpole",
+      "x": 85,
+      "y": 138.5
+    },
+    {
+      "model": "gate_totem",
+      "x": 71.5,
+      "y": 141
+    },
+    {
+      "model": "lamp_street",
+      "x": 72.5,
+      "y": 137.5,
+      "rot": 3.142
+    },
+    {
+      "model": "lamp_street",
+      "x": 72.5,
+      "y": 147.2,
+      "rot": 3.142
+    },
+    {
+      "model": "tree_neem",
+      "x": 76,
+      "y": 146.3
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 75.5,
+      "y": 138.2
+    },
+    {
+      "model": "bollard_light",
+      "x": 67.2,
+      "y": 135.6
+    },
+    {
+      "model": "bollard_light",
+      "x": 68.8,
+      "y": 135.6
+    },
+    {
+      "model": "bollard_light",
+      "x": 70.4,
+      "y": 135.6
+    },
+    {
+      "model": "bollard_light",
+      "x": 72,
+      "y": 135.6
+    },
+    {
+      "model": "bus_shelter",
+      "x": 42.5,
+      "y": 145.2
+    },
+    {
+      "model": "bench_slat",
+      "x": 48.5,
+      "y": 144.4,
+      "rot": 1.571
+    },
+    {
+      "model": "lamp_street",
+      "x": 54.2,
+      "y": 124
+    },
+    {
+      "model": "lamp_street",
+      "x": 65.8,
+      "y": 118,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 52.8,
+      "y": 118
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 67.2,
+      "y": 124
+    },
+    {
+      "model": "bench_slat",
+      "x": 55.4,
+      "y": 121,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 64.6,
+      "y": 115,
+      "rot": -1.571
+    },
+    {
+      "model": "lamp_street",
+      "x": 54.2,
+      "y": 112
+    },
+    {
+      "model": "lamp_street",
+      "x": 65.8,
+      "y": 106,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 52.8,
+      "y": 106
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 67.2,
+      "y": 112
+    },
+    {
+      "model": "bench_slat",
+      "x": 55.4,
+      "y": 109,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 64.6,
+      "y": 103,
+      "rot": -1.571
+    },
+    {
+      "model": "lamp_street",
+      "x": 54.2,
+      "y": 100
+    },
+    {
+      "model": "lamp_street",
+      "x": 65.8,
+      "y": 94,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 52.8,
+      "y": 94
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 67.2,
+      "y": 100
+    },
+    {
+      "model": "bench_slat",
+      "x": 55.4,
+      "y": 97,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 64.6,
+      "y": 91,
+      "rot": -1.571
+    },
+    {
+      "model": "lamp_street",
+      "x": 54.2,
+      "y": 88
+    },
+    {
+      "model": "lamp_street",
+      "x": 65.8,
+      "y": 82,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 52.8,
+      "y": 82
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 67.2,
+      "y": 88
+    },
+    {
+      "model": "bench_slat",
+      "x": 55.4,
+      "y": 85,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 64.6,
+      "y": 79,
+      "rot": -1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 124,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 124,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 118,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 118,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 112,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 112,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 106,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 106,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 100,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 100,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 94,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 94,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 50,
+      "y": 88,
+      "rot": 1.571
+    },
+    {
+      "model": "planter_trough",
+      "x": 70,
+      "y": 88,
+      "rot": 1.571
+    },
+    {
+      "model": "bus_shelter",
+      "x": 51,
+      "y": 118.5,
+      "rot": 1.571
+    }
+  ]
 }

@@ -5,8 +5,8 @@
     "maxTriangles": 6000
   },
   "residentBudget": {
-    "maxBytes": 4000000,
-    "maxTriangles": 100000
+    "maxBytes": 6000000,
+    "maxTriangles": 140000
   },
   "assets": [
     {
@@ -1283,6 +1283,312 @@
         "h": 54.7,
         "d": 13.879
       }
+    },
+    {
+      "id": "gate_pier",
+      "url": "/assets/gate/gate_pier.glb",
+      "slot": "decor:gate_pier",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 191000,
+      "maxTriangles": 2200,
+      "size": {
+        "w": 3.74,
+        "h": 6.6,
+        "d": 5.32
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_canopy",
+      "url": "/assets/gate/gate_canopy.glb",
+      "slot": "decor:gate_canopy",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 172000,
+      "maxTriangles": 2200,
+      "size": {
+        "w": 21.44,
+        "h": 2.86,
+        "d": 7.4
+      },
+      "yOffset": 5
+    },
+    {
+      "id": "gate_letters",
+      "url": "/assets/gate/gate_letters.glb",
+      "slot": "decor:gate_letters",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 60000,
+      "maxTriangles": 800,
+      "size": {
+        "w": 8.658,
+        "h": 1.907,
+        "d": 0.28
+      },
+      "yOffset": 7.86
+    },
+    {
+      "id": "gate_wall_bay",
+      "url": "/assets/gate/gate_wall_bay.glb",
+      "slot": "decor:gate_wall_bay",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 133000,
+      "maxTriangles": 1600,
+      "size": {
+        "w": 6,
+        "h": 2.6,
+        "d": 0.72
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_wall_end",
+      "url": "/assets/gate/gate_wall_end.glb",
+      "slot": "decor:gate_wall_end",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 22000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 0.92,
+        "h": 3.82,
+        "d": 0.92
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_booth",
+      "url": "/assets/gate/gate_booth.glb",
+      "slot": "decor:gate_booth",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 31000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 3.96,
+        "h": 3.4,
+        "d": 3.24
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_boom",
+      "url": "/assets/gate/gate_boom.glb",
+      "slot": "decor:gate_boom",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 18000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 1.981,
+        "h": 4.904,
+        "d": 0.44
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_flagpole",
+      "url": "/assets/gate/gate_flagpole.glb",
+      "slot": "decor:gate_flagpole",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 22000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 2.15,
+        "h": 9.22,
+        "d": 0.4
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_totem",
+      "url": "/assets/gate/gate_totem.glb",
+      "slot": "decor:gate_totem",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 32000,
+      "maxTriangles": 400,
+      "size": {
+        "w": 1.4,
+        "h": 3.1,
+        "d": 0.56
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "lamp_street",
+      "url": "/assets/gate/lamp_street.glb",
+      "slot": "decor:lamp_street",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 16000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 2.04,
+        "h": 6.328,
+        "d": 0.52
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "bollard_light",
+      "url": "/assets/gate/bollard_light.glb",
+      "slot": "decor:bollard_light",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 11000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 0.23,
+        "h": 0.88,
+        "d": 0.219
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "bench_slat",
+      "url": "/assets/gate/bench_slat.glb",
+      "slot": "decor:bench_slat",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 52000,
+      "maxTriangles": 700,
+      "size": {
+        "w": 2.1,
+        "h": 0.905,
+        "d": 0.53
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "planter_trough",
+      "url": "/assets/gate/planter_trough.glb",
+      "slot": "decor:planter_trough",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 15000,
+      "maxTriangles": 200,
+      "size": {
+        "w": 2.784,
+        "h": 1.455,
+        "d": 1.136
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "hedge_trim",
+      "url": "/assets/gate/hedge_trim.glb",
+      "slot": "decor:hedge_trim",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 24000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 3.21,
+        "h": 0.827,
+        "d": 0.713
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "tree_neem",
+      "url": "/assets/gate/tree_neem.glb",
+      "slot": "decor:tree_neem",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 91000,
+      "maxTriangles": 900,
+      "size": {
+        "w": 9.253,
+        "h": 7.5,
+        "d": 8.94
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "palm_royal_tall",
+      "url": "/assets/gate/palm_royal_tall.glb",
+      "slot": "decor:palm_royal_tall",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 91000,
+      "maxTriangles": 1000,
+      "size": {
+        "w": 8.05,
+        "h": 12.793,
+        "d": 7.618
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_forecourt",
+      "url": "/assets/gate/gate_forecourt.glb",
+      "slot": "decor:gate_forecourt",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 86000,
+      "maxTriangles": 1200,
+      "size": {
+        "w": 34,
+        "h": 0.07,
+        "d": 15
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "bus_shelter",
+      "url": "/assets/gate/bus_shelter.glb",
+      "slot": "decor:bus_shelter",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 34000,
+      "maxTriangles": 500,
+      "size": {
+        "w": 6.54,
+        "h": 2.93,
+        "d": 2.88
+      },
+      "yOffset": 0
     }
   ]
 }
