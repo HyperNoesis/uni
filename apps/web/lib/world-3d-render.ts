@@ -734,7 +734,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
               };
               commitChunks(ekey, bakeEnv(q), 40, q === "low" ? null : bakeEnv("low"));
             }
-            if (bakedCache.get(ekey)) drawChunks(ekey, vp, eye, (q === "high" ? 34 : 16) * govScale, (CULL_D[q] ?? 115) * Math.max(.55, govScale));
+            if (bakedCache.get(ekey)) drawChunks(ekey, vp, eye, (q === "high" ? 34 : 16) * govScale, (CULL_D[q] ?? 115) * Math.max(.3, govScale));
         }
         floor(0, 0, domain_1.WORLD.width, domain_1.WORLD.height, "#5c9142", vp, -.12);
         // Zone floors create a readable, colourful campus plan without flattening the perspective.
@@ -772,7 +772,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         }
         for (let i = 0; i < 4; i++) { box(103.2, 64.4 + i * 3.8, .5, .35, .45, "#6b5a45", vp, 0); } // spectator benches
         }, vp);
-        const propRadius = q === "low" ? 26 : q === "high" ? 72 : 48;
+        const propRadius = (q === "low" ? 26 : q === "high" ? 72 : 48) * Math.max(.7, govScale); // governed: dense junctions shed distant props first
         const nearCamera = (x, z, pad = 0) => Math.hypot(x - input.camX, z - input.camY) <= propRadius + pad && inCone(x, z, pad);
         let dressing = 0;
         const flagCols = ["#3675e7", "#ffd166", "#e8644a", "#4ce4d9", "#a15cff", "#ff8fb3", "#65c7ff", "#8bd450", "#ffb24d"];
@@ -1039,7 +1039,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
               };
               commitChunks(akey, bakeArch(q, true), 24, q === "low" ? null : bakeArch("low", false));
             }
-            if (bakedCache.get(akey)) { drawChunks(akey, vp, eye, (q === "high" ? 34 : 16) * govScale, (CULL_D[q] ?? 115) * Math.max(.55, govScale)); drawn++; }
+            if (bakedCache.get(akey)) { drawChunks(akey, vp, eye, (q === "high" ? 34 : 16) * govScale, (CULL_D[q] ?? 115) * Math.max(.3, govScale)); drawn++; }
         }
         // Decor: non-solid scenery from zone data; drawn only when its GLB has streamed in.
         for (const zd of domain_1.ZONE_DEFS) {
@@ -1251,7 +1251,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         if (character && (q !== "low" || characterLod)) { // Low: only the 3 nearest people (incl. you) get the light 900-tri skinned body
             const budget = q === "high" ? 12 : q === "low" ? 3 : 6, range = q === "high" ? 40 : q === "low" ? 18 : 26;
             const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
-            const hi = q === "low" ? 0 : characterLod ? (q === "high" ? 6 : 3) : budget, total = q === "low" ? 3 : characterLod ? (q === "high" ? 16 : 8) : budget;
+            const hi = q === "low" ? 0 : characterLod ? (q === "high" ? 3 : 1) : budget, total = q === "low" ? 3 : characterLod ? (q === "high" ? 12 : 6) : budget; // realistic bodies: ~7k tris full / ~1.9k LOD (was 2.4k / 0.9k), so fewer full bodies per tier
             for (let i = 0; i < Math.min(total, near.length); i++) skinSet.set(near[i].id, i < hi);
         }
         for (const e of input.entities) {

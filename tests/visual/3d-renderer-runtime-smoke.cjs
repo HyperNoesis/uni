@@ -86,6 +86,7 @@ const sandbox = {
     if (name === "./world-backdrop") return loadTypeScript(path.join(root, "apps/web/lib/world-backdrop.ts"));
     if (name === "./world-flora") return loadTypeScript(path.join(root, "apps/web/lib/world-flora.ts"));
     if (name === "./skinned-character") return loadTypeScript(path.join(root, "apps/web/lib/skinned-character.ts"));
+    if (name === "./avatar-gl") return loadTypeScript(path.join(root, "apps/web/lib/avatar-gl.ts"));
     if (name === "./world-shaders") return loadTypeScript(path.join(root, "apps/web/lib/world-shaders.ts"));
     throw new Error(`Unexpected renderer dependency ${name}`);
   },

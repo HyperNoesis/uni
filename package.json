@@ -22,9 +22,7 @@
     "check:assets": "node scripts/models/audit-glb.mjs",
     "gen:inventory": "node scripts/models/audit-glb.mjs --write",
     "check:sports": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/sports-game.mjs",
-    "check:minigames": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/minigames.mjs",
-    "check:vista": "node scripts/world/build-gate-vista.mjs --check",
-    "gen:gate-kit": "node scripts/models/build-gate-kit.mjs && node scripts/world/build-gate-vista.mjs"
+    "check:minigames": "node --no-warnings --import ./tests/visual/ts-resolve.mjs tests/visual/minigames.mjs"
   },
   "devDependencies": {
     "turbo": "^2.3.0",

@@ -34,5 +34,5 @@ type Cfg = { width: number; height: number; quality: "low" | "medium" | "high"; 
     times.push(performance.now() - t0);
   }
   times.sort((a, b) => a - b);
-  return { stats: { drawn: last.drawn, calls: last.calls, tris: last.tris, culled: last.culled, topTris: Object.entries(last.byShape || {}).filter(([k]) => k.startsWith("t:")).sort((a, b) => b[1] - a[1]).slice(0, 60) }, cpuMs: { p50: times[Math.floor(times.length / 2)], p95: times[Math.floor(times.length * .95)] }, assets: { loaded: loaded.length, failed }, model: model ? { tris: model.triangles, joints: model.jointCount } : null };
+  return { stats: { gov: last.gov, drawn: last.drawn, calls: last.calls, tris: last.tris, culled: last.culled, topTris: Object.entries(last.byShape || {}).filter(([k]) => k.startsWith("t:")).sort((a, b) => b[1] - a[1]).slice(0, 60) }, cpuMs: { p50: times[Math.floor(times.length / 2)], p95: times[Math.floor(times.length * .95)] }, assets: { loaded: loaded.length, failed }, model: model ? { tris: model.triangles, joints: model.jointCount } : null };
 };
