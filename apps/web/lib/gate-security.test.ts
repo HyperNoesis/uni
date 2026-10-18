@@ -18,7 +18,7 @@ describe("gate security check", () => {
       const n = g.snapshot().surround; expect(n).toBeGreaterThanOrEqual(SURROUND_MIN); expect(n).toBeLessThanOrEqual(SURROUND_MAX); seen.add(n);
       run(g, 12, p, () => g.phase === "offer"); expect(g.phase).toBe("offer");
       const s = g.snapshot(); expect(s.tapReady).toBe(true); expect(s.pass?.state).toBe("out"); expect(approved).toBe(0);
-      const ringed = s.guards.filter((q) => Math.hypot(q.x - p.x, q.y - p.y) < 3.2 && q.kit === "guard").length; expect(ringed).toBe(n);
+      const ringed = s.guards.filter((q) => Math.hypot(q.x - p.x, q.y - p.y) < 3.9 && q.kit === "guard").length; expect(ringed).toBe(n);
       run(g, 10, p); expect(g.phase).toBe("offer"); // never approves without a tap
       expect(g.tapPass()).toBe(true); expect(g.tapPass()).toBe(false);
       run(g, 20, p, () => g.phase === "open"); expect(approved).toBe(1); expect(g.passed).toBe(true);
@@ -30,7 +30,7 @@ describe("gate security check", () => {
     run(g, 1, p, () => false); run(g, 12, p, () => g.phase === "offer"); g.tapPass();
     run(g, 20, p, () => g.phase === "through"); expect(g.phase).toBe("through"); expect(g.snapshot().lock).toBe(false); expect(g.snapshot().wicket).toBeGreaterThan(0.95);
     const gm = g.snapshot().guards.find((q) => q.id === "gateman")!; expect(Math.hypot(gm.x - (GATE.wicket.x0 + 0.5), gm.y - (GATE.line + 1.1))).toBeLessThan(0.3);
-    const inside = { x: 68.5, y: 120 }; run(g, 12, inside, () => g.phase === "idle"); expect(g.phase).toBe("idle");
+    const inside = { x: 68.5, y: 120 }; run(g, 12, inside, () => g.phase === "idle"); expect(g.phase).toBe("idle"); run(g, 25, inside);
     expect(g.snapshot().guards.every((q) => q.kit === "police" || Math.hypot(q.x - GATE.guardPosts.find((s) => s.id === q.id)!.x, q.y - GATE.guardPosts.find((s) => s.id === q.id)!.y) < 0.2)).toBe(true);
   });
   it("has exactly one police officer and one patrol car", () => {

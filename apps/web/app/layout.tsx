@@ -6,6 +6,7 @@ import "./phase2.css";
 import "./phase5.css";
 import "./phase6.css";
 import "./phone.css";
+import "./gate.css";
 import "./landing.css";
 import { PwaRegister } from "../components/PwaRegister";
 

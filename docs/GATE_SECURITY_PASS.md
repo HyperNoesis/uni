@@ -13,16 +13,17 @@ Server: unapproved players cannot cross the wicket (segment-checked, no tunnelli
 
 Screenshot harness: `node tests/visual/harness/run.mjs <out.png> '{"entry":"gate-entry.ts","shots":[...]}' <workdir>` (see `tests/visual/harness/gate-entry.ts`).
 
-## Not done in this pass
-- Not run on a real phone/GPU; only SwiftShader screenshots.
-- Forecourt is only ~13 m deep (world ends at y=150): extend WORLD.height + plaza for a longer approach.
-- Side walls (x≈19.6 / 99.6) and wing closures exist as invisible collision only; add visible railings/walls.
-- `build-grand-gate-manifest.mjs` still rewrites decor only; props, spawn and building removals were edited by hand in the zone JSON (re-running it will not undo them, but does not know about them).
-- Police car is code-drawn primitives; a proper GLB would look better.
-- "olcat" interpreted as ONE police officer + ONE patrol car. Tell me if you meant something else.
-- At Low quality only 3 skinned bodies are allowed, so extra guards render as the older box bodies.
-- Guard AI: no collision/avoid between guards; pass tap needs the 3D card on screen (first-person camera hides your own body/card).
-- Intro camera runs once per page load (skippable); not tuned on device.
-- `check:3d` references missing test files (realistic-character, lagos-time) and `avatar-paint` fails on campus_body.glb hair_ponytail; `check:budget` reports alley low over budget. None touch gate code; not fixed.
-- e2e scripts were not run (they may assume the old spawn).
-- No multiplayer visibility of other players' guard interactions (client-side scene; guards are not server entities).
+## Pass 2 (polish)
+- Real Toyota Hilux double-cab in Nigeria Police livery as a GLB (`scripts/models/build-police-hilux.mjs`): blue body, white roof, POLICE on doors/tailgate, bull bar, caged bed, blinking light bar.
+- Guards walk (never run), stand upright, greet by name ("All good, Daniel! Welcome to Unity Heights. 👍"), nameplate only while talking; always real skinned bodies; police officer stays relaxed.
+- Pocket holds only the Campus Pass; the UI says so and offers a clear "Show my Campus Pass (E)" button.
+- New UI: `components/GateUI.tsx` + `app/gate.css` (intro title, controls hint, 4-step glass card with captions, welcome pass card; reduced-motion aware; left-docked on desktop, top on phones).
+- World extended 18 m south: paved avenue with lamps and palms, spawn at y=160, side walls extended.
+
+## Not done
+- Not run on a real phone/GPU; only software-GL screenshots and a static render of the UI over them.
+- Side walls are collision only (no visible railings yet). Police car is a stand-alone prop (no driver/interior).
+- `build-grand-gate-manifest.mjs` still rewrites decor only; the avenue props, spawn and building removals are hand-edited in the zone JSON.
+- "Only the pass in your pocket" was implemented as: the pocket holds one item and nothing else can be presented. If you wanted a decoy-item rejection mini-game, say so.
+- `check:3d`/`check:vista` reference missing files; avatar-paint fails on campus_body.glb; `check:budget` alley/boulevard over budget (untouched by this work).
+- e2e scripts not run. Guards are client-side scenery (other players do not see your check).

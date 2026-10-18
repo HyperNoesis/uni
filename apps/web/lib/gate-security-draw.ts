@@ -5,7 +5,7 @@
  */
 import { GATE } from "@campus/domain";
 
-export type Shape = "box" | "cylinder" | "sphere";
+export type Shape = string;
 export type DrawFn = (shape: Shape, x: number, y: number, z: number, w: number, h: number, d: number, color: string, vp: unknown, emissive?: number, rot?: number) => void;
 export interface Ctx { draw: DrawFn; vp: unknown; q: "low" | "medium" | "high"; time: number }
 type V3 = [number, number, number];
@@ -44,8 +44,16 @@ export function drawGateLeaves(c: Ctx, open: number): number {
 
 // ---- Nigeria Police Force Hilux: white body, blue band, black sill + bull bar, caged load bed, roof beacon bar, "POLICE" on the doors ----
 const GLYPH: Record<string, string[]> = { P: ["111", "101", "111", "100", "100"], O: ["111", "101", "101", "101", "111"], L: ["100", "100", "100", "100", "111"], I: ["111", "010", "010", "010", "111"], C: ["111", "100", "100", "100", "111"], E: ["111", "100", "111", "100", "111"] };
-export function drawPoliceCar(c: Ctx, car: { x: number; y: number; rot: number }): number {
+export interface CarMesh { name: string; size: { w: number; h: number; d: number }; yOffset?: number }
+/** The patrol pickup. With the streamed GLB (`mesh`) it is one draw + two blinking lenses; without it, the code-drawn fallback body is used. */
+export function drawPoliceCar(c: Ctx, car: { x: number; y: number; rot: number }, mesh?: CarMesh | null): number {
   const { draw, vp, q } = c, cs = Math.cos(car.rot), sn = Math.sin(car.rot); let n = 0;
+  if (mesh) {
+    draw(mesh.name, car.x, (mesh.yOffset ?? 0) + mesh.size.h / 2, car.y, mesh.size.w, mesh.size.h, mesh.size.d, "#ffffff", vp, 0, car.rot); n++;
+    const f = Math.floor(c.time * 3) % 2, lens = (ox: number, col: string, em: number) => { draw("box", car.x + ox * cs + 0.28 * sn, 1.935, car.y - ox * sn + 0.28 * cs, 0.5, 0.07, 0.24, col, vp, em, car.rot); n++; };
+    lens(-0.36, f ? "#ff3b3b" : "#6e1414", f ? 1 : 0); lens(0.36, f ? "#16224a" : "#3b7bff", f ? 0 : 1);
+    return n;
+  }
   const put = (ox: number, y: number, oz: number, w: number, h: number, d: number, col: string, em = 0) => { draw("box", car.x + ox * cs + oz * sn, y, car.y - ox * sn + oz * cs, w, h, d, col, vp, em, car.rot); n++; };
   const WHITE = "#f1f3f6", BLUE = "#1c4fb5", BLACK = "#16181d", GLASS = "#22313f";
   put(0, 0.62, 0, 1.86, 0.62, 5.3, WHITE);                       // body

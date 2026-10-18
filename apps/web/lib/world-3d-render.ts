@@ -511,8 +511,8 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             }
             labels++;
         }
-        // Building names: nearest first, hero buildings ahead of numbered rooms, capped per quality, and never overlapping another name.
-        {
+        // Building names: nearest first, hero buildings ahead of numbered rooms, capped per quality, and never overlapping another name. Hidden while the gate check is talking to you.
+        if (!input.gate?.quiet) {
             const cap = input.quality === "low" ? 3 : input.quality === "medium" ? 6 : 9, maxD = input.quality === "low" ? 20 : 38;
             ctx.font = "800 11px system-ui";
             const cands = [];
@@ -1264,6 +1264,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) * (en.staff ? .4 : 1) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
             const hi = q === "low" ? 0 : characterLod ? (q === "high" ? 6 : 3) : budget, total = q === "low" ? 3 : characterLod ? (q === "high" ? 16 : 8) : budget;
             for (let i = 0; i < Math.min(total, near.length); i++) skinSet.set(near[i].id, i < hi);
+            for (const en of input.entities) if (en.staff) skinSet.set(en.id, Math.hypot(en.x - input.camX, en.y - input.camY) < (q === "low" ? 9 : 16) || !characterLod); // gate staff are ALWAYS real skinned bodies (never the box fallback): full body up close, light body further away
         }
         for (const e of input.entities) {
             if (fpCam && e.id === input.meId) continue; // you are the camera: no body inside your own eyes
@@ -1419,7 +1420,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         if (input.gate) { // Grand Gate entry check: shut car gate, wicket, patrol car, and the pass card travelling between hands
             const g = input.gate, near = Math.hypot(60 - input.camX, 135 - input.camY) < (q === "low" ? 50 : 80), pk = slotToName["decor:gate_pier"];
             if (near && pk && meshes[pk.name]) drawn += drawGateLeaves(gctx, g.wicket ?? 0);
-            if (near && g.car) drawn += drawPoliceCar(gctx, g.car);
+            if (near && g.car) { const hk = slotToName["decor:gate_police_hilux"]; drawn += drawPoliceCar(gctx, g.car, hk && meshes[hk.name] ? { name: hk.name, size: hk.entry.size, yOffset: hk.entry.yOffset ?? 0 } : null); }
             const pv = g.pass, me = handMap.get(input.meId);
             if (pv && me) {
                 const L = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k], ez = (t) => t * t * (3 - 2 * t);

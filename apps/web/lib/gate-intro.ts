@@ -6,12 +6,12 @@
 export type IntroCam = { eye: [number, number, number]; target: [number, number, number]; fov: number };
 export const INTRO_MS = 7000;
 /** Recommended spawn for new players: gate forecourt, facing the gate (heading PI faces -z). Not wired into server data. */
-export const GATE_INTRO_SPAWN = { x: 60, y: 146.5, heading: Math.PI } as const;
+export const GATE_INTRO_SPAWN = { x: 60, y: 162, heading: Math.PI } as const;
 const KF: Array<{ t: number } & IntroCam> = [
-  { t: 0.0, eye: [60, 2.0, 172], target: [60, 14, 132], fov: 72 },   // wide, low: the whole gate on the horizon
-  { t: 0.35, eye: [60, 3.4, 166], target: [60, 22, 132], fov: 66 },  // tilt up to the crest and lit sign
-  { t: 0.7, eye: [60, 2.8, 158], target: [60, 13, 132], fov: 62 },   // glide past the fountain pools
-  { t: 1.0, eye: [60, 2.4, 150.6], target: [60, 6.5, 124], fov: 58 }, // settle behind the player, gate + boulevard ahead
+  { t: 0.0, eye: [60, 2.4, 190], target: [60, 14, 132], fov: 72 },   // wide, low: the whole gate on the horizon
+  { t: 0.35, eye: [60, 3.8, 181], target: [60, 22, 132], fov: 66 },  // tilt up to the crest and lit sign
+  { t: 0.7, eye: [60, 3.0, 172], target: [60, 13, 132], fov: 62 },   // glide past the fountain pools
+  { t: 1.0, eye: [60, 2.4, 166.4], target: [60, 6.5, 124], fov: 58 }, // settle behind the player, gate + boulevard ahead
 ];
 const ss = (x: number) => x * x * (3 - 2 * x);
 const mix = (a: number, b: number, u: number) => a + (b - a) * u;

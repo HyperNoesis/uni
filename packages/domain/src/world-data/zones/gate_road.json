@@ -6,7 +6,7 @@
     "x": 48,
     "y": 80,
     "w": 24,
-    "h": 70
+    "h": 88
   },
   "color": "#477a60",
   "ambientAudio": "town",
@@ -14,7 +14,7 @@
     {
       "id": "forecourt",
       "x": 60,
-      "y": 146.5,
+      "y": 160,
       "default": true
     }
   ],
@@ -636,6 +636,74 @@
       "model": "tree_neem",
       "x": 103,
       "y": 149
+    },
+    {
+      "model": "gate_forecourt",
+      "x": 60,
+      "y": 157.5
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 155
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 155,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 161
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 161,
+      "rot": 3.142
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 167
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 167,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 154
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 154
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 160
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 160
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 166
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 166
     }
   ]
 }

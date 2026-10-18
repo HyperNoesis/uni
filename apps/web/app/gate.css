@@ -1,0 +1,41 @@
+/* Grand Gate entry: intro title, controls hint, security card, pass tap target. Glass over the 3D scene; respects reduced motion. */
+.gate-tap{position:fixed;left:0;top:0;z-index:30;width:72px;height:72px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer;transition:opacity .2s;touch-action:manipulation}
+.gate-tap span{position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(255,209,102,.9);box-shadow:0 0 0 6px rgba(255,209,102,.18),0 0 28px rgba(255,209,102,.55);animation:gate-pulse 1.6s ease-in-out infinite}
+.gate-tap:focus-visible{outline:3px solid #fff;outline-offset:2px}
+@keyframes gate-pulse{0%,100%{transform:scale(.92);opacity:.85}50%{transform:scale(1.06);opacity:1}}
+kbd{font:600 11px/1 var(--font);padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;margin-left:6px}
+.gate-intro{position:fixed;inset:0;z-index:28;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;padding:0 clamp(20px,6vw,72px) calc(64px + var(--safe-b));background:linear-gradient(to top,rgba(6,12,30,.72),rgba(6,12,30,0) 46%)}
+.gate-intro-title{display:flex;flex-direction:column;gap:4px;animation:gate-rise .9s .3s both cubic-bezier(.2,.8,.2,1)}
+.gate-intro-title small{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#ffd166}
+.gate-intro-title b{font:700 clamp(28px,6vw,52px)/1.05 var(--display);color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.45)}
+.gate-intro-title span{font-size:15px;color:#cfdcff}
+.gate-skip{pointer-events:auto;position:absolute;right:clamp(16px,4vw,40px);top:calc(18px + var(--safe-t));min-height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(10,18,40,.55);backdrop-filter:blur(10px);color:#fff;font:600 14px var(--font);cursor:pointer}
+.gate-skip:hover{background:rgba(10,18,40,.75)}.gate-skip:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.gate-controls{position:fixed;z-index:26;left:50%;transform:translateX(-50%);bottom:calc(112px + var(--safe-b));display:flex;gap:18px;align-items:center;padding:10px 18px;border-radius:999px;background:rgba(10,18,40,.62);backdrop-filter:blur(14px);border:1px solid var(--line);color:#dbe5ff;font-size:13px;animation:gate-fade .6s both;white-space:nowrap}
+.gate-controls kbd{margin:0 2px 0 0}.gate-controls em{font-style:normal;color:#ffd166;font-weight:600}
+@media (max-width:640px){.gate-controls span{display:none}.gate-controls{bottom:calc(150px + var(--safe-b))}}
+.gate-card{position:fixed;z-index:27;left:50%;transform:translateX(-50%);bottom:calc(104px + var(--safe-b));width:min(540px,calc(100vw - 24px));padding:14px 16px 16px;border-radius:22px;color:#fff;background:linear-gradient(180deg,rgba(18,32,70,.82),rgba(10,18,40,.82));backdrop-filter:blur(20px) saturate(1.25);border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);animation:gate-rise .45s both cubic-bezier(.2,.8,.2,1)}
+.gate-card::before{content:"";position:absolute;left:18px;right:18px;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,#ffd166,transparent)}
+@media (min-width:900px){.gate-card{left:28px;transform:none;--tx:0;bottom:calc(96px + var(--safe-b));width:min(430px,38vw)}}
+@media (max-width:640px){.gate-card{bottom:auto;top:calc(64px + var(--safe-t))}}
+.gate-steps{display:flex;list-style:none;margin:0 0 12px;padding:0;gap:6px}
+.gate-steps li{flex:1;display:flex;align-items:center;gap:8px;font-size:12px;color:#8ea0cb;min-width:0}
+.gate-steps li i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--font);font-style:normal;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16)}
+.gate-steps li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gate-steps li.done{color:#9fe3c1}.gate-steps li.done i{background:#2f9d70;border-color:#2f9d70;color:#fff}
+.gate-steps li.now{color:#fff;font-weight:600}.gate-steps li.now i{background:#ffd166;border-color:#ffd166;color:#1b2540;box-shadow:0 0 0 4px rgba(255,209,102,.2)}
+@media (max-width:420px){.gate-steps li span{display:none}.gate-steps li.now span{display:inline}}
+.gate-line{min-height:48px}.gate-line p{margin:2px 0 0;font-size:17px;line-height:1.35}.gate-line p.soft{color:#b9c8ee}
+.gate-who{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fb6f5}.gate-who i{width:8px;height:8px;border-radius:50%;background:#4f8bff;box-shadow:0 0 0 3px rgba(79,139,255,.25)}
+.gate-pocket{margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.gate-pocket-row{display:flex;gap:10px;align-items:center;min-width:0}.gate-pocket-row b{display:block;font-size:13px}.gate-pocket-row small{color:#a9b9e3;font-size:12px}
+.gate-pocket-ico{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#223a78,#2f6bff);position:relative;flex:none;border:1px solid rgba(255,255,255,.2)}
+.gate-pocket-ico::after{content:"";position:absolute;left:7px;right:7px;top:9px;height:14px;border-radius:3px;background:linear-gradient(#ffd166 0 28%,#eef3ff 28%)}
+.gate-cta{min-height:48px;padding:0 18px;border-radius:14px;border:0;background:linear-gradient(180deg,#ffdf8a,#ffc94d);color:#1b2540;font:700 16px var(--font);cursor:pointer;box-shadow:0 8px 22px rgba(255,201,77,.35);display:inline-flex;align-items:center;gap:6px;transition:transform .12s}
+.gate-cta:hover{transform:translateY(-1px)}.gate-cta:active{transform:translateY(1px)}.gate-cta:focus-visible{outline:3px solid #fff;outline-offset:2px}.gate-cta kbd{background:rgba(27,37,64,.14);border-color:rgba(27,37,64,.25);color:#1b2540}
+.gate-welcome{margin-top:6px;animation:gate-fade .5s both}.gate-welcome .pass{max-width:340px;margin:8px 0 6px}.gate-welcome p{margin:0;color:#c9d6f7;font-size:14px}.gate-welcome b{color:#fff}
+@keyframes gate-rise{from{opacity:0;transform:translate(var(--tx,-50%),14px)}to{opacity:1;transform:translate(var(--tx,-50%),0)}}
+.gate-intro-title{--tx:0}.gate-card{--tx:-50%}
+@media (min-width:900px){.gate-card{--tx:0}}
+@keyframes gate-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.gate-tap span,.gate-card,.gate-intro-title,.gate-controls,.gate-welcome{animation:none}}

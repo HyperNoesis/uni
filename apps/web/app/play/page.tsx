@@ -6,6 +6,7 @@ import { JobsSheet } from "../../components/JobsSheet";
 import { ShiftSheet } from "../../components/ShiftSheet";
 import { TasksPanel } from "../../components/TasksPanel";
 import { createGateSecurity, type GateSnapshot } from "../../lib/gate-security";
+import { GateUI, type GateUiState } from "../../components/GateUI";
 import { gateEntities, gestureView } from "../../lib/gate-entities";
 import { gateIntroCamera, INTRO_MS } from "../../lib/gate-intro";
 import { PocketPhone } from "../../components/PocketPhone";
@@ -84,6 +85,8 @@ export default function Play() {
   const huntBusyRef = useRef(false);
 
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
+  const profileRef = useRef<PlayerProfile | null>(null);
+  profileRef.current = profile;
   const [phase, setPhase] = useState<Phase>("connecting");
   const [population, setPopulation] = useState(1);
   const [zoneName, setZoneName] = useState("Main Gate");
@@ -98,14 +101,14 @@ export default function Play() {
   const gateSec = useRef<ReturnType<typeof createGateSecurity> | null>(null);
   const gateSnap = useRef<GateSnapshot | null>(null);
   const [gatePassed, setGatePassed] = useState(false);
-  const [gateHint, setGateHint] = useState<string | null>(null);
-  const [tapShown, setTapShown] = useState(false);
+  const [gateUi, setGateUi] = useState<GateUiState>({ phase: "idle", line: null, speaker: null, tapReady: false, passed: false });
+  const gateUiKey = useRef(""), [moved, setMoved] = useState(false);
   const tapBtn = useRef<HTMLButtonElement>(null);
   const gateIntro = useRef<{ t0: number } | null>(null);
   const [introOn, setIntroOn] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
   const sitOkRef = useRef(false);
-  const introChecked2 = useRef(false), gateHintRef = useRef<string | null>(null), tapShownRef = useRef(false);
+  const introChecked2 = useRef(false), movedRef = useRef(false);
   const myEmote = useRef<{ k: string; until: number; x: number; y: number } | null>(null);
   function doEmote(k: string) {
     if (k === "sit" && !canSit(me.current.x, me.current.y)) return;
@@ -525,13 +528,14 @@ export default function Play() {
           if (!reduce && viewRef.current !== "orbit" && renderModeRef.current === "3D") { gateIntro.current = { t0: performance.now() }; setIntroOn(true); }
         }
         if (gateIntro.current && (k.size > 0 || performance.now() - gateIntro.current.t0 > INTRO_MS)) { gateIntro.current = null; setIntroOn(false); k.clear(); }
-        if (!gateSec.current) gateSec.current = createGateSecurity({ onApproved: () => { setGatePassed(true); send({ t: "gate_pass" }); } });
+        if (!gateSec.current) gateSec.current = createGateSecurity({ ...(profileRef.current ? { player: { name: profileRef.current.displayName, campus: CAMPUSES[profileRef.current.campus]?.name ?? "campus" } } : {}), onApproved: () => { setGatePassed(true); send({ t: "gate_pass" }); } });
         const gs = gateSec.current;
         if (!gateIntro.current && !overlayRef.current) gs.update(dt, me.current);
         const sn = gs.snapshot(); gateSnap.current = sn;
         if (k.has("e") && sn.tapReady) gs.tapPass();
-        if (sn.hint !== gateHintRef.current) { gateHintRef.current = sn.hint; setGateHint(sn.hint); }
-        if (sn.tapReady !== tapShownRef.current) { tapShownRef.current = sn.tapReady; setTapShown(sn.tapReady); }
+        { const sayer = sn.guards.find((g) => g.say && g.id === sn.leadId) ?? sn.guards.find((g) => g.say && g.kit !== "police"), key = `${sn.phase}|${sayer?.say ?? ""}|${sn.tapReady}|${sn.passed}`;
+          if (key !== gateUiKey.current) { gateUiKey.current = key; setGateUi({ phase: sn.phase, line: sayer?.say ?? null, speaker: sayer ? (sayer.id === "gateman" ? "Gate Man" : "Gate Security") : null, tapReady: sn.tapReady, passed: sn.passed }); } }
+        if (!movedRef.current && (Math.abs(me.current.x - SPAWN.x) > 0.6 || Math.abs(me.current.y - SPAWN.y) > 0.6)) { movedRef.current = true; setMoved(true); }
         if (sn.lock || gateIntro.current) { ix = 0; iy = 0; autoWalkRef.current = null; }
         if (sn.faceHeading != null) lookRef.current.heading = wrapHeading(lookRef.current.heading + wrapHeading(sn.faceHeading - lookRef.current.heading) * Math.min(1, dt * 6));
       }
@@ -713,7 +717,7 @@ export default function Play() {
           width: w, height: h, time, camX: cam.x, camY: cam.y, camMode: walkView ? viewRef.current : "orbit", ...(introCam ? { camMode: "free" as const, camEye: introCam.eye, camTarget: introCam.target, camFov: (introCam.fov * Math.PI) / 180 } : {}), camHeading: lookRef.current.heading, camLook: lookRef.current.pitch, camBob, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
           meId: me.current.id || "me", entities, quality: qualityRef.current, ...(lightingRef.current === "auto" ? (() => { const k = lagosSky(); return { lighting: "day" as const, nightBlend: k.night, warmth: k.warmth, sunElevation: k.elevation }; })() : { lighting: lightingRef.current }),
           activeHuntPointId: huntTargetRef.current, gateOpen: 1,
-          ...(gsn ? { gate: { wicket: gsn.wicket, pass: gsn.pass, car: gsn.car }, passSkin: profile?.avatar.skin, passOutfit: profile?.avatar.outfit } : {}),
+          ...(gsn ? { gate: { wicket: gsn.wicket, pass: gsn.pass, car: gsn.car, quiet: gsn.lock }, passSkin: profile?.avatar.skin, passOutfit: profile?.avatar.outfit } : {}),
         }, labelsCtx);
         { // tap target for the pass follows the 3D card (DOM, so it is a real button for touch, mouse and screen readers)
           const pr = stats.probes?.pass, btn = tapBtn.current, ok = !!(pr && gsn?.tapReady && !introCam);
@@ -1005,8 +1009,7 @@ export default function Play() {
       </div>
 
       <button ref={tapBtn} type="button" className="gate-tap" aria-label="Show your Campus Pass to the guard" tabIndex={-1} style={{ opacity: 0, pointerEvents: "none" }} onPointerDown={(ev) => { ev.preventDefault(); gateSec.current?.tapPass(); }} onClick={() => gateSec.current?.tapPass()}><span aria-hidden="true" /></button>
-      {gateHint && !introOn && <div className="gate-hint" role="status">{gateHint}{tapShown ? " · tap the glowing pass or press E" : ""}</div>}
-      {introOn && <button type="button" className="gate-skip" onClick={() => { gateIntro.current = null; setIntroOn(false); }}>Skip</button>}
+      <GateUI ui={gateUi} profile={profile} campus={profile ? CAMPUSES[profile.campus]?.name ?? "Campus" : "Campus"} introOn={introOn} moved={moved} onShowPass={() => gateSec.current?.tapPass()} onSkipIntro={() => { gateIntro.current = null; setIntroOn(false); }} />
       {profile && gatePassed && <PocketPhone profile={profile} onOpenChange={setPhoneOpen} />}
 
       {libOpen && profile && <LibraryWorld avatar={profile.avatar} onClose={() => setLibOpen(false)} />}

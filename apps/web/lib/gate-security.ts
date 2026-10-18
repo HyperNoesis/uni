@@ -22,19 +22,19 @@ export interface GateSnapshot {
   tapReady: boolean; hint: string | null; passed: boolean; surround: number; approvedAt: number;
   car: { x: number; y: number; rot: number }; leadId: string | null;
 }
-export interface GateOptions { rng?: () => number; onApproved?: () => void; passed?: boolean }
+export interface GateOptions { rng?: () => number; onApproved?: () => void; passed?: boolean; /** First name and campus, so the welcome is personal. */ player?: { name: string; campus: string } }
 
 export const GUARD_NAMES: Record<string, string> = { gateman: "Gate Man", g2: "Security", g3: "Security", g4: "Security", g5: "Security", g6: "Security" };
 export const SURROUND_MIN = 2, SURROUND_MAX = 5;
-const RUN = 4.8, WALK = 2.8, RING = 2.6, EPS = 0.06;
-export const T = { call: 0.5, askLine: 1.2, reach: 1.0, give: 0.8, inspect: 1.9, approve: 1.7, retPass: 0.7, unlatch: 1.0, wicketOpen: 1.3, wicketClose: 1.2, maxArrive: 3.2, repeat: 6.5 } as const;
+const RUN = 1.6, WALK = 1.3, RING = 3.3, EPS = 0.06; // everyone walks: no sprinting at a new student (RUN is just the 'purposeful' walking pace)
+export const T = { call: 0.5, askLine: 1.2, reach: 1.0, give: 0.8, inspect: 1.9, approve: 1.7, retPass: 0.7, unlatch: 1.0, wicketOpen: 1.3, wicketClose: 1.2, maxArrive: 9, repeat: 8 } as const;
 const ease = (x: number) => { const c = Math.min(1, Math.max(0, x)); return c * c * (3 - 2 * c); };
 const hd = (fx: number, fy: number, tx: number, ty: number) => Math.atan2(tx - fx, ty - fy);
 
 interface G { id: string; post: { x: number; y: number }; x: number; y: number; face: number; tx: number; ty: number; speed: number; gesture?: Gesture; say?: string; sayUntil: number; moving: boolean }
 
 export function createGateSecurity(opts: GateOptions = {}) {
-  const rng = opts.rng ?? Math.random;
+  const rng = opts.rng ?? Math.random, who = opts.player?.name?.split(/\s+/)[0] ?? "", campus = opts.player?.campus ?? "campus", newcomer = !opts.passed;
   const guards: G[] = GATE.guardPosts.map((p) => ({ id: p.id, post: { x: p.x, y: p.y }, x: p.x, y: p.y, face: 0, tx: p.x, ty: p.y, speed: WALK, sayUntil: 0, moving: false }));
   const byId = (id: string) => guards.find((g) => g.id === id)!;
   const wk = GATE.wicket;
@@ -53,9 +53,9 @@ export function createGateSecurity(opts: GateOptions = {}) {
     const a0 = hd(px, py, GATE.centre.x, GATE.line), spread = [0, 1.57, 1.92, 2.27, 2.62][surround - 1] ?? 2.4;
     const slots = ring.map((_, i) => (ring.length === 1 ? 0 : (i / (ring.length - 1) - 0.5) * spread)).sort((a, b) => Math.abs(a) - Math.abs(b));
     ring.forEach((g, i) => { const a = a0 + slots[i]! + 0.34; // whole arc nudged off the player-gate line so the lead is never hidden behind the player's back (chase camera)
-      g.tx = px + Math.sin(a) * RING; g.ty = Math.min(149.4, py + Math.cos(a) * RING); g.speed = RUN; });
+      g.tx = px + Math.sin(a) * RING; g.ty = Math.min(167.4, py + Math.cos(a) * RING); g.speed = RUN; });
     lead = ring[0]!; // nearest guard takes the centre slot
-    say(lead, "Stop! Stop there!", 1.8); gest(lead, "stop");
+    say(lead, "Good day! Welcome 🙂", 2.6); gest(lead, "stop");
     setPhase("call");
   }
 
@@ -74,14 +74,14 @@ export function createGateSecurity(opts: GateOptions = {}) {
       case "idle": {
         for (const g of guards) if (!g.moving) g.face = g.id === "g6" || g.id === "g5" ? hd(g.x, g.y, player.x, player.y) : 0;
         if (passed) { const near = Math.hypot(player.x - (wk.x0 + wk.x1) / 2, player.y - GATE.line) < 8; wicket += ((near ? 1 : 0) - wicket) * Math.min(1, dt * 3);
-          if (near && !welcomed && isOutsideGate(player.y)) { welcomed = true; say(byId("gateman"), "Welcome back!", 2.2); } if (!near) welcomed = false; }
+          if (near && !welcomed && isOutsideGate(player.y)) { welcomed = true; say(byId("gateman"), "Welcome back!", 2.4); } if (!near) welcomed = false; }
         else if (inChallengeZone(player.x, player.y)) begin(player.x, player.y);
         break;
       }
       case "call": {
         for (const g of ring) facePlayer(g);
         const arrived = ring.every((g) => !g.moving);
-        if ((arrived && pt > T.call) || pt > T.maxArrive) { for (const g of ring) facePlayer(g); say(lead!, "Where's your pass?", 2.6); gest(lead!, "stop"); setPhase("ask"); }
+        if ((arrived && pt > T.call) || pt > T.maxArrive) { for (const g of ring) facePlayer(g); say(lead!, newcomer ? "New here? May I see your Campus Pass, please?" : "May I see your Campus Pass, please?", 3.4); gest(lead!, "stop"); setPhase("ask"); }
         break;
       }
       case "ask": {
@@ -93,17 +93,17 @@ export function createGateSecurity(opts: GateOptions = {}) {
       case "offer": {
         for (const g of ring) facePlayer(g);
         if (pass) pass.t += dt;
-        if (clock - lastRepeat > T.repeat) { lastRepeat = clock; say(lead!, "Your pass, please. Tap it.", 2.4); }
+        if (clock - lastRepeat > T.repeat) { lastRepeat = clock; say(lead!, "Take your time. It's in your pocket.", 3); }
         break;
       }
       case "give": {
         pass!.t = Math.min(1, pt / T.give);
-        if (pt >= T.give) { pass = { state: "held", t: 0, holder: lead!.id, verified: 0 }; playerGesture = undefined; gest(lead!, "inspect"); say(lead!, "Hmm… let me see.", 1.6); setPhase("inspect"); }
+        if (pt >= T.give) { pass = { state: "held", t: 0, holder: lead!.id, verified: 0 }; playerGesture = undefined; gest(lead!, "inspect"); say(lead!, "Thank you. One moment…", 1.9); setPhase("inspect"); }
         break;
       }
       case "inspect": {
         if (pass) { pass.t += dt; pass.verified = ease((pt - 0.9) / 0.8); }
-        if (pt >= T.inspect) { gest(lead!, "thumbs"); say(lead!, "Approved! 👍", 2.4); approvedAt = clock; passed = true; opts.onApproved?.(); setPhase("approve"); }
+        if (pt >= T.inspect) { gest(lead!, "thumbs"); say(lead!, who ? `All good, ${who}! Welcome to ${campus}. 👍` : "All good. Welcome to campus! 👍", 3.4); approvedAt = clock; passed = true; opts.onApproved?.(); setPhase("approve"); }
         break;
       }
       case "approve": {
@@ -118,7 +118,7 @@ export function createGateSecurity(opts: GateOptions = {}) {
       }
       case "open": {
         const gm = byId("gateman");
-        if (!gm.moving && pt > 0.15) { if (!gm.gesture) { gest(gm, "beckon"); say(gm, "Come in, oga.", 2.6); sendHome(); gm.tx = latch.x; gm.ty = latch.y; } wicket = Math.min(1, wicket + dt / T.wicketOpen); }
+        if (!gm.moving && pt > 0.15) { if (!gm.gesture) { gest(gm, "beckon"); say(gm, "Please, come in. Enjoy your first day!", 3.2); sendHome(); gm.tx = latch.x; gm.ty = latch.y; } wicket = Math.min(1, wicket + dt / T.wicketOpen); }
         else for (const g of ring) if (g !== gm && !g.moving) { g.tx = g.post.x; g.ty = g.post.y; g.speed = WALK; }
         for (const g of ring) if (g !== gm) { g.tx = g.post.x; g.ty = g.post.y; g.speed = WALK; }
         if (wicket >= 1) setPhase("through");
@@ -153,7 +153,7 @@ export function createGateSecurity(opts: GateOptions = {}) {
     const lock = phase !== "idle" && phase !== "open" && phase !== "through" && phase !== "done";
     const officer = GATE.police.officer;
     const views: GuardView[] = guards.map((g) => ({ id: g.id, name: GUARD_NAMES[g.id] ?? "Security", kit: "guard", x: g.x, y: g.y, face: g.face, ...(g.gesture ? { gesture: g.gesture } : {}), ...(g.say ? { say: g.say } : {}), moving: g.moving }));
-    views.push({ id: "police1", name: "Police", kit: "police", x: officer.x, y: officer.y, face: 2.4, moving: false });
+    views.push({ id: "police1", name: "Police", kit: "police", x: officer.x, y: officer.y, face: lastP.x || lastP.y ? hd(officer.x, officer.y, lastP.x, lastP.y) : 2.4, moving: false });
     return {
       phase, guards: views, wicket: ease(wicket), pass: pass ? { ...pass } : null, ...(playerGesture ? { playerGesture } : {}), lock,
       faceHeading: lock && lead ? hd(lastP.x, lastP.y, lead.x, lead.y) : null,

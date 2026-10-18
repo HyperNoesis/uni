@@ -1793,6 +1793,23 @@
         "d": 28
       },
       "yOffset": 0
+    },
+    {
+      "id": "gate_police_hilux",
+      "url": "/assets/gate/gate_police_hilux.glb",
+      "slot": "decor:gate_police_hilux",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 371000,
+      "maxTriangles": 5300,
+      "size": {
+        "w": 2.12,
+        "h": 2.27,
+        "d": 5.565
+      },
+      "yOffset": 0
     }
   ]
 }

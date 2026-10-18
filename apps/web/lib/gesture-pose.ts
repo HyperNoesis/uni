@@ -7,13 +7,13 @@ export type GestureKind = "stop" | "reach" | "hold" | "give" | "take" | "inspect
 type V = [number, number, number];
 /** Directions in body space as [outward(from the shoulder's own side), up, forward]. */
 const SPEC: Record<GestureKind, { upper: V; fore: V }> = {
-  stop: { upper: [0.22, 0.05, 0.97], fore: [0.05, 0.9, 0.42] },
+  stop: { upper: [0.18, -0.62, 0.55], fore: [0.02, 0.35, 0.94] }, // 'greeting': relaxed open hand offered at chest height, never a raised palm
   reach: { upper: [0.1, -0.97, -0.15], fore: [-0.25, -0.8, 0.5] },
   hold: { upper: [0.2, -0.55, 0.75], fore: [-0.08, 0.1, 0.99] },
   give: { upper: [0.1, -0.2, 0.95], fore: [0, 0.05, 1] },
   take: { upper: [0.12, -0.3, 0.92], fore: [-0.05, 0.02, 1] },
   inspect: { upper: [0.3, -0.75, 0.4], fore: [-0.35, 0.65, 0.65] },
-  thumbs: { upper: [0.3, -0.8, 0.45], fore: [-0.1, 0.62, 0.78] },
+  thumbs: { upper: [0.38, -0.68, 0.5], fore: [0.22, 0.5, 0.84] },
   beckon: { upper: [0.45, -0.5, 0.7], fore: [-0.3, 0.2, 0.9] },
 };
 const norm = (v: V): V => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
