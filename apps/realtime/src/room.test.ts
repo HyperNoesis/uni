@@ -176,7 +176,7 @@ describe("Room", () => {
     const a = client();
     const p = room.join(id("a"), a.conn);
     expect(isBlocked(p.x, p.y)).toBe(false);
-    expect(zones[0]).toBe("main_gate");
+    expect(zones[0]).toBe("gate_road");
     room.disconnect("a", a.conn);
     t += 31_000; room.tick();
     expect(left).toEqual(["a"]);
@@ -306,5 +306,21 @@ describe("Room blocks (Phase 5)", () => {
     expect(room.disconnect("a", a2.conn)).toBe(false);
     expect(room.disconnect("a", a1.conn)).toBe(true);
     expect(first.conn).toBeNull();
+  });
+
+  it("keeps an unapproved player out of the wicket and lets an approved one through", () => {
+    const walk = (approve: boolean) => {
+      let t = 0;
+      const room = new Room({ now: () => t });
+      const a = client();
+      const p = room.join(id("a"), a.conn);
+      p.x = 68.8; p.y = 133.2; // just outside the pedestrian wicket (x 67.6-70, line y=132)
+      if (approve) room.gatePass("a");
+      let seq = 0;
+      for (let i = 0; i < 20; i++) { t += 100; room.input("a", ++seq, 68.8, 133.2 - (i + 1) * 0.2); }
+      return p;
+    };
+    expect(walk(false).y).toBeGreaterThan(132.0); // blocked by the closed wicket / car-gate line
+    expect(walk(true).y).toBeLessThan(132.0);     // approved: walks through
   });
 });

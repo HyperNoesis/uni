@@ -15,3 +15,4 @@ export * from "./jobs";
 export * from "./world-schema";
 export * from "./world-compile";
 export * from "./assets";
+export * from "./gate-security";

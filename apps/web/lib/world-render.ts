@@ -10,6 +10,8 @@ import { drawAvatar } from "./avatar";
 export interface Entity {
   id: string; name: string; x: number; y: number; avatar: Avatar;
   tagColor: string; emote?: string; npc?: boolean;
+  /** Gate security staff: exempt from the NPC budget; `face` overrides the yaw while standing; `gesture` poses the arm; `say` is a speech bubble. */
+  staff?: boolean; face?: number; gesture?: { kind: string; w: number }; say?: string; kit?: "guard" | "police";
 }
 export interface RenderInput {
   w: number; h: number; scale: number; time: number;

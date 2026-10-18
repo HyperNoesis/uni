@@ -58,12 +58,13 @@ export function collides(x: number, y: number, r = PLAYER_RADIUS, solids: readon
 export const isBlocked = (x: number, y: number): boolean => collides(x, y);
 
 /** Axis-separated slide so players glide along walls instead of sticking. */
-export function slideMove(x: number, y: number, nx: number, ny: number): { x: number; y: number } {
+export function slideMove(x: number, y: number, nx: number, ny: number, extra?: (x: number, y: number) => boolean): { x: number; y: number } {
   const cx = Math.min(WORLD.width, Math.max(0, nx));
   const cy = Math.min(WORLD.height, Math.max(0, ny));
-  if (!collides(cx, cy)) return { x: cx, y: cy };
-  if (!collides(cx, y)) return { x: cx, y };
-  if (!collides(x, cy)) return { x, y: cy };
+  const hit = (px: number, py: number) => collides(px, py) || (extra?.(px, py) ?? false);
+  if (!hit(cx, cy)) return { x: cx, y: cy };
+  if (!hit(cx, y)) return { x: cx, y };
+  if (!hit(x, cy)) return { x, y: cy };
   return { x, y };
 }
 

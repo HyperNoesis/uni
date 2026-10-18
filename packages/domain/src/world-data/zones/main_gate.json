@@ -10,14 +10,7 @@
   },
   "color": "#2f6bff",
   "ambientAudio": "street",
-  "spawnPoints": [
-    {
-      "id": "default",
-      "x": 60,
-      "y": 74,
-      "default": true
-    }
-  ],
+  "spawnPoints": [],
   "buildings": [],
   "props": [
     {

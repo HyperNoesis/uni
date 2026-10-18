@@ -223,36 +223,6 @@
       "kind": "shop"
     },
     {
-      "id": "market_15_print_copy_centre",
-      "name": "Print & Copy Centre",
-      "x": 73.5,
-      "y": 125.5,
-      "w": 7,
-      "h": 6.5,
-      "door": {
-        "x": 75.5,
-        "w": 3
-      },
-      "color": "#f7b0c4",
-      "height": 2.4,
-      "kind": "shop"
-    },
-    {
-      "id": "market_16_bank_branch",
-      "name": "Bank Branch",
-      "x": 82.5,
-      "y": 125.5,
-      "w": 7,
-      "h": 6.5,
-      "door": {
-        "x": 84.5,
-        "w": 3
-      },
-      "color": "#e07c97",
-      "height": 2.6,
-      "kind": "office"
-    },
-    {
       "id": "market_17_atm_lobby",
       "name": "ATM Lobby",
       "x": 102.5,
@@ -384,20 +354,6 @@
       "activity": "reaction"
     },
     {
-      "id": "rp_market_15_print_copy_centre",
-      "name": "Reaction Challenge",
-      "x": 77,
-      "y": 128.43,
-      "activity": "reaction"
-    },
-    {
-      "id": "rp_market_16_bank_branch",
-      "name": "Study Quiz",
-      "x": 86,
-      "y": 128.43,
-      "activity": "quiz"
-    },
-    {
       "id": "rp_market_17_atm_lobby",
       "name": "Reaction Challenge",
       "x": 106,
@@ -427,7 +383,7 @@
         },
         {
           "x": 95.2,
-          "y": 131
+          "y": 129.5
         }
       ]
     },
@@ -441,7 +397,7 @@
       "path": [
         {
           "x": 96.8,
-          "y": 131
+          "y": 129.5
         },
         {
           "x": 96.8,
@@ -465,8 +421,8 @@
     },
     {
       "model": "kn_produce_fruit",
-      "x": 91.2,
-      "y": 99,
+      "x": 97.5,
+      "y": 128.4,
       "rot": 1.5708
     },
     {
@@ -483,8 +439,8 @@
     },
     {
       "model": "kn_produce_bread",
-      "x": 100.8,
-      "y": 101,
+      "x": 91.2,
+      "y": 128.6,
       "rot": -1.5708
     },
     {
@@ -501,14 +457,14 @@
     },
     {
       "model": "kn_produce_fruit",
-      "x": 100.8,
-      "y": 134,
+      "x": 97.5,
+      "y": 128.4,
       "rot": -1.5708
     },
     {
       "model": "kn_produce_bread",
       "x": 91.2,
-      "y": 132,
+      "y": 128.6,
       "rot": 1.5708
     }
   ]

@@ -22,7 +22,7 @@ both("gate_pool", 15.6, GY + 14.5, 0, 0);            // twin reflecting pools + 
 both("gate_pavilion", 25, GY + 10.8, 0, 0);          // gatehouse + welcome desk, off-axis (vista stays open)
 both("gate_boom", 10.2, GY + 9, 0, PI);
 for (const dx of [32, 35.5, 39]) both("gate_mast", dx, GY + 9.5, PI, 0);
-for (const y of [GY + 7.5, GY + 18, GY - 7.5]) both("gate_lamp_tall", 11.6, y, 0, 0);
+for (const y of [GY + 7.5, GY + 17.5, GY - 7.5]) both("gate_lamp_tall", 11.6, y, 0, 0);
 both("gate_kiosk", 30, GY + 15.8, 0, 0);
 both("gate_monument", 35, GY + 16.8, 0, 0);
 for (const dx of [27, 35]) both("gate_garden_bed", dx, GY + 2.6, 0, 0);

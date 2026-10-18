@@ -185,6 +185,7 @@ wss.on("connection", (ws: WebSocket) => {
       case "input": return room.input(playerId, msg.seq, msg.x, msg.y);
       case "emote": return room.emote(playerId, msg.emote);
       case "interact": return room.interact(playerId, msg.pointId);
+      case "gate_pass": return room.gatePass(playerId);
       case "ping": return conn.send({ t: "pong", ts: msg.ts, serverTime: Date.now() });
     }
   });

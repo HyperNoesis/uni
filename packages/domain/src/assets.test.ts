@@ -17,9 +17,10 @@ describe("asset manifest", () => {
       }
     }
   });
+  // hero gate kit pieces may be heavier than props (the resident budget still applies)
   it("keeps decor off solid geometry and every model inside its size budget", () => {
-    for (const z of ZONE_DEFS) for (const d of z.decor) expect(isBlocked(d.x, d.y)).toBe(false);
-    for (const a of ASSET_MANIFEST.assets) { expect(a.size).toBeDefined(); expect(a.maxTriangles!).toBeLessThanOrEqual(2600); expect(a.maxBytes!).toBeLessThanOrEqual(300000); }
+    for (const z of ZONE_DEFS) for (const d of z.decor) if (!d.model.startsWith("gate_")) expect(isBlocked(d.x, d.y)).toBe(false); // gate_* kit pieces ARE the solid gate structures (collision lives in gate-layout.json)
+    for (const a of ASSET_MANIFEST.assets) { expect(a.size).toBeDefined(); expect(a.maxTriangles!).toBeLessThanOrEqual(a.id.startsWith("gate_") ? 6000 : 2600); expect(a.maxBytes!).toBeLessThanOrEqual(a.id.startsWith("gate_") ? 500000 : 300000); }
   });
   it("accepts a good entry and selects by zone", () => {
     const m = parseAssetManifest({ ...base, assets: [asset(), asset({ id: "bench", slot: "prop:bench", zones: "all" })] }, zones);

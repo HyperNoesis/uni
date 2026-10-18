@@ -4,6 +4,9 @@ import {
   SPAWN,
   canSit,
   isBlocked,
+  gateBlocked,
+  gateDistance,
+  gateSegmentBlocked,
   zoneAt,
   WORLD,
   validateMove,
@@ -39,6 +42,8 @@ interface Player {
   reconnectToken: string;
   disconnectedAt: number | null;
   lastInteractAt: number;
+  /** Approved at the Grand Gate: may walk through the pedestrian wicket. Lives as long as this session (kept across reconnects). */
+  gatePassed: boolean;
   msgWindowStart: number;
   msgCount: number;
   /** What this viewer has been told about each visible entity (fingerprint), for delta snapshots. */
@@ -167,6 +172,7 @@ export class Room {
       reconnectToken: randomUUID(),
       disconnectedAt: null,
       lastInteractAt: 0,
+      gatePassed: false,
       msgWindowStart: this.now(),
       msgCount: 0,
       known: new Map(),
@@ -213,6 +219,13 @@ export class Room {
     return p.msgCount <= MAX_MSGS_PER_SEC;
   }
 
+  /** The client says the entry check is done. Accepted only while the player is near the gate (soft check: the ceremony itself is client-side). */
+  gatePass(playerId: string): void {
+    const p = this.players.get(playerId);
+    if (!p || p.gatePassed) return;
+    if (gateDistance(p.x, p.y) <= 20) p.gatePassed = true;
+  }
+
   input(playerId: string, seq: number, x: number, y: number): void {
     const p = this.players.get(playerId);
     if (!p || !p.conn) return;
@@ -221,7 +234,7 @@ export class Room {
     const dt = t - p.lastInputAt;
     p.lastInputAt = t;
     p.moveBankMs = Math.min(MOVE_BANK_MAX_MS, p.moveBankMs + Math.max(0, dt));
-    const r = validateMove(p, { x, y }, p.moveBankMs, WORLD.maxSpeed, WORLD.speedTolerance, WORLD, isBlocked, 0);
+    const r = gateSegmentBlocked(p.x, p.y, x, y, p.gatePassed) ? { x: p.x, y: p.y, corrected: true } : validateMove(p, { x, y }, p.moveBankMs, WORLD.maxSpeed, WORLD.speedTolerance, WORLD, (bx, by) => isBlocked(bx, by) || gateBlocked(bx, by, p.gatePassed), 0);
     p.moveBankMs = Math.max(0, p.moveBankMs - (Math.hypot(r.x - p.x, r.y - p.y) / (WORLD.maxSpeed * WORLD.speedTolerance)) * 1000);
     p.x = r.x;
     p.y = r.y;

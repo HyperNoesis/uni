@@ -106,6 +106,8 @@ export const ClientMessage = z.discriminatedUnion("t", [
   z.object({ t: z.literal("emote"), emote: z.enum(["wave", "dance", "laugh", "cheer", "sit"]) }),
   z.object({ t: z.literal("interact"), pointId: z.string().max(40) }),
   z.object({ t: z.literal("ping"), ts: z.number() }),
+  /** Client finished the Grand Gate entry check. Soft authority: the server only accepts it near the gate, then lets this player through the wicket. */
+  z.object({ t: z.literal("gate_pass") }),
 ]);
 export type ClientMessage = z.infer<typeof ClientMessage>;
 

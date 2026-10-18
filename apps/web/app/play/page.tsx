@@ -5,7 +5,9 @@ import { DEFAULT_PITCH, clampPitch, clampZoom, clampLook, wrapHeading, headingFo
 import { JobsSheet } from "../../components/JobsSheet";
 import { ShiftSheet } from "../../components/ShiftSheet";
 import { TasksPanel } from "../../components/TasksPanel";
-import { GateCheck, GATE_POST, type GateState } from "../../components/GateCheck";
+import { createGateSecurity, type GateSnapshot } from "../../lib/gate-security";
+import { gateEntities, gestureView } from "../../lib/gate-entities";
+import { gateIntroCamera, INTRO_MS } from "../../lib/gate-intro";
 import { PocketPhone } from "../../components/PocketPhone";
 import { HudIcon, PlayNav } from "../../components/HudIcons";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -35,6 +37,7 @@ import {
   levelFor,
   npcAt,
   slideMove,
+  gateBlocked,
   suggestQuality,
   zoneAt,
   canSit,
@@ -91,12 +94,18 @@ export default function Play() {
   const mapCone = useRef<SVGPolygonElement>(null);
   const [near, setNear] = useState<string | null>(null);
   const [sitOk, setSitOk] = useState(false);
-  const gateRef = useRef<GateState>({ gx: GATE_POST.x, gy: GATE_POST.y, open: 0 });
-  const [gateDone, setGateDone] = useState(false);
+  // Grand Gate entry check: guards, pass, wicket. The controller is a pure state machine stepped from the frame loop; the page only lends it your position.
+  const gateSec = useRef<ReturnType<typeof createGateSecurity> | null>(null);
+  const gateSnap = useRef<GateSnapshot | null>(null);
+  const [gatePassed, setGatePassed] = useState(false);
+  const [gateHint, setGateHint] = useState<string | null>(null);
+  const [tapShown, setTapShown] = useState(false);
+  const tapBtn = useRef<HTMLButtonElement>(null);
+  const gateIntro = useRef<{ t0: number } | null>(null);
+  const [introOn, setIntroOn] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
-  useEffect(() => { try { if (sessionStorage.getItem("campus.gatePass")) { gateRef.current.open = 1; setGateDone(true); } } catch { /* storage blocked: show the check */ } }, []);
-  const finishGate = useCallback(() => { try { sessionStorage.setItem("campus.gatePass", "1"); } catch { /* ignore */ } setGateDone(true); }, []);
   const sitOkRef = useRef(false);
+  const introChecked2 = useRef(false), gateHintRef = useRef<string | null>(null), tapShownRef = useRef(false);
   const myEmote = useRef<{ k: string; until: number; x: number; y: number } | null>(null);
   function doEmote(k: string) {
     if (k === "sit" && !canSit(me.current.x, me.current.y)) return;
@@ -509,6 +518,23 @@ export default function Play() {
           ix = rx; iy = ry;
         }
       }
+      { // Grand Gate: first-view camera, then the entry check. Movement is frozen during both.
+        if (!gateIntro.current && !introChecked2.current) {
+          introChecked2.current = true;
+          const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (!reduce && viewRef.current !== "orbit" && renderModeRef.current === "3D") { gateIntro.current = { t0: performance.now() }; setIntroOn(true); }
+        }
+        if (gateIntro.current && (k.size > 0 || performance.now() - gateIntro.current.t0 > INTRO_MS)) { gateIntro.current = null; setIntroOn(false); k.clear(); }
+        if (!gateSec.current) gateSec.current = createGateSecurity({ onApproved: () => { setGatePassed(true); send({ t: "gate_pass" }); } });
+        const gs = gateSec.current;
+        if (!gateIntro.current && !overlayRef.current) gs.update(dt, me.current);
+        const sn = gs.snapshot(); gateSnap.current = sn;
+        if (k.has("e") && sn.tapReady) gs.tapPass();
+        if (sn.hint !== gateHintRef.current) { gateHintRef.current = sn.hint; setGateHint(sn.hint); }
+        if (sn.tapReady !== tapShownRef.current) { tapShownRef.current = sn.tapReady; setTapShown(sn.tapReady); }
+        if (sn.lock || gateIntro.current) { ix = 0; iy = 0; autoWalkRef.current = null; }
+        if (sn.faceHeading != null) lookRef.current.heading = wrapHeading(lookRef.current.heading + wrapHeading(sn.faceHeading - lookRef.current.heading) * Math.min(1, dt * 6));
+      }
       const mag = Math.hypot(ix, iy);
       // You can walk the moment the page loads: the server link may still be waking (free hosting), and it catches up when it connects.
       const canWalk = phaseRef.current !== "failed" && !overlayRef.current;
@@ -536,7 +562,7 @@ export default function Play() {
           const h = lookRef.current.heading, [fx, fz] = headingForward(h), [rx, rz] = headingRight(h), fw = -iy / mag, st = ix / mag;
           dx = fx * fw + rx * st; dy = fz * fw + rz * st;
         }
-        const m = slideMove(me.current.x, me.current.y, me.current.x + dx * sp * dt, me.current.y + dy * sp * dt);
+        const gsP = gateSec.current?.passed ?? false, m = slideMove(me.current.x, me.current.y, me.current.x + dx * sp * dt, me.current.y + dy * sp * dt, (qx, qy) => gateBlocked(qx, qy, gsP));
         speedNow = Math.hypot(m.x - me.current.x, m.y - me.current.y) / Math.max(dt, 1e-3);
         me.current.x = m.x;
         me.current.y = m.y;
@@ -639,8 +665,8 @@ export default function Play() {
   useEffect(() => {
     huntRef.current = hunt;
     huntTargetRef.current = hunt && hunt.stage !== "complete" ? HUNT_STOPS[hunt.step]?.pointId ?? null : null;
-    overlayRef.current = !!sport || !!mini || !!reaction || !!quiz || !!board || jobsOpen || shiftOpen || hunt?.stage === "complete" || phoneOpen || (phase === "live" && !gateDone);
-  }, [sport, mini, reaction, quiz, board, hunt, jobsOpen, shiftOpen, phoneOpen, phase, gateDone]);
+    overlayRef.current = !!sport || !!mini || !!reaction || !!quiz || !!board || jobsOpen || shiftOpen || hunt?.stage === "complete" || phoneOpen || false;
+  }, [sport, mini, reaction, quiz, board, hunt, jobsOpen, shiftOpen, phoneOpen, phase]);
 
   function myEmoteNow(now: number, x: number, y: number): boolean {
     const e = myEmote.current;
@@ -659,12 +685,9 @@ export default function Play() {
       if (Math.hypot(p.x - me.current.x, p.y - me.current.y) > 70) continue; // large world: skip far ambient NPCs
       entities.push({ id: n.id, name: n.name, x: p.x, y: p.y, npc: true, tagColor: "#5b6b94", avatar: { ...DEFAULT_AVATAR, skin: n.skin, outfit: n.outfit } });
     }
-    { // Main Gate officers (client-side scenery, flagged as NPCs). The first one walks out to check your pass.
-      const uni = { ...DEFAULT_AVATAR, skin: "#5e3b26", outfit: "#1f3a6e", hair: "cap" } as unknown as typeof DEFAULT_AVATAR, g = gateRef.current;
-      entities.push({ id: "gate_officer_1", name: "Gate Officer", x: g.gx, y: g.gy, npc: true, tagColor: "#1f3a6e", avatar: uni });
-      entities.push({ id: "gate_officer_2", name: "Gate Officer", x: 65.2, y: 72.6, npc: true, tagColor: "#1f3a6e", avatar: { ...uni, skin: "#8a5a3b" } });
-    }
-    if (profile) entities.push({ id: me.current.id || "me", name: profile.displayName, x: me.current.x, y: me.current.y, avatar: profile.avatar, tagColor: CAMPUSES[profile.campus].color, ...(myEmoteNow(now, me.current.x, me.current.y) ? { emote: myEmote.current!.k } : {}) });
+    const gsn = gateSnap.current;
+    if (gsn) entities.push(...gateEntities(gsn)); // Grand Gate staff: skinned guards (blue, glasses, baton) + one police officer; flagged staff so they are never culled as ambient NPCs
+    if (profile) entities.push({ id: me.current.id || "me", name: profile.displayName, x: me.current.x, y: me.current.y, avatar: profile.avatar, tagColor: CAMPUSES[profile.campus].color, ...(myEmoteNow(now, me.current.x, me.current.y) ? { emote: myEmote.current!.k } : {}), ...gestureView(gsn?.playerGesture) });
     // camera eases toward the player (smooth follow)
     const cam = camRef.current;
     const vo = viewOverride.current; // dev-only visual camera override (?view=x,y); never affects the server-side position
@@ -674,6 +697,7 @@ export default function Play() {
       cam.x += ((vo ? vo.x : me.current.x) - cam.x) * 0.18;
       cam.y += ((vo ? vo.y : me.current.y) - cam.y) * 0.18;
     }
+    const ig = gateIntro.current, introCam = ig ? gateIntroCamera((performance.now() - ig.t0) / INTRO_MS) : null;
     const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     const camBob = viewRef.current === "fp" && !reducedMotion ? Math.sin(walkRef.current.phase) * 0.042 * walkRef.current.amp : 0;
     const renderInput = { w, h, scale, time, camX: cam.x, camY: cam.y, meId: me.current.id || "me", entities, emoji: EMOTES, quality: q, activeHuntPointId: huntTargetRef.current };
@@ -686,10 +710,15 @@ export default function Play() {
           assetStreamerRef.current?.setZone(zoneAt(px, py)?.id, near);
         }
         const stats = renderer3dRef.current.render({
-          width: w, height: h, time, camX: cam.x, camY: cam.y, camMode: walkView ? viewRef.current : "orbit", camHeading: lookRef.current.heading, camLook: lookRef.current.pitch, camBob, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
+          width: w, height: h, time, camX: cam.x, camY: cam.y, camMode: walkView ? viewRef.current : "orbit", ...(introCam ? { camMode: "free" as const, camEye: introCam.eye, camTarget: introCam.target, camFov: (introCam.fov * Math.PI) / 180 } : {}), camHeading: lookRef.current.heading, camLook: lookRef.current.pitch, camBob, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
           meId: me.current.id || "me", entities, quality: qualityRef.current, ...(lightingRef.current === "auto" ? (() => { const k = lagosSky(); return { lighting: "day" as const, nightBlend: k.night, warmth: k.warmth, sunElevation: k.elevation }; })() : { lighting: lightingRef.current }),
-          activeHuntPointId: huntTargetRef.current, gateOpen: gateRef.current.open,
+          activeHuntPointId: huntTargetRef.current, gateOpen: 1,
+          ...(gsn ? { gate: { wicket: gsn.wicket, pass: gsn.pass, car: gsn.car }, passSkin: profile?.avatar.skin, passOutfit: profile?.avatar.outfit } : {}),
         }, labelsCtx);
+        { // tap target for the pass follows the 3D card (DOM, so it is a real button for touch, mouse and screen readers)
+          const pr = stats.probes?.pass, btn = tapBtn.current, ok = !!(pr && gsn?.tapReady && !introCam);
+          if (btn) { if (ok) { btn.style.transform = `translate(${Math.round(pr.x - 36)}px, ${Math.round(pr.y - 36)}px)`; } btn.style.opacity = ok ? "1" : "0"; btn.style.pointerEvents = ok ? "auto" : "none"; btn.tabIndex = ok ? 0 : -1; }
+        }
         return { drawn: stats.drawn, culled: stats.culled };
       } catch (error) {
         console.warn("CAMPUS 3D frame failed; switching to 2D fallback.", error);
@@ -975,8 +1004,10 @@ export default function Play() {
         </div>
       </div>
 
-      {profile && phase === "live" && !gateDone && <GateCheck profile={profile} player={me} gate={gateRef} onDone={finishGate} />}
-      {profile && gateDone && <PocketPhone profile={profile} onOpenChange={setPhoneOpen} />}
+      <button ref={tapBtn} type="button" className="gate-tap" aria-label="Show your Campus Pass to the guard" tabIndex={-1} style={{ opacity: 0, pointerEvents: "none" }} onPointerDown={(ev) => { ev.preventDefault(); gateSec.current?.tapPass(); }} onClick={() => gateSec.current?.tapPass()}><span aria-hidden="true" /></button>
+      {gateHint && !introOn && <div className="gate-hint" role="status">{gateHint}{tapShown ? " · tap the glowing pass or press E" : ""}</div>}
+      {introOn && <button type="button" className="gate-skip" onClick={() => { gateIntro.current = null; setIntroOn(false); }}>Skip</button>}
+      {profile && gatePassed && <PocketPhone profile={profile} onOpenChange={setPhoneOpen} />}
 
       {libOpen && profile && <LibraryWorld avatar={profile.avatar} onClose={() => setLibOpen(false)} />}
 

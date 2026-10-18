@@ -281,36 +281,6 @@
       "color": "#e89d4a",
       "height": 3.4,
       "kind": "dorm"
-    },
-    {
-      "id": "hostel_19_village_common_roo",
-      "name": "Village Common Room",
-      "x": 30.5,
-      "y": 124,
-      "w": 7,
-      "h": 6.5,
-      "door": {
-        "x": 32.5,
-        "w": 3
-      },
-      "color": "#f7cb85",
-      "height": 3.4,
-      "kind": "dorm"
-    },
-    {
-      "id": "hostel_20_village_porter_s_l",
-      "name": "Village Porter's Lodge",
-      "x": 39.5,
-      "y": 124,
-      "w": 7,
-      "h": 6.5,
-      "door": {
-        "x": 41.5,
-        "w": 3
-      },
-      "color": "#d98f45",
-      "height": 2.6,
-      "kind": "lounge"
     }
   ],
   "props": [],

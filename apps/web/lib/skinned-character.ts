@@ -116,6 +116,8 @@ export interface CharacterAnimator {
   /** Skin the pose in `st` and append the body (+ the given groups) to the dynamic batch arrays. Returns triangles emitted and the head's offset from its rest position (world axes). */
   emit(st: AnimState, at: { x: number; z: number; yaw: number }, col: Float32Array, out: { p: number[]; n: number[]; c: number[] }, groups?: readonly string[]): { tris: number; head: [number, number, number] };
   restHeadTop: number;
+  /** World position of a named joint from the LAST emit()/emitTextured() call (so call it after emitting). Null if the joint is missing. */
+  joint(name: string, at: { x: number; z: number; yaw: number }): [number, number, number] | null;
 }
 
 export { hairIsPainted };
@@ -140,6 +142,11 @@ export function createCharacterAnimator(m: SkinnedModel, pants = "#2a3144", shoe
   return {
     model: m, textured: !!m.uvs, headWidth: (hx1 - hx0) * scale, restHeadTop: top * scale + yOffset,
     create: () => createAnimState(m),
+    joint(name, at) {
+      const j = m.jointNames.indexOf(name); if (j < 0) return null;
+      const x = world[j * 16 + 12]! * scale, y = world[j * 16 + 13]! * scale + yOffset, z = world[j * 16 + 14]! * scale, cy = Math.cos(at.yaw), sy = Math.sin(at.yaw);
+      return [at.x + x * cy + z * sy, y, at.z - x * sy + z * cy];
+    },
     colors(avatar) {
       const key = paintKey(avatar); let c = colorCache.get(key);
       if (!c) {

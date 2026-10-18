@@ -11,6 +11,8 @@ import { solveOrbitCamera, solveFirstPersonCamera, solveChaseCamera, DEFAULT_PIT
 import { environment } from "./world-environment";
 import { palmTree } from "./world-flora";
 import { BACKDROP } from "./world-backdrop";
+import { applyGesture } from "./gesture-pose";
+import { drawGateLeaves, drawPoliceCar, drawKit, drawThumb, drawPass } from "./gate-security-draw";
 import { createCharacterAnimator, stepAnimation, hairIsPainted, bodyKind } from "./skinned-character";
 import { createAvatarProgram, loadAtlasTextures, bindBody, setLook, uploadBatch } from "./avatar-gl";
 import { FRAG, SHADOW_VERT, SHADOW_VERT_I, SHADOW_FRAG, SKY_VERT, SKY_FRAG, SUN_DIR } from "./world-shaders";
@@ -475,7 +477,8 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         let labelledNpcs = 0;
         const npcLimit = domain_1.QUALITY_PROFILES[input.quality]?.npcs ?? 6;
         for (const e of input.entities) {
-            if (e.npc && ++labelledNpcs > npcLimit) continue;
+            if (e.npc && !e.staff && ++labelledNpcs > npcLimit) continue;
+            if (e.staff && !e.say && e.kit !== "police" && e.id !== "gateman") continue; // guards only wear a nameplate while talking (keeps the surround readable)
             const p = project(e.x, e.npc ? 1.95 : 2.1, e.y);
             if (!p || p.x < 0 || p.x > input.width || p.y < 0 || p.y > input.height)
                 continue;
@@ -498,6 +501,13 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
                 ctx.fill();
                 ctx.fillStyle = "#3b2a00";
                 ctx.fillText(et, p.x, ey);
+            }
+            if (e.say) { // speech bubble above the nameplate / emote pill
+                const st = String(e.say); ctx.font = `700 ${Math.max(11, Math.min(14, input.width / 70))}px system-ui`;
+                const sw = ctx.measureText(st).width + 18, sy = p.y - 10 - (e.emote ? 30 : 4) - 14;
+                ctx.fillStyle = "rgba(255,255,255,.96)"; ctx.beginPath(); ctx.roundRect(p.x - sw / 2, sy - 12, sw, 24, 10); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(p.x - 5, sy + 11); ctx.lineTo(p.x, sy + 18); ctx.lineTo(p.x + 5, sy + 11); ctx.fill();
+                ctx.fillStyle = "#10203f"; ctx.fillText(st, p.x, sy);
             }
             labels++;
         }
@@ -1247,24 +1257,25 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             return true;
         };
         // Skinned bodies cost ~2.4k triangles each, so only the nearest few avatars (always you) get one; everyone else keeps the box body.
+        const handMap = new Map(), gctx = { draw, vp, q, time: input.time };
         const skinSet = new Map(); // id -> true (full body) | false (~900-tri LOD body, same skeleton so animation state is shared)
         if (character && (q !== "low" || characterLod)) { // Low: only the 3 nearest people (incl. you) get the light 900-tri skinned body
             const budget = q === "high" ? 12 : q === "low" ? 3 : 6, range = q === "high" ? 40 : q === "low" ? 18 : 26;
-            const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
+            const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) * (en.staff ? .4 : 1) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
             const hi = q === "low" ? 0 : characterLod ? (q === "high" ? 6 : 3) : budget, total = q === "low" ? 3 : characterLod ? (q === "high" ? 16 : 8) : budget;
             for (let i = 0; i < Math.min(total, near.length); i++) skinSet.set(near[i].id, i < hi);
         }
         for (const e of input.entities) {
             if (fpCam && e.id === input.meId) continue; // you are the camera: no body inside your own eyes
             if (walkCam && e.id !== input.meId && !inCone(e.x, e.y, 2)) { culled++; continue; } // people behind you are not drawn
-            if (e.npc && ++npcCount > npcLimit) {
+            if (e.npc && !e.staff && ++npcCount > npcLimit) {
                 culled++;
                 continue;
             }
             let mo = motion.get(e.id); if (!mo) { if (motion.size > 300) motion.clear(); mo = { x: e.x, y: e.y, dx: 0, dz: 1, yaw: 0, phase: hash2(e.x, e.y) * 6, speed: 0, t: input.time }; motion.set(e.id, mo); }
             const dtm = Math.max(.001, Math.min(.2, input.time - mo.t)), vx = (e.x - mo.x) / dtm, vz = (e.y - mo.y) / dtm, spd = Math.hypot(vx, vz);
             if (spd > .3) { mo.dx = vx / spd; mo.dz = vz / spd; }
-            { const own = e.id === input.meId && camMode === "chase" && spd <= .3; const want = own ? (input.camHeading ?? 0) : Math.atan2(mo.dx, mo.dz); let dy = want - (mo.yaw ?? 0); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); mo.yaw = (mo.yaw ?? 0) + dy * Math.min(1, dtm * 12); }
+            { const own = e.id === input.meId && camMode === "chase" && spd <= .3; const want = own ? (input.camHeading ?? 0) : (e.face !== undefined && spd <= .3) ? e.face : Math.atan2(mo.dx, mo.dz); let dy = want - (mo.yaw ?? 0); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); mo.yaw = (mo.yaw ?? 0) + dy * Math.min(1, dtm * 12); }
             mo.speed += (Math.min(1, spd / 4.5) - mo.speed) * Math.min(1, dtm * 10);
             mo.rn = (mo.rn ?? 0) + (Math.max(0, Math.min(1, (spd - 4.2) / 1.6)) - (mo.rn ?? 0)) * Math.min(1, dtm * 8); // walk -> run blend
             mo.phase += dtm * (5 + Math.min(spd, 7) * 1.5) * (mo.speed > .05 ? 1 : .25);
@@ -1290,6 +1301,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             if (useSkin) {
                 if (!mo.sk || mo.skKind !== character) { mo.sk = character.create(); mo.skKind = character; }
                 stepAnimation(character.model, mo.sk, spd, em, dtm);
+                { const gw = mo.gw || (mo.gw = { k: "stop", w: 0 }), tg = e.gesture; if (tg) { gw.k = tg.kind; gw.w += (tg.w - gw.w) * Math.min(1, dtm * 10); } else gw.w += (0 - gw.w) * Math.min(1, dtm * 8); if (gw.w > .01) applyGesture(character.model, mo.sk.pose, gw.k, gw.w, input.time, "R"); }
                 const anim = skinSet.get(e.id) || !characterLod ? character : characterLod;
                 let res;
                 if (anim.textured) {
@@ -1297,6 +1309,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                     res = anim.emitTextured(mo.sk, { x: e.x, z: e.y, yaw }, kb, anim.groups(e.avatar)); kb.segs.push({ first, count: kb.p.length / 3 - first, avatar: e.avatar });
                 } else res = anim.emit(mo.sk, { x: e.x, z: e.y, yaw }, anim.colors(e.avatar), recorder, anim.groups(e.avatar));
                 trisFrame += res.tris; head = res.head; bob = res.head[1]; // emote bubble etc. follow the animated head
+                { const at = { x: e.x, z: e.y, yaw }, hs0 = Math.max(.45, Math.min(1.4, character.headWidth / .4)); handMap.set(e.id, { R: anim.joint("hand.R", at), L: anim.joint("hand.L", at), head: [e.x + res.head[0], character.restHeadTop - .21 * hs0 + res.head[1], e.y + res.head[2]], yaw, hw: character.headWidth }); }
             }
             if (!useSkin) {
             const topPart = part(e, slots.top);
@@ -1399,6 +1412,30 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
                 part(e, slots.accessory);
             }
             }
+            if (!handMap.has(e.id)) handMap.set(e.id, { R: [lx(.43, .3), 1.0 + bob, lz(.43, .3)], L: [lx(-.43, .3), 1.0 + bob, lz(-.43, .3)], head: [e.x, 1.6 + bob, e.y], yaw });
+            if (e.kit || e.gesture) { const hm = handMap.get(e.id); if (e.kit) drawKit(gctx, e.kit, hm.head, hm.L, yaw, hm.hw); if (e.gesture && e.gesture.kind === "thumbs" && e.gesture.w > .5 && hm.R) drawThumb(gctx, hm.R, skin, yaw); }
+        }
+        let probes = null;
+        if (input.gate) { // Grand Gate entry check: shut car gate, wicket, patrol car, and the pass card travelling between hands
+            const g = input.gate, near = Math.hypot(60 - input.camX, 135 - input.camY) < (q === "low" ? 50 : 80), pk = slotToName["decor:gate_pier"];
+            if (near && pk && meshes[pk.name]) drawn += drawGateLeaves(gctx, g.wicket ?? 0);
+            if (near && g.car) drawn += drawPoliceCar(gctx, g.car);
+            const pv = g.pass, me = handMap.get(input.meId);
+            if (pv && me) {
+                const L = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k], ez = (t) => t * t * (3 - 2 * t);
+                const hand = (id) => { const h = handMap.get(id); return h ? (h.R || h.head) : null; };
+                let at = null;
+                if (pv.state === "out") at = me.R; else if (pv.state === "held") at = hand(pv.holder);
+                else if (pv.state === "flying") { const a = me.R, b = hand(pv.to); if (a && b) { at = L(a, b, ez(pv.t)); at[1] += Math.sin(Math.PI * ez(pv.t)) * .3; } }
+                else if (pv.state === "returning") { const a = hand(pv.holder), b = me.R; if (a && b) { at = L(a, b, ez(pv.t)); at[1] += Math.sin(Math.PI * ez(pv.t)) * .25; } }
+                if (at) {
+                    const lift = [at[0], at[1] + (pv.state === "out" ? .12 : .03), at[2]], yawC = Math.atan2(eye[0] - lift[0], eye[2] - lift[2]);
+                    drawPass(gctx, lift, yawC, { scale: pv.state === "out" ? 2.1 : 1.2, glow: pv.state === "out" ? .5 + .5 * Math.sin(input.time * 6) : 0, verified: pv.verified ?? 0, scan: pv.state === "held" && (pv.verified ?? 0) < 1 ? (pv.t % 1.1) / 1.1 : -1, skin: input.passSkin ?? "#8d5a3b", outfit: input.passOutfit ?? "#2f6bff" });
+                    drawn += 12;
+                    const a = vp[0] * lift[0] + vp[4] * lift[1] + vp[8] * lift[2] + vp[12], b = vp[1] * lift[0] + vp[5] * lift[1] + vp[9] * lift[2] + vp[13], c = vp[3] * lift[0] + vp[7] * lift[1] + vp[11] * lift[2] + vp[15];
+                    if (c > 0) probes = { pass: { x: (a / c * .5 + .5) * input.width, y: (1 - (b / c * .5 + .5)) * input.height, state: pv.state } };
+                }
+            }
         }
         { // Main gate leaves (iron bars + gold rail) swing open about the pillars; input.gateOpen 0..1 (visual only)
             const go = Math.max(0, Math.min(1, input.gateOpen ?? 0));
@@ -1465,7 +1502,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         }, vp);
         const labels = overlayLabels(overlay, input, vp);
         lastFrameTris = trisFrame;
-        return { drawn, culled, labels, calls, tris: Math.round(trisFrame), gov: Math.round(govScale * 100) / 100, shadows: shadowOn, byShape: callBy };
+        return { probes, drawn, culled, labels, calls, tris: Math.round(trisFrame), gov: Math.round(govScale * 100) / 100, shadows: shadowOn, byShape: callBy };
     };
     return { render, resize, registerMesh, unregisterMesh, setSkinnedCharacter, setSkinnedCharacters, destroy: () => { for (const m of Object.values(meshes)) {
             gl.deleteBuffer(m.p);

@@ -15,7 +15,7 @@ describe("world as data", () => {
   });
   it("compiles the shipped campus to the same content the code used to hard-code", () => {
     expect(ZONES).toHaveLength(22);
-    expect(BUILDINGS).toHaveLength(160);
+    expect(BUILDINGS).toHaveLength(156);
     expect(BUILDINGS.filter((b) => b.door).length).toBeGreaterThanOrEqual(100); // enterable rooms
     expect(INTERACTION_POINTS.filter((p) => !p.id.startsWith("rp_"))).toHaveLength(13); // hand-placed campus points
     expect(INTERACTION_POINTS.filter((p) => p.id.startsWith("rp_")).length).toBeGreaterThanOrEqual(100); // generated room points (quiz / reaction by room kind)
@@ -38,7 +38,7 @@ describe("world as data", () => {
     expect(() => compileWorld(WORLD_JSON, dupe)).toThrow(/duplicate interaction/);
     const outside = base(); outside.library.buildings[0].x = 200;
     expect(() => compileWorld(WORLD_JSON, outside)).toThrow(/outside/);
-    const noSpawn = base(); noSpawn.main_gate.spawnPoints = [];
+    const noSpawn = base(); noSpawn.gate_road.spawnPoints = [];
     expect(() => compileWorld(WORLD_JSON, noSpawn)).toThrow(/default spawn/);
     const badId = base(); badId.library.id = "Library";
     expect(() => compileWorld(WORLD_JSON, badId)).toThrow();
