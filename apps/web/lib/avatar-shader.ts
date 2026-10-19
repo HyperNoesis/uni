@@ -71,6 +71,6 @@ void main(){
  col=aces(col*.56); col=pow(col,vec3(1.0/2.2));
  float lum=dot(col,vec3(.299,.587,.114)); col=clamp(mix(vec3(lum),col,1.04),0.0,1.0);
  vec3 fogC=mix(vec3(.78,.88,.97),vec3(.04,.06,.15),uNight);
- col=mix(col,fogC,smoothstep(60.0,165.0,dist)*.9);
+ col=mix(col,fogC,smoothstep(95.0,430.0,dist)*.80);
  gl_FragColor=vec4(col,uAlpha);
 }`;

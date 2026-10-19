@@ -12,7 +12,7 @@ const [out, cfgJson, workArg] = process.argv.slice(2);
 const cfg = JSON.parse(cfgJson ?? "{}"), work = workArg ?? fs.mkdtempSync("/tmp/campus-harness-");
 fs.mkdirSync(work, { recursive: true });
 const esbuild = process.env.ESBUILD ?? "/opt/npm-tools/node_modules/esbuild/bin/esbuild";
-execFileSync(esbuild, [path.join(root, "tests/visual/harness", cfg.entry ?? "entry.ts"), "--bundle", "--format=iife", `--outfile=${work}/bundle.js`, `--alias:@campus/domain=${root}/packages/domain/src/index.ts`, "--log-level=warning"], { env: { ...process.env, NODE_PATH: ["/opt/npm-tools/node_modules", process.env.NODE_PATH].filter(Boolean).join(":") }, stdio: "inherit" });
+execFileSync(esbuild, [path.join(root, "tests/visual/harness", cfg.entry ?? "entry.ts"), "--bundle", "--format=iife", `--outfile=${work}/bundle.js`, `--alias:@campus/domain=${root}/tests/visual/harness/domain-shim.ts`, "--log-level=warning"], { env: { ...process.env, NODE_PATH: ["/opt/npm-tools/node_modules", process.env.NODE_PATH].filter(Boolean).join(":") }, stdio: "inherit" });
 fs.copyFileSync(path.join(root, "tests/visual/harness/index.html"), path.join(work, "index.html"));
 const pub = path.join(root, "apps/web/public"), types = { ".html": "text/html", ".js": "text/javascript", ".glb": "model/gltf-binary", ".png": "image/png" };
 const server = http.createServer((req, res) => {
@@ -22,14 +22,11 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, args: ["--use-angle=swiftshader", "--use-gl=angle", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--enable-webgl"] });
-const page = await browser.newPage({ viewport: { width: cfg.width ?? 1280, height: cfg.height ?? 720 } });
-const logs = []; page.on("console", (m) => { logs.push(`${m.type()}: ${m.text()}`); if (process.env.HARNESS_LIVE) console.error(`${m.type()}: ${m.text()}`); }); page.on("pageerror", (e) => logs.push("pageerror: " + e.message));
+const page = await browser.newPage({ viewport: { width: cfg.width ?? 1280, height: cfg.height ?? 720 }, deviceScaleFactor: cfg.dpr ?? 1 });
+const logs = []; page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`)); page.on("pageerror", (e) => logs.push("pageerror: " + e.message));
 await page.goto(`http://127.0.0.1:${server.address().port}/`);
 if (cfg.spawnOnly) { console.log(JSON.stringify(await page.evaluate(() => window.__spawn))); await browser.close(); server.close(); process.exit(0); }
 let result; try { result = await page.evaluate((c) => window.__run(c), cfg); } catch (e) { logs.push("run failed: " + e.message); }
-if (Array.isArray(cfg.shots)) { // multi-shot scenes: entry exposes window.__shot(spec); one PNG per shot: <out>-<name>.png
-  result = { setup: result, shots: {} };
-  for (const spec of cfg.shots) { try { result.shots[spec.name] = await page.evaluate((s) => window.__shot(s), spec); await page.screenshot({ path: out.replace(/\.png$/, "") + "-" + spec.name + ".png", timeout: 150000 }); } catch (e) { logs.push("shot " + spec.name + " failed: " + e.message); } }
-} else if (out) await page.screenshot({ path: out, timeout: 150000 });
+if (out) await page.screenshot({ path: out, timeout: 150000 });
 console.log(JSON.stringify({ result, logs: logs.slice(0, 12) }, null, 1));
 await browser.close(); server.close();

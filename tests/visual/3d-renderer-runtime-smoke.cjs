@@ -92,7 +92,7 @@ const sandbox = {
     if (name === "./world-shaders") return loadTypeScript(path.join(root, "apps/web/lib/world-shaders.ts"));
     throw new Error(`Unexpected renderer dependency ${name}`);
   },
-  window: { devicePixelRatio: 1 }, Float32Array, Math, parseInt, Number, Object, Array, String,
+  window: { devicePixelRatio: 1 }, performance, Float32Array, Math, parseInt, Number, Object, Array, String,
 };
 vm.runInNewContext(rendererJavascript, sandbox, { timeout: 10_000, filename: "world-3d-render.ts" });
 const createRenderer = sandbox.exports.createWorld3DRenderer;
@@ -132,7 +132,7 @@ console.log("Event-night lighting smoke passed (night + festival x low/medium/hi
 
 // Verify low-quality mode caps both visible ambient NPC meshes and their floating labels.
 const lowRenderer = createRenderer({ ...canvas, getContext: (name) => name === "webgl" ? gl : null });
-const manyNpcs = Array.from({ length: 8 }, (_, i) => ({
+const manyNpcs = Array.from({ length: 14 }, (_, i) => ({
   id: `npc-${i}`, name: `Student-${i}`, x: 59 + i * 0.2, y: 53 + i * 0.25,
   avatar: { ...avatar, outfit: i % 2 ? "#e8644a" : "#2f6bff" }, npc: true, tagColor: "#8fb7e6",
 }));
@@ -140,9 +140,9 @@ const lowStats = lowRenderer.render({
   width: 1280, height: 720, time: 1.25, camX: 60, camY: 72, meId: "you", quality: "low",
   entities: [{ id: "you", name: "You", x: 60, y: 72, avatar, tagColor: "#2f6bff" }, ...manyNpcs],
 }, labels);
-assert.ok(lowStats.culled >= stats.culled + 5, "low quality should cull NPCs above the configured three-NPC cap");
+assert.ok(lowStats.culled >= stats.culled + 4, "low quality should cull ambient NPC bodies above the 10-body cap (14 supplied)");
 assert.ok(projectedLabels.includes("Student-0") && projectedLabels.includes("Student-2"), "first three NPC labels should remain available");
-assert.ok(!projectedLabels.includes("Student-3") && !projectedLabels.includes("Student-7"), "labels for NPCs above the low-quality cap should be hidden");
+assert.ok(!projectedLabels.includes("Student-3") && !projectedLabels.includes("Student-13"), "labels for NPCs above the low-quality cap should be hidden");
 // Skeleton animation: a walking, running, sitting and emoting player must render finite, stable frames at every quality (leg/arm FK + pelvis plant).
 for (const q of ["low", "medium", "high"]) {
   const r = createRenderer(canvas);
@@ -159,5 +159,5 @@ console.log("Skeleton animation smoke passed (walk/run/sit/dance x low/medium/hi
 lowRenderer.destroy();
 assert.equal(deletedResources, createdResources, "both renderers should release all generated mesh buffers and linked shader programs");
 console.log(`3D renderer runtime smoke passed against current domain data: ${domain.ZONES.length} zones, ${domain.BUILDINGS.length} buildings, ${domain.SOLIDS.length} solids; ${stats.drawn} visible objects, ${stats.culled} culled, ${stats.labels} labels, ${drawCalls} mesh draw calls.`);
-console.log("Quality-budget check passed: low mode limits ambient NPC meshes and labels to three.");
+console.log("Quality-budget check passed: low mode caps ambient NPC bodies at 10 and labels at three.");
 console.log("Note: this uses a mock WebGL API. It validates the renderer's JavaScript path, not GPU shader compilation or browser/device compatibility.");

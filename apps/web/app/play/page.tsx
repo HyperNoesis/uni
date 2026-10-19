@@ -55,8 +55,13 @@ import { createWorld3DRenderer } from "../../lib/world-3d-render";
 import { createAssetStreamer, type AssetStreamer } from "../../lib/asset-loader";
 import { loadSkinnedCharacter, CHARACTER_SETS } from "../../lib/skinned-character";
 
-const EMOTES = { wave: "👋", dance: "💃", laugh: "😂", cheer: "🎉" } as const; // "sit" is a contextual action, not in this strip
-type EmoteKey = keyof typeof EMOTES;
+/** Graphics profile used by the page (dpr for the 2D layer + the auto-quality frame targets). The 3D renderer sets its own pixel ratio per level. */
+const GFX = {
+  low: { ...QUALITY_PROFILES.low, dprCap: 1.5, shadows: true, detail: true, targetFps: 24 },
+  medium: { ...QUALITY_PROFILES.medium, dprCap: 2, detail: true, targetFps: 36 },
+  high: { ...QUALITY_PROFILES.high, dprCap: 2.5, targetFps: 48 },
+} as const;
+const EMOTES = { wave: "👋", dance: "💃", laugh: "😂", cheer: "🎉" } as const; // renderer vocabulary only (gate gestures / server emotes); the on-screen emoji strip was removed
 type Phase = "connecting" | "live" | "reconnecting" | "failed";
 
 interface Remote extends PlayerSnapshot {
@@ -206,16 +211,18 @@ export default function Play() {
     autoQuality.current = next === "auto";
     const lvl = next === "auto" ? detectQuality() : next;
     qualityRef.current = lvl;
-    try { localStorage.setItem("campus.quality", next); } catch { /* storage unavailable */ }
+    try { localStorage.setItem("campus.quality.v2", next); } catch { /* storage unavailable */ }
     window.dispatchEvent(new Event("resize"));
   }
   function detectQuality(): QualityLevel {
     const n = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-    return suggestQuality({ cores: n.hardwareConcurrency, ...(n.deviceMemory !== undefined ? { memoryGb: n.deviceMemory } : {}), ...(n.connection?.saveData !== undefined ? { saveData: n.connection.saveData } : {}) });
+    if (n.connection?.saveData || (n.deviceMemory !== undefined && n.deviceMemory <= 2)) return "low";
+    if ((n.hardwareConcurrency ?? 8) <= 4 || (n.deviceMemory !== undefined && n.deviceMemory <= 4)) return "medium"; // start sharp; the frame-time governor steps down only if the phone really struggles
+    return suggestQuality({ cores: n.hardwareConcurrency, ...(n.deviceMemory !== undefined ? { memoryGb: n.deviceMemory } : {}) });
   }
   useEffect(() => {
     let saved: string | null = null;
-    try { saved = localStorage.getItem("campus.quality"); } catch { /* ignore */ }
+    try { saved = localStorage.getItem("campus.quality.v2"); /* v2: an old saved "low" (often an auto-downgrade) no longer pins the game to blurry graphics */ } catch { /* ignore */ }
     const pick = saved === "low" || saved === "medium" || saved === "high" ? saved : null;
     setQuality(pick ?? "auto");
     autoQuality.current = !pick;
@@ -471,7 +478,7 @@ export default function Play() {
     const acc = { ms: 0, n: 0 };
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, QUALITY_PROFILES[qualityRef.current].dprCap);
+      const dpr = Math.min(window.devicePixelRatio || 1, GFX[qualityRef.current].dprCap);
       canvas.width = Math.round(canvas.clientWidth * dpr);
       canvas.height = Math.round(canvas.clientHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -628,12 +635,12 @@ export default function Play() {
       if (acc.ms >= 1000) {
         const fps = Math.round((acc.n * 1000) / acc.ms);
         if (diagOn.current) setDiag({ fps, ms: +(acc.ms / acc.n).toFixed(1), drawn: st.drawn, culled: st.culled, players: others.current.size + 1, rtt: rttRef.current, bytes: bytesRef.current });
-        const budget = 1000 / (QUALITY_PROFILES[qualityRef.current].targetFps * 0.8);
+        const budget = 1000 / (GFX[qualityRef.current].targetFps * 0.8);
         slow = acc.ms / acc.n > budget ? slow + 1 : 0;
         if (slow >= 3 && autoQuality.current && qualityRef.current !== "low") { slow = 0; gov.noteDowngrade(now); applyQuality(DOWNGRADE[qualityRef.current], true); resize(); }
         else if (autoQuality.current && qualityRef.current !== "high" && !sampler.current.recording) {
           const nxt = UP[qualityRef.current];
-          if (gov.observe(acc.ms / acc.n, 1000 / (QUALITY_PROFILES[nxt].targetFps * 0.8), now)) { applyQuality(nxt, true, true); resize(); }
+          if (gov.observe(acc.ms / acc.n, 1000 / (GFX[nxt].targetFps * 0.8), now)) { applyQuality(nxt, true, true); resize(); }
         }
         acc.ms = 0; acc.n = 0;
       }
@@ -681,17 +688,17 @@ export default function Play() {
 
   function drawFrame(ctx: CanvasRenderingContext2D, labelsCtx: CanvasRenderingContext2D | null, w: number, h: number, scale: number, time: number) {
     const now = Date.now();
-    const q = QUALITY_PROFILES[qualityRef.current];
+    const q = GFX[qualityRef.current];
     const entities: Entity[] = [];
     for (const o of others.current.values()) entities.push({ id: o.id, name: o.name, x: o.rx, y: o.ry, avatar: o.avatar, tagColor: CAMPUSES[o.campus].color, ...(o.emote ? { emote: o.emote } : {}) });
     for (const n of AMBIENT_NPCS) {
       const p = npcAt(n, now);
-      if (Math.hypot(p.x - me.current.x, p.y - me.current.y) > 70) continue; // large world: skip far ambient NPCs
+      if (Math.hypot(p.x - me.current.x, p.y - me.current.y) > 220) continue; // the whole world is visible now: only skip NPCs beyond the far edge
       entities.push({ id: n.id, name: n.name, x: p.x, y: p.y, npc: true, tagColor: "#5b6b94", avatar: { ...DEFAULT_AVATAR, skin: n.skin, outfit: n.outfit } });
     }
     const gsn = gateSnap.current;
     if (gsn) entities.push(...gateEntities(gsn)); // Grand Gate staff: skinned guards (blue, glasses, baton) + one police officer; flagged staff so they are never culled as ambient NPCs
-    if (profile) entities.push({ id: me.current.id || "me", name: profile.displayName, x: me.current.x, y: me.current.y, avatar: profile.avatar, tagColor: CAMPUSES[profile.campus].color, ...(myEmoteNow(now, me.current.x, me.current.y) ? { emote: myEmote.current!.k } : {}), ...gestureView(gsn?.playerGesture) });
+    entities.push({ id: me.current.id || "me", name: profile?.displayName ?? "You", x: me.current.x, y: me.current.y, avatar: profile?.avatar ?? DEFAULT_AVATAR, tagColor: profile ? CAMPUSES[profile.campus].color : "#2f6bff", ...(myEmoteNow(now, me.current.x, me.current.y) ? { emote: myEmote.current!.k } : {}), ...gestureView(gsn?.playerGesture) });
     // camera eases toward the player (smooth follow)
     const cam = camRef.current;
     const vo = viewOverride.current; // dev-only visual camera override (?view=x,y); never affects the server-side position
@@ -709,8 +716,9 @@ export default function Play() {
       try {
         {
           const px = me.current.x, py = me.current.y;
-          // Zones within ~30 units are visible from here: stream them ahead of arrival so buildings never pop in.
-          const near = ZONES.filter((z) => Math.max(z.x - px, 0, px - (z.x + z.w)) ** 2 + Math.max(z.y - py, 0, py - (z.y + z.h)) ** 2 < 900).map((z) => z.id);
+          // The whole campus is visible from here, so every zone streams in (nearest first).
+          const d2 = (z: (typeof ZONES)[number]) => Math.max(z.x - px, 0, px - (z.x + z.w)) ** 2 + Math.max(z.y - py, 0, py - (z.y + z.h)) ** 2;
+          const near = [...ZONES].sort((a, b) => d2(a) - d2(b)).map((z) => z.id); // EVERY zone, nearest first: the whole campus is loaded and visible at once
           assetStreamerRef.current?.setZone(zoneAt(px, py)?.id, near);
         }
         const stats = renderer3dRef.current.render({
@@ -986,19 +994,14 @@ export default function Play() {
       {viewMode === "fp" && renderMode === "3D" && <div className="reticle" aria-hidden="true" />}
       <div className="hud-bottom">
         <div className="left-controls">
-          <button className={`emote sprint${sprintOn ? " on" : ""}`} aria-label="Sprint (hold Shift)" aria-pressed={sprintOn} onClick={toggleSprint}>⚡</button>
+          <button className={`emote sprint${sprintOn ? " on" : ""}`} aria-label="Sprint (hold Shift)" aria-pressed={sprintOn} onClick={toggleSprint}><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.2 2 5 13.4h5.3L9.4 22 18.8 9.8h-5.4z" /></svg></button>
           <div className="stick" onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); onStick(e); }}
             onPointerMove={onStick} onPointerUp={onStick} onPointerCancel={onStick} aria-label="Move">
             <div className="knob" ref={knob} />
           </div>
         </div>
         <div className="actions">
-          <div className="emotes">
-            {(Object.keys(EMOTES) as EmoteKey[]).map((k) => (
-              <button key={k} className="emote" aria-label={k} onClick={() => doEmote(k)}>{EMOTES[k]}</button>
-            ))}
-            {sitOk && <button className="emote" aria-label="Sit" onClick={() => doEmote("sit")}>🪑</button>}
-          </div>
+          {sitOk && <button className="btn big sit-btn" aria-label="Sit down" onClick={() => doEmote("sit")}>Sit</button>}
           {sportSpot && !near && <button className="btn big accent" onClick={() => { keys.current.clear(); setSport(sportSpot); }}>🏀⚽ Play {sportSpot === "football" ? "Football" : "Basketball"}</button>}
           {miniSpot && !sportSpot && !near && <button className="btn big accent" onClick={() => { keys.current.clear(); setMini(miniSpot); }}>{miniSpot === "rhythm" ? "🎵 Play Beat Stage" : "🛵 Play Delivery Dash"}</button>}
           {doorNear && !near && !sportSpot && !miniSpot && <button className="btn big accent" onClick={() => enterDoor(doorNear.id)}>🚪 Enter {doorNear.name}</button>}

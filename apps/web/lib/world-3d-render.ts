@@ -274,6 +274,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             pushTri(px + tx * w, py, pz + tz * w, px - tx * w, py, pz - tz * w, px + dx * L + nx * .18, py + dy * L + ny * .18, pz + dz * L + nz * .18, col);
         }
     };
+    let frameNo = 0;
     let collectCam = false; const camPropKeys = new Set(); const CAM_PROPS = [];
     const drawBaked = (key, fn, vp, cell = 0) => {
         if (!bakedCache.has(key)) {
@@ -327,6 +328,8 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         bakedCache.set(key, cells.length > 0);
     };
     let frustum = new Float32Array(24), shCenter = [0, 0, 0], shReach = 70;
+    let bakeDeadline = 0, bakesThisFrame = 0; // time-sliced baking: the whole world is drawn, but new static meshes are built a few ms per frame so the first view never freezes
+    const bakeOK = () => bakesThisFrame++ === 0 || performance.now() < bakeDeadline;
     const setFrustum = (m) => {
         const row = (i) => [m[i], m[4 + i], m[8 + i], m[12 + i]], r0 = row(0), r1 = row(1), r2 = row(2), r3 = row(3);
         const pl = [[1, r0], [-1, r0], [1, r1], [-1, r1], [1, r2], [-1, r2]];
@@ -343,10 +346,10 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     // Draws the visible chunks of a chunked bake (far cells use the low-quality variant when one exists); off-screen chunks near the shadow focus still cast into the shadow map.
     // Triangle governor: scales the near-detail and draw distances of the big baked chunks so a frame stays inside its quality budget
     // (phone-safe), easing in/out slowly. State is per renderer; `lastFrameTris` is the previous frame's total.
-    const TRI_BUDGET = { low: 52000, medium: 105000, high: 175000 };
+    const TRI_BUDGET = { low: 220000, medium: 380000, high: 600000 }; // the WHOLE world is drawn now (far parts use their light variants), so budgets only trade near-detail distance, never visibility
     let govScale = 1, lastFrameTris = 0;
     let cloudBake = false; // clouds are soft blobs seen from far away: 80-tri spheres at every quality
-    const CULL_D = { low: 80, medium: 105, high: 140 }; // per-quality chunk draw distance (m); fog is ~90% opaque at 165 m
+    const CULL_D = { low: 900, medium: 900, high: 900 }; // chunk draw distance (m): effectively the whole world (frustum culling still applies); far cells use their light variant
     const drawChunks = (key, vp, eyeP, farD, cullD) => {
         const cells = chunkMeshes.get(key); if (!cells) return 0; let n = 0;
         const one = (c, glow) => {
@@ -374,7 +377,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         }
         if (r.tex) { if (shadowOn) for (const k of Object.values(r.tex)) dynShadowP = dynShadowP.concat(k.p); drawTexAvatars(r, vp); }
     };
-    const renderer_chunks = { solids: null, keys: new Map() };
+    const renderer_chunks = { solids: null, keys: new Map(), bOrder: null, bAt: [0, 0], bLast: new Map(), aLast: new Map() };
     const draw = (shape, x, y, z, w, h, d, color, viewProjection, emissive = 0, rot = 0) => {
         if (shape === "sphere" && cloudBake) shape = "lowsphere"; else if (shape === "sphere" && detailQ < 1) shape = Math.max(w, h, d) < .45 ? "lowsphere" : "midsphere"; // tessellation budget: only High keeps the 480-tri sphere
         if (recorder && cpu[shape]) {
@@ -616,10 +619,10 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
     // Depth-only pass from the sun using LAST frame's casters (one-frame lag, texel-snapped so it never shimmers).
     const shadowPass = (center, q) => {
         if (!shadowOn) return;
-        const size = q === "high" ? 2048 : 1024;
+        const size = q === "low" ? 1024 : 2048;
         if (size !== shadowSize) ensureShadow(size);
         if (!shadowOn) return;
-        shadowQ = q === "high" ? 2 : q === "medium" ? 1 : 0;
+        shadowQ = q === "high" ? 2 : 1; // soft rotated-PCF shadows at every quality (the single-tap shadow looked like stair-steps)
         const R = q === "high" ? 48 : q === "medium" ? 40 : 34, texel = 2 * R / size;
         const Ln = Math.hypot(...SUN_DIR), Lv = [SUN_DIR[0] / Ln, SUN_DIR[1] / Ln, SUN_DIR[2] / Ln];
         let rx = Lv[2], rz = -Lv[0]; const rl = Math.hypot(rx, rz) || 1; rx /= rl; rz /= rl; // cross([0,1,0], L)
@@ -663,12 +666,28 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shadowDepth);
         gl.useProgram(program);
     };
+    // Third-person "game" camera: over-the-shoulder, a little above the head, aimed ahead of the avatar so you always see your character from behind.
+    // Only buildings block it (poles/trunks never pull it into your body); when a wall is behind you it slides in but never closer than 1.9 m, then lifts up and looks down instead.
+    const chaseView = (wi, walls) => {
+        const h = Number.isFinite(wi.heading) ? wi.heading : 0, lk = Math.max(-1.25, Math.min(1.25, Number.isFinite(wi.look) ? wi.look : 0)), sp = Math.sin(lk * .8);
+        const fx = Math.sin(h), fz = Math.cos(h), rx = -Math.cos(h), rz = Math.sin(h), SHOULDER = .26, DIST = 3.7;
+        const wallAt = (x, y, z) => { for (const b of walls) if (x > b.x - .3 && x < b.x + b.w + .3 && z > b.y - .3 && z < b.y + b.h + .3 && y < b.height + .3) return true; return false; };
+        const pivot = [wi.x, 1.55, wi.y];
+        const place = (d) => [pivot[0] - fx * d + rx * SHOULDER, Math.max(.6, 1.55 + .62 - sp * d * .75), pivot[2] - fz * d + rz * SHOULDER];
+        let want = DIST, clear = 1;
+        if (wallAt(...place(DIST))) { let lo = 1.9, hi = DIST; if (wallAt(...place(lo))) { want = lo; } else { for (let k = 0; k < 9; k++) { const m = (lo + hi) / 2; if (wallAt(...place(m))) hi = m; else lo = m; } want = lo; } clear = want / DIST; }
+        camClear += (clear - camClear) * (clear < camClear ? .55 : .07);
+        const d = Math.max(1.9, DIST * camClear), e = place(d); e[1] += (1 - camClear) * 1.1; // pinned against a wall: rise a little and look down onto the avatar
+        const target = [wi.x + fx * 7 + rx * SHOULDER, 1.05 + sp * 6, wi.y + fz * 7 + rz * SHOULDER];
+        return { eye: e, target, clearance: camClear };
+    };
     const render = (input, overlay) => {
+        bakesThisFrame = 0; bakeDeadline = performance.now() + (frameNo < 3 ? 40 : 9); frameNo++;
         const q = input.quality ?? "medium";
-        detailQ = (input.quality ?? "medium") === "high" ? 1 : (input.quality ?? "medium") === "low" ? 0 : .6;
-        { const bud = TRI_BUDGET[input.quality ?? "medium"] ?? 105000; govScale = lastFrameTris > bud ? Math.max(.12, govScale * (lastFrameTris > bud * 1.25 ? .7 : .88)) : lastFrameTris < bud * .8 ? Math.min(1, govScale * 1.02) : govScale; }
+        detailQ = (input.quality ?? "medium") === "high" ? 1 : .6; // material detail textures on at every quality
+        { const bud = TRI_BUDGET[input.quality ?? "medium"] ?? 105000; govScale = lastFrameTris > bud ? Math.max(.45, govScale * (lastFrameTris > bud * 1.25 ? .8 : .93)) : lastFrameTris < bud * .8 ? Math.min(1, govScale * 1.02) : govScale; }
         calls = 0; trisFrame = 0; for (const k in callBy) delete callBy[k]; buckets.clear(); shadowBuckets.clear();
-        pixelRatioCap = q === "low" ? 0.85 : q === "high" ? 1.5 : 1.2;
+        pixelRatioCap = q === "low" ? 1.4 : q === "high" ? 2.25 : 1.8; // was .85 / 1.2 / 1.5: a phone at DPR 2.6 was rendered at a third of its pixels and looked blurry
         const dpr = Math.min(window.devicePixelRatio || 1, pixelRatioCap);
         if (canvas.width !== Math.round(input.width * dpr) || canvas.height !== Math.round(input.height * dpr))
             resize();
@@ -691,7 +710,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             const wi = { x: input.camX, y: input.camY, heading: input.camHeading ?? 0, look: input.camLook ?? 0, bob: input.camBob ?? 0 };
             const camBoxes = CAM_PROPS.length ? CAM_WALLS.concat(CAM_PROPS) : CAM_WALLS;
             if (fpCam) { const c = solveFirstPersonCamera({ ...wi, boxes: CAM_PROPS }); eye = c.eye; target = c.target; fov = FP_FOV; }
-            else { const c = solveChaseCamera({ ...wi, boxes: camBoxes }); camClear += (c.clearance - camClear) * (c.clearance < camClear ? .6 : .1); eye = solveChaseCamera({ ...wi, boxes: [], dist: 4.3 * camClear }).eye; target = c.target; fov = 1.1; }
+            else { const c = chaseView(wi, CAM_WALLS); eye = c.eye; target = c.target; fov = 1.12; }
         } else {
             const base = { camX: input.camX, camY: input.camY, yaw: input.camYaw ?? 0, pitch: input.camPitch ?? DEFAULT_PITCH, zoom: input.zoom ?? 1, worldW: domain_1.WORLD.width, worldH: domain_1.WORLD.height };
             const cam = solveOrbitCamera({ ...base, boxes: domain_1.BUILDINGS });
@@ -699,10 +718,11 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             target = cam.target; eye = solveOrbitCamera({ ...base, boxes: [], scale: camClear }).eye;
         }
         const aspect = Math.max(.2, input.width / input.height);
-        const view = lookAt(eye, target, [0, 1, 0]), proj = perspective(fov, aspect, walkCam ? .12 : .1, walkCam ? 150 : 170), vp = multiply(proj, view);
+        const view = lookAt(eye, target, [0, 1, 0]), proj = perspective(fov, aspect, fpCam ? .16 : walkCam ? .3 : .6, 480), vp = multiply(proj, view);
         // Heading frustum for culling in walk views: anything clearly behind or beside the view cone is skipped (static meshes only; labels/entities have their own rules).
         const hdg = freeCam ? Math.atan2(target[0] - eye[0], target[2] - eye[2]) : walkCam ? (input.camHeading ?? 0) : 0, fwdX = Math.sin(hdg), fwdZ = Math.cos(hdg), halfH = Math.atan(Math.tan(fov / 2) * aspect) + .42;
-        const inCone = (x, z, pad) => { if (!walkCam) return true; const dx = x - eye[0], dz = z - eye[2], d = Math.hypot(dx, dz); if (d <= pad + 6) return true; const ang = Math.acos(Math.max(-1, Math.min(1, (dx * fwdX + dz * fwdZ) / d))); return ang <= halfH + Math.asin(Math.min(1, pad / d)); };
+        const cullBox = { x0: 0, x1: 0, y0: -2, y1: 60, z0: 0, z1: 0 }; // frustum test only (never a distance or a heading cone): anything on screen is drawn, so the whole world is there at once
+        const inCone = (x, z, pad) => { const r = pad + 3; cullBox.x0 = x - r; cullBox.x1 = x + r; cullBox.z0 = z - r; cullBox.z1 = z + r; return chunkVisible(cullBox, eye, 0); };
         const bdHit = slotToName["decor:kn_bd_a"], bdOn = !!(bdHit && meshes[bdHit.name]); // model backdrop streamed in?
         if (skyProg) {
             const fw = [target[0] - eye[0], target[1] - eye[1], target[2] - eye[2]], fl = Math.hypot(...fw) || 1, F = [fw[0] / fl, fw[1] / fl, fw[2] / fl];
@@ -726,7 +746,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         {
             // Surrounding environment (treeline, distant wings, skyline, hills): ONE baked mesh per quality.
             const ekey = "env|" + q + "|" + (bdOn ? 1 : 0);
-            if (!bakedCache.has(ekey)) {
+            if (!bakedCache.has(ekey) && bakeOK()) {
               const bakeEnv = (qq) => {
                 recorder = { p: [], n: [], c: [] };
                 try {
@@ -782,7 +802,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         }
         for (let i = 0; i < 4; i++) { box(103.2, 64.4 + i * 3.8, .5, .35, .45, "#6b5a45", vp, 0); } // spectator benches
         }, vp);
-        const propRadius = q === "low" ? 26 : q === "high" ? 72 : 48;
+        const propRadius = 600; // whole world
         const nearCamera = (x, z, pad = 0) => Math.hypot(x - input.camX, z - input.camY) <= propRadius + pad && inCone(x, z, pad);
         let dressing = 0;
         const flagCols = ["#3675e7", "#ffd166", "#e8644a", "#4ce4d9", "#a15cff", "#ff8fb3", "#65c7ff", "#8bd450", "#ffb24d"];
@@ -810,7 +830,8 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
                 // Initialised before culling; buildings outside the camera radius can increment `culled` below.
         let drawn = 1 + dressing + domain_1.ZONES.length + domain_1.BUILDINGS.length, culled = 0;
         const meE = input.entities.find((e) => e.id === input.meId); // roofs lift off while the player is inside (visual only)
-        for (const b of domain_1.BUILDINGS) {
+        if (!renderer_chunks.bOrder || Math.hypot(input.camX - renderer_chunks.bAt[0], input.camY - renderer_chunks.bAt[1]) > 6) { renderer_chunks.bAt = [input.camX, input.camY]; renderer_chunks.bOrder = domain_1.BUILDINGS.slice().sort((a, b2) => Math.hypot(a.x + a.w / 2 - input.camX, a.y + a.h / 2 - input.camY) - Math.hypot(b2.x + b2.w / 2 - input.camX, b2.y + b2.h / 2 - input.camY)); }
+        for (const b of renderer_chunks.bOrder) {
             if (!nearCamera(b.x + b.w / 2, b.y + b.h / 2, Math.max(b.w, b.h) * .55)) {
                 culled++;
                 continue;
@@ -820,7 +841,9 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             const detailOn = q !== "low" && !facOk && dist < (q === "high" ? 40 : 28);
             if (q !== "low") slabShadow(b.x, b.y - b.height * .65, b.w + b.height * .5, b.h + b.height * .65, vp, .24);
             const roofOn = !(meE && meE.x > b.x - .6 && meE.x < b.x + b.w + .6 && meE.y > b.y - .6 && meE.y < b.y + b.h + .6);
-            const bkey = "baked:" + b.id + "|" + q + "|" + (detailOn ? 1 : 0) + "|" + (facOk ? 1 : 0) + "|" + (roofOn ? 1 : 0);
+            let bkey = "baked:" + b.id + "|" + q + "|" + (detailOn ? 1 : 0) + "|" + (facOk ? 1 : 0) + "|" + (roofOn ? 1 : 0);
+            if (!bakedCache.has(bkey) && !bakeOK()) { const prev = renderer_chunks.bLast.get(b.id); if (prev && bakedCache.get(prev)) bkey = prev; else { culled++; continue; } } // over this frame's bake budget: keep showing the previous variant, build the new one next frame
+            else renderer_chunks.bLast.set(b.id, bkey);
             if (!bakedCache.has(bkey)) {
                 recorder = { p: [], n: [], c: [] };
                 try {
@@ -1025,7 +1048,8 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         for (const z of domain_1.ZONES) {
             if (!nearCamera(z.x + z.w / 2, z.y + z.h / 2, Math.max(z.w, z.h) * .6)) continue;
             const vistaHit = z.id === "gate_road" ? slotToName["decor:gate_pier"] : null, vistaOn = !!(vistaHit && meshes[vistaHit.name]);
-            const akey = "arch:" + z.id + "|" + q + (vistaOn ? "|glb" : "");
+            let akey = "arch:" + z.id + "|" + q + (vistaOn ? "|glb" : "");
+            if (!bakedCache.has(akey) && !bakeOK()) { const prev = renderer_chunks.aLast.get(z.id); if (prev && bakedCache.get(prev)) akey = prev; else continue; } else renderer_chunks.aLast.set(z.id, akey);
             if (!bakedCache.has(akey)) {
               const bakeArch = (qq, cam) => {
                 recorder = { p: [], n: [], c: [] }; collectCam = cam;
@@ -1195,6 +1219,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             const [gx, gz] = cid.split(",").map(Number);
             if (Math.hypot(gx * 30 + 15 - input.camX, gz * 30 + 15 - input.camY) > propRadius + 30) continue;
             const pkey = "props:" + cid + "|" + q + "|" + slotSig;
+            if (!bakedCache.has(pkey) && !bakeOK()) { const ok = renderer_chunks.keys.get(cid); if (ok && bakedCache.get(ok) && meshes[ok]) { draw(ok, 0, 0, 0, 1, 1, 1, "#ffffff", vp); drawn++; if (meshes[ok + "|g"]) draw(ok + "|g", 0, 0, 0, 1, 1, 1, "#ffffff", vp, .15); } continue; }
             if (!bakedCache.has(pkey)) {
                 const old = renderer_chunks.keys.get(cid);
                 if (old) { const om = meshes[old]; if (om) { gl.deleteBuffer(om.p); gl.deleteBuffer(om.n); gl.deleteBuffer(om.c); delete meshes[old]; } bakedCache.delete(old); }
@@ -1230,7 +1255,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             draw("box", bx - cr * .5, by + fl, bz + sr * .5, .9, .05, .3, "#dfe6ee", vp, 0, rt);
         }
         // Campus shuttle: visual-only ambient traffic on Gate Road's west lane (loops 84->146, pausing at the shelter). Drawn in the dynamic batch => no extra call.
-        if (q !== "low" && Math.hypot(52.6 - input.camX, 115 - input.camY) < 70) {
+        if (q !== "low" && Math.hypot(52.6 - input.camX, 115 - input.camY) < 600) {
             const cyc = input.time % 48, run = 20, stop = 4;
             const sx = 52.6, sz = cyc < run ? 146 - (cyc / run) * 36 : cyc < run + stop ? 110 : cyc < 2 * run + stop ? 110 - ((cyc - run - stop) / run) * 30 : -1; // north leg, dwell at the shelter, north leg, off-road hold
             if (sz > 0) {
@@ -1243,7 +1268,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         }
         let npcCount = 0;
         const humans = input.entities.filter(h => !h.npc);
-        const npcLimit = domain_1.QUALITY_PROFILES[q]?.npcs ?? 6;
+        const npcLimit = ({ low: 10, medium: 18, high: 30 })[q] ?? 12; // bodies drawn (labels keep their own, smaller cap)
         // Avatar parts: streamed GLBs anchored to the entity. Each falls back to the code-drawn body when its model is absent.
         let bob = 0;
         const part = (e, slot) => {
@@ -1259,12 +1284,12 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         // Skinned bodies cost ~2.4k triangles each, so only the nearest few avatars (always you) get one; everyone else keeps the box body.
         const handMap = new Map(), gctx = { draw, vp, q, time: input.time };
         const skinSet = new Map(); // id -> true (full body) | false (~900-tri LOD body, same skeleton so animation state is shared)
-        if (character && (q !== "low" || characterLod)) { // Low: only the 3 nearest people (incl. you) get the light 900-tri skinned body
-            const budget = q === "high" ? 12 : q === "low" ? 3 : 6, range = q === "high" ? 40 : q === "low" ? 18 : 26;
+        if (character) { // YOU always get the full skinned body at every quality; the nearest others get the full or the light 900-tri body
+            const budget = q === "high" ? 16 : q === "low" ? 5 : 9, range = q === "high" ? 70 : q === "low" ? 30 : 48;
             const near = input.entities.filter((en) => !(fpCam && en.id === input.meId)).map((en) => ({ id: en.id, d: en.id === input.meId ? -1 : Math.hypot(en.x - input.camX, en.y - input.camY) * (en.staff ? .4 : 1) })).filter((o) => o.d < range).sort((a, b) => a.d - b.d);
-            const hi = q === "low" ? 0 : characterLod ? (q === "high" ? 6 : 3) : budget, total = q === "low" ? 3 : characterLod ? (q === "high" ? 16 : 8) : budget;
+            const hi = characterLod ? (q === "high" ? 8 : q === "low" ? 1 : 4) : budget, total = characterLod ? (q === "high" ? 26 : q === "low" ? 8 : 14) : budget;
             for (let i = 0; i < Math.min(total, near.length); i++) skinSet.set(near[i].id, i < hi);
-            for (const en of input.entities) if (en.staff) skinSet.set(en.id, Math.hypot(en.x - input.camX, en.y - input.camY) < (q === "low" ? 9 : 16) || !characterLod); // gate staff are ALWAYS real skinned bodies (never the box fallback): full body up close, light body further away
+            for (const en of input.entities) if (en.staff) skinSet.set(en.id, Math.hypot(en.x - input.camX, en.y - input.camY) < (q === "low" ? 12 : 22) || !characterLod); // gate staff are ALWAYS real skinned bodies (never the box fallback): full body up close, light body further away
         }
         for (const e of input.entities) {
             if (fpCam && e.id === input.meId) continue; // you are the camera: no body inside your own eyes
@@ -1418,7 +1443,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         }
         let probes = null;
         if (input.gate) { // Grand Gate entry check: shut car gate, wicket, patrol car, and the pass card travelling between hands
-            const g = input.gate, near = Math.hypot(60 - input.camX, 135 - input.camY) < (q === "low" ? 50 : 80), pk = slotToName["decor:gate_pier"];
+            const g = input.gate, near = Math.hypot(60 - input.camX, 135 - input.camY) < 600, pk = slotToName["decor:gate_pier"];
             if (near && pk && meshes[pk.name]) drawn += drawGateLeaves(gctx, g.wicket ?? 0);
             if (near && g.car) { const hk = slotToName["decor:gate_police_hilux"]; drawn += drawPoliceCar(gctx, g.car, hk && meshes[hk.name] ? { name: hk.name, size: hk.entry.size, yOffset: hk.entry.yOffset ?? 0 } : null); }
             const pv = g.pass, me = handMap.get(input.meId);
@@ -1440,7 +1465,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
         }
         { // Main gate leaves (iron bars + gold rail) swing open about the pillars; input.gateOpen 0..1 (visual only)
             const go = Math.max(0, Math.min(1, input.gateOpen ?? 0));
-            if (Math.hypot(60 - input.camX, 71.7 - input.camY) < (q === "low" ? 30 : 45)) {
+            if (Math.hypot(60 - input.camX, 71.7 - input.camY) < 600) {
                 const a = go * 1.35, L = 6.6;
                 for (const s of [-1, 1]) {
                     const hx = s < 0 ? 53.4 : 66.6, rot = s < 0 ? a : Math.PI - a, dx = Math.cos(rot), dz = -Math.sin(rot);

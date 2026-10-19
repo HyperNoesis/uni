@@ -17,6 +17,8 @@ export interface StreamerOptions {
 
 export function createAssetStreamer(opts: StreamerOptions) {
   const { manifest, sink, onStatus } = opts;
+  // The whole campus is visible at once now, so every zone's models stay resident. The manifest budget (4 MB / 100k tris) was sized for 'current zone only'.
+  const budget = { maxBytes: Math.max(manifest.residentBudget.maxBytes, 24_000_000), maxTriangles: Math.max(manifest.residentBudget.maxTriangles, 450_000) };
   const doFetch = opts.fetchFn ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
   const keepPrevious = opts.keepPrevious ?? 1;
   const loaded = new Map<string, { entry: AssetEntry; bytes: number; triangles: number; lastUsed: number }>();
@@ -47,8 +49,8 @@ export function createAssetStreamer(opts: StreamerOptions) {
       const mesh = parseGlb(buf, { maxTriangles: lim.maxTriangles });
       if (destroyed || !keepNow.has(entry.id)) return; // player already left the zone
       // Make room under the resident budget, never evicting what the current zone still needs.
-      while ((resident().bytes + buf.byteLength > manifest.residentBudget.maxBytes || resident().triangles + mesh.triangles > manifest.residentBudget.maxTriangles) && evictOldest(wanted));
-      if (resident().bytes + buf.byteLength > manifest.residentBudget.maxBytes || resident().triangles + mesh.triangles > manifest.residentBudget.maxTriangles)
+      while ((resident().bytes + buf.byteLength > budget.maxBytes || resident().triangles + mesh.triangles > budget.maxTriangles) && evictOldest(wanted));
+      if (resident().bytes + buf.byteLength > budget.maxBytes || resident().triangles + mesh.triangles > budget.maxTriangles)
         throw new Error("resident budget exhausted");
       sink.add(entry, mesh);
       loaded.set(entry.id, { entry, bytes: buf.byteLength, triangles: mesh.triangles, lastUsed: ++tick });

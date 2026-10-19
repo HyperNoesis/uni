@@ -39,3 +39,7 @@ kbd{font:600 11px/1 var(--font);padding:3px 6px;border-radius:6px;background:rgb
 @media (min-width:900px){.gate-card{--tx:0}}
 @keyframes gate-fade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.gate-tap span,.gate-card,.gate-intro-title,.gate-controls,.gate-welcome{animation:none}}
+
+/* Play HUD: the emoji strip was removed; Sit is a plain pill and the sprint button carries an SVG bolt (no emoji glyphs). */
+.sit-btn { min-width: 76px; }
+.emote.sprint svg { display: block; margin: auto; }
