@@ -3,7 +3,7 @@
  * Baked by the renderer into ONE mesh per quality (1 draw call). Seeded + deterministic; no collision. */
 import type { P, Quality } from "./world-architecture";
 import { leafFringe } from "./world-flora";
-const W = 240, H = 168;
+const W = 240, H = 192;
 const rnd = (a: number, b: number) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
 const CONC = ["#d8d2c4", "#cfc8b8", "#e4d4b9", "#c9c2b4"], GLASS = "#a8e3f6", TINT = ["#8fb4cf", "#9db8c9", "#b5c6d4"];
 const GREENS = [["#2b6f33", "#4a9040"], ["#2f6a34", "#558f3e"], ["#26623a", "#437f45"], ["#3a7a38", "#6aa84f"]] as const;

@@ -6,7 +6,7 @@
     "x": 48,
     "y": 80,
     "w": 24,
-    "h": 88
+    "h": 112
   },
   "color": "#477a60",
   "ambientAudio": "town",
@@ -14,7 +14,7 @@
     {
       "id": "forecourt",
       "x": 60,
-      "y": 160,
+      "y": 184,
       "default": true
     }
   ],
@@ -67,14 +67,14 @@
       "x": 19.6,
       "y": 132.8,
       "w": 0.8,
-      "h": 17.2
+      "h": 59.2
     },
     {
       "kind": "wall",
       "x": 99.6,
       "y": 132.8,
       "w": 0.8,
-      "h": 17.2
+      "h": 59.2
     },
     {
       "kind": "wall",
@@ -108,12 +108,12 @@
       "kind": "wall",
       "x": 50,
       "y": 131.85,
-      "w": 17.1,
+      "w": 15.9,
       "h": 0.3
     },
     {
       "kind": "wall",
-      "x": 67.1,
+      "x": 65.9,
       "y": 131.8,
       "w": 0.5,
       "h": 0.4
@@ -638,11 +638,6 @@
       "y": 149
     },
     {
-      "model": "gate_forecourt",
-      "x": 60,
-      "y": 157.5
-    },
-    {
       "model": "gate_lamp_tall",
       "x": 49.2,
       "y": 155
@@ -704,6 +699,208 @@
       "model": "palm_royal_tall",
       "x": 74.5,
       "y": 166
+    },
+    {
+      "model": "gate_forecourt",
+      "x": 60,
+      "y": 157.5
+    },
+    {
+      "model": "gate_promenade",
+      "x": 60,
+      "y": 178.5
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 173
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 173,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 172
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 172
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 179
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 179,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 178
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 178
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 185
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 185,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 184
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 184
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 49.2,
+      "y": 191
+    },
+    {
+      "model": "gate_lamp_tall",
+      "x": 70.8,
+      "y": 191,
+      "rot": 3.142
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 45.5,
+      "y": 190
+    },
+    {
+      "model": "palm_royal_tall",
+      "x": 74.5,
+      "y": 190
+    },
+    {
+      "model": "bench_slat",
+      "x": 40,
+      "y": 171,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 80,
+      "y": 171,
+      "rot": -1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 40,
+      "y": 177,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 80,
+      "y": 177,
+      "rot": -1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 40,
+      "y": 183,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 80,
+      "y": 183,
+      "rot": -1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 40,
+      "y": 189,
+      "rot": 1.571
+    },
+    {
+      "model": "bench_slat",
+      "x": 80,
+      "y": 189,
+      "rot": -1.571
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 30,
+      "y": 168
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 90,
+      "y": 168
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 30,
+      "y": 177
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 90,
+      "y": 177
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 30,
+      "y": 186
+    },
+    {
+      "model": "gate_garden_bed",
+      "x": 90,
+      "y": 186
+    },
+    {
+      "model": "tree_neem",
+      "x": 24,
+      "y": 160
+    },
+    {
+      "model": "tree_neem",
+      "x": 96,
+      "y": 160
+    },
+    {
+      "model": "tree_neem",
+      "x": 24,
+      "y": 172
+    },
+    {
+      "model": "tree_neem",
+      "x": 96,
+      "y": 172
+    },
+    {
+      "model": "tree_neem",
+      "x": 24,
+      "y": 184
+    },
+    {
+      "model": "tree_neem",
+      "x": 96,
+      "y": 184
     }
   ]
 }

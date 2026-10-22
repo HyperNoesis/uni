@@ -33,12 +33,17 @@ export function drawGateLeaves(c: Ctx, open: number): number {
   const sx = (wk.x0 + wk.x1) / 2, sz = Z + 0.24;
   put("box", sx, 3.45, sz - 0.1, 1.5, 1.0, 0.08, "#2f6bff", 1); put("sphere", sx, 3.78, sz, 0.2, 0.2, 0.2, "#ffffff", 1); put("box", sx, 3.5, sz, 0.2, 0.42, 0.05, "#ffffff", 1);
   put("box", sx - 0.13, 3.14, sz, 0.07, 0.32, 0.05, "#ffffff", 1); put("box", sx + 0.13, 3.14, sz, 0.07, 0.32, 0.05, "#ffffff", 1);
-  // wicket leaf, hinged at the tower face, swings toward the campus side
-  const a = Math.min(1, Math.max(0, open)) * 1.75, L = wk.x1 - wk.x0, hx = wk.hinge, rot = Math.PI - a, dx = -Math.cos(a), dz = -Math.sin(a), wh = wk.height;
-  const at = (u: number, y: number, w: number, h: number, d: number, col: string, em = 0) => put("box", hx + dx * u, y, Z + dz * u, w, h, d, col, em, rot);
-  at(L / 2, 0.45, L, 0.9, 0.14, NAVY); at(L / 2, 0.06, L, 0.12, 0.18, STEEL); at(L / 2, 1.5, L, 0.1, 0.2, GOLD); at(L / 2, wh - 0.05, L, 0.12, 0.2, STEEL);
-  for (let u = 0.18; u < L - 0.1; u += q === "low" ? 0.4 : 0.2) at(u, 1.8, 0.05, 1.8, 0.07, STEEL);
-  at(0.05, wh / 2, 0.12, wh, 0.18, STEEL); at(L - 0.05, wh / 2, 0.14, wh, 0.2, GOLD);
+  // two-leaf wicket: one leaf hinged on the pier, one on the tower face; both swing inward (toward the campus) and fold back along the posts, leaving the full opening clear
+  const ang = Math.min(1, Math.max(0, open)) * 1.62, W = wk.x1 - wk.x0, L = W / 2 - 0.03, wh = wk.height;
+  for (const side of [-1, 1] as const) {
+    const hx = side < 0 ? wk.x0 : wk.x1, rot = side < 0 ? -ang : Math.PI + ang, dx = Math.cos(rot), dz = -Math.sin(rot);
+    const at = (u: number, y: number, w: number, h: number, d: number, col: string, em = 0) => put("box", hx + dx * u, y, Z + dz * u, w, h, d, col, em, rot);
+    at(L / 2, 0.45, L, 0.9, 0.14, NAVY); at(L / 2, 0.06, L, 0.12, 0.18, STEEL); at(L / 2, 1.5, L, 0.1, 0.2, GOLD); at(L / 2, wh - 0.05, L, 0.12, 0.2, STEEL);
+    for (let u = 0.16; u < L - 0.08; u += q === "low" ? 0.4 : 0.2) at(u, 1.8, 0.05, 1.8, 0.07, STEEL);
+    at(0.05, wh / 2, 0.12, wh, 0.18, STEEL); at(L - 0.05, wh / 2, 0.14, wh, 0.2, GOLD);
+  }
+  // entry button + status lamp on the pier face (the gate man presses it): amber while shut, green when open
+  const bx = GATE.pier.x0 - 0.22; put("box", bx, 1.15, Z + 0.3, 0.16, 0.26, 0.08, STEEL); put("sphere", bx, 1.2, Z + 0.35, 0.09, 0.09, 0.09, open > 0.5 ? "#53e08a" : "#ffb347", 1);
   return n;
 }
 
@@ -110,15 +115,19 @@ export function drawThumb(c: Ctx, hand: V3, skin: string, yaw: number) {
   const { draw, vp } = c; draw("sphere", hand[0], hand[1], hand[2], 0.12, 0.1, 0.12, skin, vp); draw("box", hand[0] + Math.sin(yaw) * 0.0, hand[1] + 0.085, hand[2] + Math.cos(yaw) * 0.0, 0.04, 0.11, 0.045, skin, vp, 0, yaw);
 }
 
-// ---- the Campus Pass: a real card in the world (navy body, gold rule, photo, lines, barcode, verified bar) ----
-export function drawPass(c: Ctx, at: V3, yaw: number, o: { scale: number; glow: number; verified: number; scan: number; skin: string; outfit: string }) {
-  const { draw, vp } = c, s = o.scale, cy = Math.cos(yaw), sy = Math.sin(yaw);
-  const P = (ox: number, oy: number, oz: number, w: number, h: number, d: number, col: string, em = 0) => draw("box", at[0] + (ox * cy + oz * sy) * s, at[1] + oy * s, at[2] + (-ox * sy + oz * cy) * s, w * s, h * s, d * s, col, vp, em, yaw);
-  if (o.glow > 0.02) P(0, 0, -0.012, 0.4, 0.27, 0.01, o.verified > 0.5 ? "#7dffb0" : "#8fe8ff", 1);       // pulsing halo = "tap me"
-  P(0, 0, 0, 0.34, 0.21, 0.014, NAVY); P(0, 0.083, 0.009, 0.34, 0.04, 0.006, GOLD);
-  P(-0.105, -0.012, 0.01, 0.085, 0.1, 0.006, o.skin); P(-0.105, -0.045, 0.011, 0.085, 0.04, 0.006, o.outfit);          // photo block
-  for (let i = 0; i < 3; i++) P(0.055, 0.028 - i * 0.03, 0.01, 0.16 - i * 0.03, 0.014, 0.005, "#e9eef7");              // name lines
-  for (let i = 0; i < 12; i++) P(-0.14 + i * 0.024, -0.083, 0.01, 0.01 + ((i * 7) % 3) * 0.005, 0.03, 0.005, "#cfd6e2"); // barcode
-  if (o.verified > 0.02) P(0.12, -0.075, 0.012, 0.07 * o.verified, 0.028, 0.006, "#4be28a", 1);                       // verified bar grows
-  if (o.scan > 0 && o.scan < 1) P(-0.16 + o.scan * 0.32, 0, 0.013, 0.012, 0.21, 0.004, "#aef5ff", 1);                  // scanner sweep
+// ---- the Campus Pass: a thin, real-sized card (0.20 x 0.125 m) held in a hand. The GLB carries the Rejuvini mark; photo, scan and verified bar are drawn on top. ----
+export interface CardMesh { name: string; size: { w: number; h: number; d: number }; yOffset?: number }
+export const CARD_W = 0.2, CARD_H = 0.125;
+/** `at` = card centre, `yaw` = heading of the card's FRONT normal (the face looks toward heading yaw). Vertical card, long edge horizontal. */
+export function drawPass(c: Ctx, at: V3, yaw: number, o: { verified: number; scan: number; skin: string; outfit: string; glow?: number }, mesh?: CardMesh | null) {
+  const { draw, vp } = c, cy = Math.cos(yaw), sy = Math.sin(yaw);
+  // card-local (u right as seen from the front, v up, w out of the front face) -> world
+  const P = (u: number, v: number, w: number, bw: number, bh: number, bd: number, col: string, em = 0) => draw("box", at[0] + u * cy + w * sy, at[1] + v, at[2] - u * sy + w * cy, bw, bh, bd, col, vp, em, yaw);
+  if (mesh) draw(mesh.name, at[0], at[1], at[2], CARD_W, CARD_H, 0.006, "#ffffff", vp, 0, yaw); else { P(0, 0, 0, CARD_W, CARD_H, 0.006, "#14224a"); P(0, 0.05, 0.004, CARD_W - 0.01, 0.012, 0.002, GOLD); }
+  const f = 0.0045;
+  P(0.058, -0.004, f, 0.05, 0.062, 0.0015, o.skin); P(0.058, -0.04, f, 0.05, 0.02, 0.0015, o.outfit); // photo block
+  for (let i = 0; i < 12; i++) P(-0.085 + i * 0.0085, -0.049, f, 0.004 + ((i * 7) % 3) * 0.0015, 0.014, 0.0012, "#cfd6e2"); // barcode
+  if (o.verified > 0.02) P(-0.02 + 0.045 * o.verified / 2, -0.028, f + 0.0006, 0.045 * o.verified, 0.009, 0.0012, "#4be28a", 1);                      // verified bar grows
+  if (o.scan > 0 && o.scan < 1) P(-0.095 + o.scan * 0.19, 0, f + 0.001, 0.004, CARD_H, 0.001, "#aef5ff", 1);                                           // scanner sweep
+  if ((o.glow ?? 0) > 0.02) P(0, 0, -0.004, CARD_W + 0.012, CARD_H + 0.012, 0.002, "#8fe8ff", 1);                                                       // faint rim = "ready"
 }

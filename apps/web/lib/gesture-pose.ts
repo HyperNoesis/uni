@@ -3,7 +3,7 @@
 // depend on the rig's local axis conventions. Pure and strict-typed; covered by gesture-pose.test.ts against the real GLB.
 import { worldMatrices, type Pose, type SkinnedModel } from "./skinned-glb";
 
-export type GestureKind = "stop" | "reach" | "hold" | "give" | "take" | "inspect" | "thumbs" | "beckon";
+export type GestureKind = "stop" | "reach" | "hold" | "give" | "take" | "inspect" | "thumbs" | "beckon" | "wave";
 type V = [number, number, number];
 /** Directions in body space as [outward(from the shoulder's own side), up, forward]. */
 const SPEC: Record<GestureKind, { upper: V; fore: V }> = {
@@ -15,6 +15,7 @@ const SPEC: Record<GestureKind, { upper: V; fore: V }> = {
   inspect: { upper: [0.3, -0.75, 0.4], fore: [-0.35, 0.65, 0.65] },
   thumbs: { upper: [0.38, -0.68, 0.5], fore: [0.22, 0.5, 0.84] },
   beckon: { upper: [0.45, -0.5, 0.7], fore: [-0.3, 0.2, 0.9] },
+  wave: { upper: [0.55, 0.1, 0.35], fore: [0.1, 0.92, 0.25] }, // friendly hand raised at shoulder height, gentle sway
 };
 const norm = (v: V): V => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 type Q = [number, number, number, number];
@@ -58,6 +59,7 @@ export function applyGesture(m: SkinnedModel, pose: Pose, kind: GestureKind, w: 
   const sp = SPEC[kind], k = Math.min(1, w), outward = rig.side * (arm === "R" ? 1 : -1) * (arm === "R" ? 1 : 1);
   const bodyDir = (v: V): V => norm([v[0] * outward, v[1], v[2]]);
   let fore = sp.fore; if (kind === "beckon") fore = [fore[0] + 0.5 * Math.sin(time * 6.5), fore[1] + 0.25 * Math.sin(time * 6.5 + 1), fore[2]];
+  else if (kind === "wave") fore = [fore[0] + 0.38 * Math.sin(time * 7), fore[1], fore[2]];
   const aim = (joint: number, child: number, want: V) => {
     worldMatrices(m, pose, rig.world); worldQuats(m, pose, rig.wq);
     const a = pos(rig.world, joint), b = pos(rig.world, child), cur = norm([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);

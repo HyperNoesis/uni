@@ -24,6 +24,21 @@ const C = {
 };
 const WARM = "#ffe2a0";
 
+// ---- Rejuvini logo: traced from the owner's artwork (scripts/brand/trace-logo.py -> apps/web/lib/brand-logo.json). Unit: glyph ring radius 1, +y up.
+const LOGO = JSON.parse(fs.readFileSync(new URL("../../apps/web/lib/brand-logo.json", import.meta.url), "utf8"));
+const LOGO_COL = { glyphWhite: hex("#f4f7ff"), glyphBlue: hex("#2f7df6"), wordWhite: hex("#f4f7ff"), techBlue: hex("#2f7df6") };
+/** Flat logo decal on a vertical face (facing +z when dir = 1, -z when dir = -1, mirrored so it reads correctly from that side). layers: which logo layers. */
+function logoWall(m, cx, cy, z, s, dir = 1, layers = ["glyphWhite", "glyphBlue"], glow = false) {
+  for (const name of layers) {
+    const L = LOGO.layers[name], col = glow && name.endsWith("White") ? hex("#ffffff").map((v) => v + 2) : LOGO_COL[name], V = L.vertices;
+    for (const t of L.triangles) m.tri(...t.map((i) => [cx + dir * V[i][0] * s, cy + V[i][1] * s, z]), [0, 0, dir], col);
+  }
+}
+/** Flat logo decal lying on the ground at height y, centred (cx,cz). Logo "up" points to -z (north), so it reads upright to people arriving from the south. */
+function logoGround(m, cx, y, cz, s, layers = ["glyphWhite", "glyphBlue", "wordWhite", "techBlue"]) {
+  for (const name of layers) { const L = LOGO.layers[name], V = L.vertices; for (const t of L.triangles) m.tri(...t.map((i) => [cx + V[i][0] * s, y, cz - V[i][1] * s]), [0, 1, 0], LOGO_COL[name]); }
+}
+
 class Mesh {
   constructor(name, seed = 1, grad = true) { this.name = name; this.P = []; this.N = []; this.Cc = []; this.I = []; this.s = seed; this.grad = grad; }
   r() { this.s = (this.s * 16807) % 2147483647; return this.s / 2147483647; }
@@ -34,6 +49,14 @@ class Mesh {
     const base = this.P.length / 3;
     for (const p of [a, b, c, d]) { this.P.push(p[0], p[1], p[2]); this.N.push(n[0], n[1], n[2]); this.Cc.push(col[0], col[1], col[2]); }
     this.I.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  /** One flat triangle with a fixed facing normal n (winding is corrected to match). */
+  tri(a, b, c, n, col) {
+    const cr = [(b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]), (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]), (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])];
+    if (cr[0] * n[0] + cr[1] * n[1] + cr[2] * n[2] < 0) [b, c] = [c, b];
+    const base = this.P.length / 3;
+    for (const p of [a, b, c]) { this.P.push(p[0], p[1], p[2]); this.N.push(n[0], n[1], n[2]); this.Cc.push(col[0], col[1], col[2]); }
+    this.I.push(base, base + 1, base + 2);
   }
   /** Box centred in x/z at (cx,cz), bottom at y0. Optional rz (rotate about Z through box centre) for diagonal strokes. */
   bx(cx, y0, cz, w, h, d, col, o = {}) {
@@ -192,10 +215,9 @@ function span() {
   for (const dz of [-1, 1]) { m.bx(0, 10.85, dz * 2.55, 15.2, 0.35, 0.34, C.navy); m.bx(0, 10.1, dz * 2.1, 14.6, 0.06, 0.2, lit(WARM)); }
   // crest
   m.bx(0, 15.75, 0, 3.0, 0.7, 1.0, C.stone); m.bx(0, 16.45, 0, 2.2, 0.15, 0.9, C.gold);
-  m.cyl(0, 17.9, 0, 1.85, 0.5, 32, C.gold, "z"); m.cyl(0, 17.9, 0, 1.6, 0.58, 32, C.navy, "z"); m.cyl(0, 17.9, 0, 1.28, 0.64, 32, C.gold, "z"); m.cyl(0, 17.9, 0, 1.12, 0.68, 32, C.navyDk, "z");
-  for (let k = 0; k < 5; k++) { const a = Math.PI / 2 + (k * 2 * Math.PI) / 5; m.seg(0, 17.9, Math.cos(a) * 0.95, 17.9 + Math.sin(a) * 0.95, 0.28, 0.74, -0.37, lit("#ffd35a")); }
-  m.cyl(0, 17.9, 0, 0.3, 0.78, 12, lit("#ffe9a8"), "z");
-  m.cyl(0, 17.9, 0, 1.9, 0.12, 32, C.goldDk, "z");
+  // crest: gold ring, black disc and the Rejuvini mark on BOTH faces (mirrored on the campus side so it reads correctly from either side)
+  m.cyl(0, 17.9, 0, 1.9, 0.12, 40, C.goldDk, "z"); m.cyl(0, 17.9, 0, 1.85, 0.52, 40, C.gold, "z"); m.cyl(0, 17.9, 0, 1.62, 0.6, 40, C.navy, "z"); m.cyl(0, 17.9, 0, 1.5, 0.64, 40, hex("#05070d"), "z");
+  for (const dir of [1, -1]) logoWall(m, 0, 17.9 + 0.07, dir * 0.335, 1.12, dir, ["glyphWhite", "glyphBlue"], true);
   return m;
 }
 
@@ -205,11 +227,18 @@ const G = {
   N: [[[0, 0], [0, 1]], [[0, 1], [1, 0]], [[1, 0], [1, 1]]], I: [[[.5, 0], [.5, 1]]], T: [[[0, 1], [1, 1]], [[.5, 1], [.5, 0]]],
   Y: [[[0, 1], [.5, .5]], [[1, 1], [.5, .5]], [[.5, .5], [.5, 0]]], H: [[[0, 0], [0, 1]], [[1, 0], [1, 1]], [[0, .5], [1, .5]]],
   E: [[[1, 1], [0, 1], [0, 0], [1, 0]], [[0, .5], [.8, .5]]],
+  R: [[[0, 0], [0, 1], [.68, 1], [.9, .93], [1, .8], [1, .66], [.9, .54], [.68, .47], [0, .47]], [[.52, .47], [1, 0]]],
+  J: [[[1, 1], [1, .3], [.92, .12], [.75, .02], [.5, 0], [.25, .02], [.08, .12], [0, .3]]],
+  V: [[[0, 1], [.5, 0], [1, 1]]],
+  C: [[[1, .82], [.9, .93], [.72, .99], [.5, 1], [.28, .98], [.1, .88], [0, .7], [0, .3], [.1, .12], [.28, .02], [.5, 0], [.72, .02], [.9, .08], [1, .2]]],
+  A: [[[0, 0], [.5, 1], [1, 0]], [[.2, .36], [.8, .36]]],
+  M: [[[0, 0], [0, 1], [.5, .32], [1, 1], [1, 0]]],
+  P: [[[0, 0], [0, 1], [.7, 1], [.92, .93], [1, .8], [1, .66], [.92, .53], [.7, .46], [0, .46]]],
   G: [[[1, .78], [.9, .9], [.72, .98], [.5, 1], [.28, .98], [.1, .88], [0, .7], [0, .3], [.1, .12], [.28, .02], [.5, 0], [.75, .02], [.92, .12], [1, .3], [1, .48], [.55, .48]]],
   S: [[[1, .85], [.85, .96], [.65, 1], [.4, 1], [.18, .96], [.05, .84], [.05, .65], [.2, .54], [.5, .5], [.8, .46], [.95, .35], [.95, .16], [.82, .04], [.6, 0], [.35, 0], [.15, .04], [0, .15]]],
 };
-function letters(text = "UNITY HEIGHTS") {
-  const m = new Mesh("gate_letters_grand", 31, false), K = 0.9, H = 1.9 * K, th = 0.26 * K, dep = 0.3, W = { I: 0.34 * K, T: 0.8 * K, S: 0.8 * K, E: 0.72 * K, U: 0.82 * K, N: 0.86 * K, Y: 0.86 * K, H: 0.86 * K, G: 0.86 * K }, gap = 0.27, sp = 0.65;
+function letters(text = "REJUVINI CAMPUS") {
+  const m = new Mesh("gate_letters_grand", 31, false), K = 0.82, H = 1.9 * K, th = 0.26 * K, dep = 0.3, W = { I: 0.34 * K, T: 0.8 * K, S: 0.8 * K, E: 0.72 * K, U: 0.82 * K, N: 0.86 * K, Y: 0.86 * K, H: 0.86 * K, G: 0.86 * K, R: 0.84 * K, J: 0.72 * K, V: 0.9 * K, C: 0.82 * K, A: 0.92 * K, M: 1.02 * K, P: 0.8 * K }, gap = 0.27, sp = 0.65;
   let x = 0; const items = [];
   for (const ch of text) { if (ch === " ") { x += sp; continue; } const w = W[ch] ?? 0.8 * K; items.push([ch, x, w]); x += w + gap; }
   const total = x - gap, off = -total / 2, col = lit("#fff3d0");
@@ -347,7 +376,37 @@ function plaza() {
   return m;
 }
 
-const kit = [tower(), span(), letters(), wing(), pavilion(), mast(), lamp(), kiosk(), monument(), garden(), pool(), plaza()];
+// ---------------------------------------------------------------- PROMENADE (the extended arrival court) 80 x 27, centre (0,0); the brand medallion lies on the aisle
+function promenade() {
+  const m = new Mesh("gate_promenade", 131, false), W = 80, D = 27, z0 = -D / 2, y = 0.07;
+  m.bx(0, 0, 0, W, y, D, C.terrazzo, { j: 0 });
+  for (let i = 0; i < 6; i++) m.bx(0, y, z0 + 1.4 + i * 4.4, W - 1.2, 0.012, 1.6, C.terrazzoDk, { j: 0 });
+  for (let i = 0; i < 110; i++) m.bx((m.r() - 0.5) * (W - 1), y + 0.012, (m.r() - 0.5) * (D - 1), 0.18 + m.r() * 0.16, 0.012, 0.16 + m.r() * 0.14, [C.stoneDk, C.terracotta, C.glassDk, C.terrazzoDk][i % 4], { j: 0 });
+  m.bx(0, y, z0 + 0.3, W - 0.6, 0.03, 0.6, C.navy, { j: 0 }); m.bx(0, y, D / 2 - 0.3, W - 0.6, 0.03, 0.6, C.navy, { j: 0 });
+  m.bx(-W / 2 + 0.3, y, 0, 0.6, 0.03, D - 1.2, C.navy, { j: 0 }); m.bx(W / 2 - 0.3, y, 0, 0.6, 0.03, D - 1.2, C.navy, { j: 0 });
+  for (const s of [-1, 1]) { m.bx(s * 10.4, y, 0, 0.36, 0.03, D - 1.2, C.gold, { j: 0 }); m.bx(s * 10.95, y, 0, 0.55, 0.03, D - 1.2, C.navy, { j: 0 }); }
+  // brand medallion: navy roundel, gold ring, black field, the traced Rejuvini mark + wordmark lying on the ground (reads upright from the south)
+  m.cyl(0, y, -1.2, 6.6, 0.03, 48, C.navy); m.cyl(0, y + 0.03, -1.2, 6.2, 0.012, 48, C.gold); m.cyl(0, y + 0.04, -1.2, 5.9, 0.012, 48, hex("#05070d"));
+  logoGround(m, 0, y + 0.06, -1.2 + 0.55, 1.6);
+  // lawn panels with kerbs either side of the aisle
+  for (const s of [-1, 1]) { m.bx(s * 24, y, 0, 18, 0.16, 20, C.stoneLt, { j: 0 }); m.bx(s * 24, y + 0.16, 0, 17.2, 0.05, 19.2, C.leaf, { j: 0.03 }); m.bx(s * 24, y + 0.2, 0, 17.2, 0.02, 0.5, C.leafDk, { j: 0 }); }
+  return m;
+}
+
+// ---------------------------------------------------------------- CAMPUS PASS CARD: a thin, real-sized card (0.20 x 0.125 x 0.006 m), centred. Front faces +z.
+function passCard() {
+  const m = new Mesh("gate_pass_card", 141, false), W = 0.2, H = 0.125, T = 0.006, navy = hex("#14224a"), body = hex("#0d1630");
+  m.bx(0, -H / 2, 0, W, H, T, body, { j: 0 });
+  m.bx(0, H / 2 - 0.014, T / 2 + 0.0006, W - 0.01, 0.012, 0.001, C.gold, { j: 0 });                 // gold top rule
+  m.bx(0, -H / 2 + 0.006, T / 2 + 0.0006, W - 0.01, 0.004, 0.001, navy, { j: 0 });
+  logoWall(m, -0.066, 0.012, T / 2 + 0.0012, 0.030, 1, ["glyphWhite", "glyphBlue"]);                  // mark, front left
+  logoWall(m, -0.066, 0.012, T / 2 + 0.0012, 0.030, 1, [], false);
+  for (let i = 0; i < 3; i++) m.bx(0.045, -H / 2 + 0.058 - i * 0.017, T / 2 + 0.0008, 0.09 - i * 0.016, 0.006, 0.001, hex("#dfe6f7"), { j: 0 }); // name lines
+  logoWall(m, 0, 0.0, -(T / 2 + 0.0012), 0.036, -1, ["glyphWhite", "glyphBlue"]);                    // back: centred mark, mirrored so it reads from behind
+  return m;
+}
+
+const kit = [tower(), span(), letters(), wing(), pavilion(), mast(), lamp(), kiosk(), monument(), garden(), pool(), plaza(), promenade(), passCard()];
 const LIFT = new Set(["gate_span", "gate_letters_grand"]);
 const SCALE = { gate_tower: 1.35, gate_span: 1.35, gate_letters_grand: 1.35, gate_mast: 1.3, gate_pavilion: 1.15, gate_lamp_tall: 1.15 }; // v2.1: grander
 const report = kit.map((m) => glb(m, path.join(OUT, m.name + ".glb"), LIFT.has(m.name), SCALE[m.name] ?? 1));

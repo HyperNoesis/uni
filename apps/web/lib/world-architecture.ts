@@ -282,7 +282,7 @@ function academic(p: P, q: Quality) {
 }
 
 const ARCH: Record<string, (p: P, q: Quality) => void> = {
-  main_gate: (p, q) => { gate(p, q); shuttleBay(p, q); }, student_commons: commons, library, hostel_street: (p, q) => { hostel(p, q); hostelExtras(p, q); }, food_court: food, sports_ground: sports, event_arena: stage, creator_hub: creator, academic_block: academic,
+  main_gate: (p, q) => { shuttleBay(p, q); }, student_commons: commons, library, hostel_street: (p, q) => { hostel(p, q); hostelExtras(p, q); }, food_court: food, sports_ground: sports, event_arena: stage, creator_hub: creator, academic_block: academic,
   quiet_garden: (p, q) => { quietGarden(p, q); waterTower(p, q); },
 };
 

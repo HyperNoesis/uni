@@ -17,8 +17,8 @@ export interface StreamerOptions {
 
 export function createAssetStreamer(opts: StreamerOptions) {
   const { manifest, sink, onStatus } = opts;
-  // The whole campus is visible at once now, so every zone's models stay resident. The manifest budget (4 MB / 100k tris) was sized for 'current zone only'.
-  const budget = { maxBytes: Math.max(manifest.residentBudget.maxBytes, 24_000_000), maxTriangles: Math.max(manifest.residentBudget.maxTriangles, 450_000) };
+  // The whole campus is visible at once, so every zone's models stay resident: the budget lives in the manifest (assets.json residentBudget), sized for that.
+  const budget = manifest.residentBudget;
   const doFetch = opts.fetchFn ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
   const keepPrevious = opts.keepPrevious ?? 1;
   const loaded = new Map<string, { entry: AssetEntry; bytes: number; triangles: number; lastUsed: number }>();

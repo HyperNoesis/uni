@@ -5,8 +5,8 @@
     "maxTriangles": 6000
   },
   "residentBudget": {
-    "maxBytes": 8000000,
-    "maxTriangles": 170000
+    "maxBytes": 24000000,
+    "maxTriangles": 450000
   },
   "assets": [
     {
@@ -747,22 +747,6 @@
       "yOffset": 0
     },
     {
-      "id": "gate_pillar",
-      "url": "/assets/props/gate_pillar.glb",
-      "slot": "prop:pillar",
-      "zones": [
-        "main_gate"
-      ],
-      "maxBytes": 22000,
-      "maxTriangles": 200,
-      "size": {
-        "w": 1.6,
-        "h": 4.26,
-        "d": 1.6
-      },
-      "yOffset": 0
-    },
-    {
       "id": "commons_fountain",
       "url": "/assets/props/commons_fountain.glb",
       "slot": "prop:fountain",
@@ -922,22 +906,6 @@
         "w": 2,
         "h": 1.83,
         "d": 0.17
-      },
-      "yOffset": 0
-    },
-    {
-      "id": "gate_arch",
-      "url": "/assets/props/gate_arch.glb",
-      "slot": "decor:gate_arch",
-      "zones": [
-        "main_gate"
-      ],
-      "maxBytes": 293000,
-      "maxTriangles": 2600,
-      "size": {
-        "w": 14.87,
-        "h": 6.24,
-        "d": 1.77
       },
       "yOffset": 0
     },
@@ -1615,7 +1583,7 @@
         "main_gate",
         "gate_road"
       ],
-      "maxBytes": 140000,
+      "maxBytes": 148000,
       "maxTriangles": 2200,
       "size": {
         "w": 22.545,
@@ -1632,11 +1600,11 @@
         "main_gate",
         "gate_road"
       ],
-      "maxBytes": 68000,
-      "maxTriangles": 900,
+      "maxBytes": 95000,
+      "maxTriangles": 1200,
       "size": {
-        "w": 16.805,
-        "h": 2.754,
+        "w": 18.563,
+        "h": 2.549,
         "d": 0.405
       },
       "yOffset": 16.18
@@ -1808,6 +1776,40 @@
         "w": 2.12,
         "h": 2.27,
         "d": 5.565
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_promenade",
+      "url": "/assets/gate/gate_promenade.glb",
+      "slot": "decor:gate_promenade",
+      "zones": [
+        "main_gate",
+        "gate_road"
+      ],
+      "maxBytes": 202000,
+      "maxTriangles": 2800,
+      "size": {
+        "w": 80,
+        "h": 0.29,
+        "d": 27
+      },
+      "yOffset": 0
+    },
+    {
+      "id": "gate_pass_card",
+      "url": "/assets/gate/gate_pass_card.glb",
+      "slot": "decor:gate_pass_card",
+      "zones": [
+        "gate_road",
+        "main_gate"
+      ],
+      "maxBytes": 24000,
+      "maxTriangles": 300,
+      "size": {
+        "w": 0.2,
+        "h": 0.125,
+        "d": 0.009
       },
       "yOffset": 0
     }

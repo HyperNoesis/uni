@@ -10,9 +10,9 @@ export const gestureView = (g: { kind: string; t: number } | undefined) => (g ? 
 export function gateEntities(sn: GateSnapshot): Entity[] {
   return sn.guards.map((g: GuardView, i: number) => {
     const avatar = (g.kit === "police"
-      ? { ...DEFAULT_AVATAR, skin: "#5e3b26", outfit: "#14161a", hair: "bald", accessory: "sunglasses", top: "polo", bottom: "chinos", shoes: "boots", face: "calm" }
+      ? { ...DEFAULT_AVATAR, skin: "#5e3b26", outfit: "#14161a", hair: "bald", accessory: "none", top: "polo", bottom: "chinos", shoes: "boots", face: "calm" }
       : { ...DEFAULT_AVATAR, skin: TONES[i % TONES.length]!, outfit: "#1f4fb5", hair: "fade", accessory: i % 3 === 2 ? "round_glasses" : "glasses", top: "polo", bottom: "chinos", shoes: "boots", face: "calm" }) as unknown as Entity["avatar"];
     return { id: g.id, name: g.name, x: g.x, y: g.y, npc: true, staff: true, tagColor: g.kit === "police" ? "#14161a" : "#1f4fb5", avatar, kit: g.kit,
-      ...(g.moving ? {} : { face: g.face }), ...gestureView(g.gesture), ...(g.say ? { say: g.say } : {}) };
+      face: g.face, ...gestureView(g.gesture), ...(g.say ? { say: g.say } : {}) };
   });
 }

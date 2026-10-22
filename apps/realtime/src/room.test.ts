@@ -43,14 +43,14 @@ describe("Room", () => {
     const room = new Room({ now: () => t });
     const a = client();
     const p = room.join(id("a"), a.conn);
-    p.x = 51.3; p.y = 71.7; // just left of a gate pillar (x 52..53.4, y 71..72.4)
+    p.x = 38.9; p.y = 128; // just outside the west gate tower (x 39.94..50.06, y 127.48..136.53)
     t += 100;
-    room.input("a", 1, 52.0, 71.7);
+    room.input("a", 1, 39.7, 128);
     expect(a.msgs.some((m) => m.t === "correct")).toBe(true);
-    expect(p.x).toBe(51.3);
+    expect(p.x).toBe(38.9);
     t += 100;
-    room.input("a", 2, 50.8, 71.7); // walking away is fine
-    expect(p.x).toBe(50.8);
+    room.input("a", 2, 38.6, 128); // walking away is fine
+    expect(p.x).toBe(38.6);
   });
 
   it("ignores replayed/stale input sequence numbers", () => {

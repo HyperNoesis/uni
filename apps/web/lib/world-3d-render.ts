@@ -274,7 +274,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
             pushTri(px + tx * w, py, pz + tz * w, px - tx * w, py, pz - tz * w, px + dx * L + nx * .18, py + dy * L + ny * .18, pz + dz * L + nz * .18, col);
         }
     };
-    let frameNo = 0;
+    let frameNo = 0, passMemo = null;
     let collectCam = false; const camPropKeys = new Set(); const CAM_PROPS = [];
     const drawBaked = (key, fn, vp, cell = 0) => {
         if (!bakedCache.has(key)) {
@@ -481,7 +481,7 @@ export function createWorld3DRenderer(canvas: HTMLCanvasElement) {
         const npcLimit = domain_1.QUALITY_PROFILES[input.quality]?.npcs ?? 6;
         for (const e of input.entities) {
             if (e.npc && !e.staff && ++labelledNpcs > npcLimit) continue;
-            if (e.staff && !e.say && e.kit !== "police" && e.id !== "gateman") continue; // guards only wear a nameplate while talking (keeps the surround readable)
+            if (e.staff && !e.say) continue; // guards only wear a nameplate while talking (keeps the surround readable)
             const p = project(e.x, e.npc ? 1.95 : 2.1, e.y);
             if (!p || p.x < 0 || p.x > input.width || p.y < 0 || p.y > input.height)
                 continue;
@@ -1301,7 +1301,7 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             let mo = motion.get(e.id); if (!mo) { if (motion.size > 300) motion.clear(); mo = { x: e.x, y: e.y, dx: 0, dz: 1, yaw: 0, phase: hash2(e.x, e.y) * 6, speed: 0, t: input.time }; motion.set(e.id, mo); }
             const dtm = Math.max(.001, Math.min(.2, input.time - mo.t)), vx = (e.x - mo.x) / dtm, vz = (e.y - mo.y) / dtm, spd = Math.hypot(vx, vz);
             if (spd > .3) { mo.dx = vx / spd; mo.dz = vz / spd; }
-            { const own = e.id === input.meId && camMode === "chase" && spd <= .3; const want = own ? (input.camHeading ?? 0) : (e.face !== undefined && spd <= .3) ? e.face : Math.atan2(mo.dx, mo.dz); let dy = want - (mo.yaw ?? 0); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); mo.yaw = (mo.yaw ?? 0) + dy * Math.min(1, dtm * 12); }
+            { const own = e.id === input.meId && camMode === "chase" && spd <= .3; const want = own ? (input.camHeading ?? 0) : (e.face !== undefined && (spd <= .3 || e.staff)) ? e.face : Math.atan2(mo.dx, mo.dz); let dy = want - (mo.yaw ?? 0); dy = Math.atan2(Math.sin(dy), Math.cos(dy)); mo.yaw = (mo.yaw ?? 0) + dy * Math.min(1, dtm * 12); }
             mo.speed += (Math.min(1, spd / 4.5) - mo.speed) * Math.min(1, dtm * 10);
             mo.rn = (mo.rn ?? 0) + (Math.max(0, Math.min(1, (spd - 4.2) / 1.6)) - (mo.rn ?? 0)) * Math.min(1, dtm * 8); // walk -> run blend
             mo.phase += dtm * (5 + Math.min(spd, 7) * 1.5) * (mo.speed > .05 ? 1 : .25);
@@ -1446,37 +1446,28 @@ floor(b.x, b.y, b.w, b.h, "#d7c7a6", vp, .07);
             const g = input.gate, near = Math.hypot(60 - input.camX, 135 - input.camY) < 600, pk = slotToName["decor:gate_pier"];
             if (near && pk && meshes[pk.name]) drawn += drawGateLeaves(gctx, g.wicket ?? 0);
             if (near && g.car) { const hk = slotToName["decor:gate_police_hilux"]; drawn += drawPoliceCar(gctx, g.car, hk && meshes[hk.name] ? { name: hk.name, size: hk.entry.size, yOffset: hk.entry.yOffset ?? 0 } : null); }
-            const pv = g.pass, me = handMap.get(input.meId);
-            if (pv && me) {
-                const L = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k], ez = (t) => t * t * (3 - 2 * t);
-                const hand = (id) => { const h = handMap.get(id); return h ? (h.R || h.head) : null; };
-                let at = null;
-                if (pv.state === "out") at = me.R; else if (pv.state === "held") at = hand(pv.holder);
-                else if (pv.state === "flying") { const a = me.R, b = hand(pv.to); if (a && b) { at = L(a, b, ez(pv.t)); at[1] += Math.sin(Math.PI * ez(pv.t)) * .3; } }
-                else if (pv.state === "returning") { const a = hand(pv.holder), b = me.R; if (a && b) { at = L(a, b, ez(pv.t)); at[1] += Math.sin(Math.PI * ez(pv.t)) * .25; } }
-                if (at) {
-                    const lift = [at[0], at[1] + (pv.state === "out" ? .12 : .03), at[2]], yawC = Math.atan2(eye[0] - lift[0], eye[2] - lift[2]);
-                    drawPass(gctx, lift, yawC, { scale: pv.state === "out" ? 2.1 : 1.2, glow: pv.state === "out" ? .5 + .5 * Math.sin(input.time * 6) : 0, verified: pv.verified ?? 0, scan: pv.state === "held" && (pv.verified ?? 0) < 1 ? (pv.t % 1.1) / 1.1 : -1, skin: input.passSkin ?? "#8d5a3b", outfit: input.passOutfit ?? "#2f6bff" });
-                    drawn += 12;
-                    const a = vp[0] * lift[0] + vp[4] * lift[1] + vp[8] * lift[2] + vp[12], b = vp[1] * lift[0] + vp[5] * lift[1] + vp[9] * lift[2] + vp[13], c = vp[3] * lift[0] + vp[7] * lift[1] + vp[11] * lift[2] + vp[15];
+            const pv = g.pass, me = handMap.get(input.meId), ld = g.lead ? handMap.get(g.lead) : null, ck = slotToName["decor:gate_pass_card"];
+            if (pv && me) { // the Campus Pass is always attached to a hand (or the pocket): drawn from your pocket, passed hand to hand, and returned to the pocket. Nothing flies.
+                const ez = (t) => t * t * (3 - 2 * t), mix3 = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+                const pocket = (() => { const yw = me.yaw, c = Math.cos(yw), s = Math.sin(yw); return [me.head[0] + .25 * c + .07 * s, .84, me.head[2] - .25 * s + .07 * c]; })();
+                const inHand = (hm, other) => { if (!hm || !hm.R) return null; const yw = other ? Math.atan2(other.head[0] - hm.head[0], other.head[2] - hm.head[2]) : hm.yaw; return { p: [hm.R[0] + Math.sin(yw) * .04, hm.R[1] + .055, hm.R[2] + Math.cos(yw) * .04], yaw: yw }; };
+                const holderHm = pv.holder === "player" ? me : handMap.get(pv.holder);
+                let tgt = null;
+                if (pv.state === "drawing") { const a = inHand(me, ld); if (a) { const k = ez(Math.min(1, pv.t / .7)); tgt = { p: mix3(pocket, a.p, k), yaw: a.yaw }; tgt.p[1] += Math.sin(Math.PI * k) * .05; } }
+                else if (pv.state === "pocketing") { const a = inHand(me, ld); if (a) { const k = ez(Math.min(1, pv.t / .7)); tgt = { p: mix3(a.p, pocket, k), yaw: a.yaw }; } }
+                else tgt = inHand(holderHm, pv.holder === "player" ? ld : me);
+                if (tgt) {
+                    if (!passMemo || pv.state === "drawing" && pv.t < .02) passMemo = { p: tgt.p.slice(), yaw: tgt.yaw };
+                    const kf = Math.min(1, 22 * Math.max(.001, Math.min(.1, input.time - passMemo.t0 || .016))); passMemo.t0 = input.time;
+                    for (let i = 0; i < 3; i++) passMemo.p[i] += (tgt.p[i] - passMemo.p[i]) * kf;
+                    { let dy = tgt.yaw - passMemo.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); passMemo.yaw += dy * kf; }
+                    const at = passMemo.p, gripSkin = pv.holder === "player" ? (input.passSkin ?? "#8d5a3b") : null;
+                    drawPass(gctx, at, passMemo.yaw, { glow: pv.state === "out" ? .4 + .4 * Math.sin(input.time * 5) : 0, verified: pv.verified ?? 0, scan: pv.state === "held" && (pv.verified ?? 0) < 1 ? (pv.t % 1.1) / 1.1 : -1, skin: input.passSkin ?? "#8d5a3b", outfit: input.passOutfit ?? "#2f6bff" }, ck && meshes[ck.name] ? { name: ck.name, size: ck.entry.size } : null);
+                    drawn += 10; void gripSkin;
+                    const a = vp[0] * at[0] + vp[4] * at[1] + vp[8] * at[2] + vp[12], b = vp[1] * at[0] + vp[5] * at[1] + vp[9] * at[2] + vp[13], c = vp[3] * at[0] + vp[7] * at[1] + vp[11] * at[2] + vp[15];
                     if (c > 0) probes = { pass: { x: (a / c * .5 + .5) * input.width, y: (1 - (b / c * .5 + .5)) * input.height, state: pv.state } };
                 }
-            }
-        }
-        { // Main gate leaves (iron bars + gold rail) swing open about the pillars; input.gateOpen 0..1 (visual only)
-            const go = Math.max(0, Math.min(1, input.gateOpen ?? 0));
-            if (Math.hypot(60 - input.camX, 71.7 - input.camY) < 600) {
-                const a = go * 1.35, L = 6.6;
-                for (const s of [-1, 1]) {
-                    const hx = s < 0 ? 53.4 : 66.6, rot = s < 0 ? a : Math.PI - a, dx = Math.cos(rot), dz = -Math.sin(rot);
-                    const at = (u, y, w, h, d, c) => draw("box", hx + dx * u, y, 71.7 + dz * u, w, h, d, c, vp, 0, rot);
-                    at(L / 2, 2.8, L, .14, .12, "#d4a64a"); at(L / 2, 2.45, L, .1, .1, "#2a2f3a"); at(L / 2, 1.3, L, .08, .08, "#2a2f3a"); at(L / 2, .4, L, .12, .1, "#2a2f3a");
-                    const n = q === "low" ? 8 : 14;
-                    for (let i = 0; i <= n; i++) at(.15 + i * (L - .3) / n, 1.5, .07, 2.5, .07, "#2a2f3a");
-                    at(L - .05, 1.5, .14, 2.8, .14, "#d4a64a");
-                }
-                drawn += 36;
-            }
+            } else passMemo = null;
         }
         flushDyn(vp);
         flushShadows(vp);

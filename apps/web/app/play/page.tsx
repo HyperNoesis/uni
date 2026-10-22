@@ -243,6 +243,15 @@ export default function Play() {
     if (ws.current?.readyState === WebSocket.OPEN) ws.current.send(JSON.stringify(m));
   }, []);
 
+  // The server decides whether the small gate is open for you. If the socket was asleep or reconnecting when you were approved, the first message is lost,
+  // so repeat it (it is idempotent) for a while after approval. Without this you could be walked back from the open gate.
+  useEffect(() => {
+    if (!gatePassed) return;
+    send({ t: "gate_pass" });
+    const id = window.setInterval(() => send({ t: "gate_pass" }), 1200), stop = window.setTimeout(() => window.clearInterval(id), 40000);
+    return () => { window.clearInterval(id); window.clearTimeout(stop); };
+  }, [gatePassed, send]);
+
   // ---- bootstrap profile ----
   useEffect(() => {
     if (!getToken()) return void router.replace("/start");
@@ -724,8 +733,8 @@ export default function Play() {
         const stats = renderer3dRef.current.render({
           width: w, height: h, time, camX: cam.x, camY: cam.y, camMode: walkView ? viewRef.current : "orbit", ...(introCam ? { camMode: "free" as const, camEye: introCam.eye, camTarget: introCam.target, camFov: (introCam.fov * Math.PI) / 180 } : {}), camHeading: lookRef.current.heading, camLook: lookRef.current.pitch, camBob, camYaw: orbit.current.yaw, camPitch: orbit.current.pitch, zoom: orbit.current.zoom,
           meId: me.current.id || "me", entities, quality: qualityRef.current, ...(lightingRef.current === "auto" ? (() => { const k = lagosSky(); return { lighting: "day" as const, nightBlend: k.night, warmth: k.warmth, sunElevation: k.elevation }; })() : { lighting: lightingRef.current }),
-          activeHuntPointId: huntTargetRef.current, gateOpen: 1,
-          ...(gsn ? { gate: { wicket: gsn.wicket, pass: gsn.pass, car: gsn.car, quiet: gsn.lock }, passSkin: profile?.avatar.skin, passOutfit: profile?.avatar.outfit } : {}),
+          activeHuntPointId: huntTargetRef.current,
+          ...(gsn ? { gate: { wicket: gsn.wicket, pass: gsn.pass, car: gsn.car, lead: gsn.leadId, quiet: gsn.lock || !gsn.passed }, passSkin: profile?.avatar.skin, passOutfit: profile?.avatar.outfit } : {}),
         }, labelsCtx);
         { // tap target for the pass follows the 3D card (DOM, so it is a real button for touch, mouse and screen readers)
           const pr = stats.probes?.pass, btn = tapBtn.current, ok = !!(pr && gsn?.tapReady && !introCam);
