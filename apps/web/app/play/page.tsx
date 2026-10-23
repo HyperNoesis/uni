@@ -717,7 +717,7 @@ export default function Play() {
       cam.x += ((vo ? vo.x : me.current.x) - cam.x) * 0.18;
       cam.y += ((vo ? vo.y : me.current.y) - cam.y) * 0.18;
     }
-    const ig = gateIntro.current, introCam = ig ? gateIntroCamera((performance.now() - ig.t0) / INTRO_MS) : null;
+    const ig = gateIntro.current, introCam = ig ? gateIntroCamera((performance.now() - ig.t0) / INTRO_MS, w / Math.max(1, h)) : null;
     const reducedMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     const camBob = viewRef.current === "fp" && !reducedMotion ? Math.sin(walkRef.current.phase) * 0.042 * walkRef.current.amp : 0;
     const renderInput = { w, h, scale, time, camX: cam.x, camY: cam.y, meId: me.current.id || "me", entities, emoji: EMOTES, quality: q, activeHuntPointId: huntTargetRef.current };

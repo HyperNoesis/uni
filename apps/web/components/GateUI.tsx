@@ -14,7 +14,7 @@ export function GateUI(p: { ui: GateUiState; profile: PlayerProfile | null; camp
     <>
       {introOn && (
         <div className="gate-intro" aria-live="polite">
-          <div className="gate-intro-title"><small>Welcome to</small><b>{campus}</b><span>Main Gate</span></div>
+          <div className="gate-intro-title"><small>Welcome to</small><b>Rejuvini Campus</b><span>Grand Gate</span></div>
           <button type="button" className="gate-skip" onClick={p.onSkipIntro}>Skip <kbd>any key</kbd></button>
         </div>
       )}

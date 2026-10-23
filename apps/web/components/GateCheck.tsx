@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { CAMPUSES, type PlayerProfile } from "@campus/domain";
+import logo from "../lib/brand-logo.json";
 
 export type GateState = { gx: number; gy: number; open: number };
 export const GATE_POST = { x: 54.8, y: 72.6 };
@@ -34,7 +35,7 @@ export function GateCheck({ profile, player, gate, onDone }: { profile: PlayerPr
   return (
     <div className="gate-overlay" role="dialog" aria-label="Campus gate check">
       <div className="gate-card">
-        <small className="gate-eyebrow">Main Gate · Security</small>
+        <small className="gate-eyebrow">Grand Gate · Security</small>
         {stage === "intro" && <><h3>Welcome, {profile.displayName}</h3><p>Entry needs your Campus Pass. An officer will come to you.</p>
           <button className="btn big accent" onClick={() => setStage("approach")}>Show my pass</button></>}
         {stage === "approach" && <><h3>Officer approaching…</h3><p>Hold your pass ready.</p></>}
@@ -46,11 +47,16 @@ export function GateCheck({ profile, player, gate, onDone }: { profile: PlayerPr
   );
 }
 
+export function BrandMark({ size = 28 }: { size?: number }) {
+  const b = logo.glyphBounds, L = logo.layers as Record<string, { color: string; path: string }>;
+  return (<svg width={size} height={size} viewBox={`${b.x0} ${-b.y1} ${b.x1 - b.x0} ${b.y1 - b.y0}`} aria-hidden="true" style={{ flex: "none" }}><g transform="scale(1,-1)">{["glyphWhite", "glyphBlue"].map((k) => L[k] && <path key={k} d={L[k].path} fill={L[k].color} />)}</g></svg>);
+}
+
 export function PassCard({ profile, campus, verified = true }: { profile: PlayerProfile; campus?: string; verified?: boolean }) {
   const c = campus ?? CAMPUSES[profile.campus]?.name ?? "CAMPUS";
   return (
     <div className={`pass ${verified ? "ok" : ""}`} style={{ ["--pass" as string]: CAMPUSES[profile.campus]?.color ?? "#2f6bff" }}>
-      <div className="pass-top"><b>CAMPUS PASS</b><span>{verified ? "VERIFIED" : "CHECKING"}</span></div>
+      <div className="pass-top"><b style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><BrandMark size={18} />CAMPUS PASS</b><span>{verified ? "VERIFIED" : "CHECKING"}</span></div>
       <div className="pass-body"><div className="pass-photo" style={{ background: profile.avatar.skin }} aria-hidden="true"><i style={{ background: profile.avatar.outfit }} /></div>
         <div><h4>{profile.displayName}</h4><p>{c}</p><code>{passNumber(profile.id)}</code></div></div>
       <div className="pass-bar" aria-hidden="true">{Array.from({ length: 28 }, (_, i) => <i key={i} style={{ width: 1 + ((i * 7) % 3) }} />)}</div>
